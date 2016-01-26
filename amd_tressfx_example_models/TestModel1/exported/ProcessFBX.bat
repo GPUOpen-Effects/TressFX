@@ -1,0 +1,1 @@
+..\..\ContentExporter\ContentExporter.exe -windowsd3d11 -exportanimations- -applyglobaltrans+ -compressvertexdata+ -forcetextureoverwrite+ %1

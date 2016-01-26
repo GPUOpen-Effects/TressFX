@@ -1,0 +1,24 @@
+version 3.0
+
+# project name diplaying on GUI (optional)
+project_name Ponytail_model
+
+# tfx file name (relative path), follow hairs per guide hair (0 means no follow hairs), follow hair growing radius, tip separation factor for guide/follow, simulation setting file name, hair section name appearing on GUI (optional)
+front_top.tfx 4 0.2 10.0 front_top.tfxsim front-and-top
+side.tfx 4 0.2 10.0 side.tfxsim side
+back.tfx 4 0.2 10.0 back.tfxsim back
+tail.tfx 4 0.2 10.0 tail.tfxsim tail
+
+# mesh file name (relative path)
+ponytail.sdkmesh
+
+# project level simulation settings
+lengthConstraintIterations 3
+localShapeMatchingIterations 3
+
+# collision spheres - maximum 3 spheres, optional
+# center x, center y, center z, radius
+collision_sphere -0.095 92.000 9.899 26.5
+collision_sphere -0.405 93.707 -5.111 24.113
+collision_sphere -0.072 68.548 -10.561 25.500
+

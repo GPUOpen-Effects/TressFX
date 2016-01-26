@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="ResourceFiles">
+      <UniqueIdentifier>{00A967FA-6C69-E330-35A4-2CAEA123280D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{EFAC8DF2-5B8C-0C8E-64A4-9764D00273EF}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\src\ResourceFiles\dpiaware.manifest">
+      <Filter>ResourceFiles</Filter>
+    </None>
+    <None Include="..\src\Shaders\GaussianFilter.hlsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\src\Shaders\SceneRender.hlsl">
+      <Filter>Shaders</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\DX11Mesh.h" />
+    <ClInclude Include="..\src\ResourceFiles\resource.h">
+      <Filter>ResourceFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\SceneObj.h" />
+    <ClInclude Include="..\src\SceneRender.h" />
+    <ClInclude Include="..\src\StringTokenizer.h" />
+    <ClInclude Include="..\src\TFXFileIO.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\DX11Mesh.cpp" />
+    <ClCompile Include="..\src\SceneRender.cpp" />
+    <ClCompile Include="..\src\StringTokenizer.cpp" />
+    <ClCompile Include="..\src\TFXFileIO.cpp" />
+    <ClCompile Include="..\src\main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\src\ResourceFiles\TressFXViewer.rc">
+      <Filter>ResourceFiles</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>
