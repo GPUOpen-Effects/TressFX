@@ -1,0 +1,61 @@
+# This is a windows-only project. Force CRLF.
+* text eol=crlf
+
+# Explicit settings for specific file types.
+*.h         eol=crlf
+*.hpp       eol=crlf
+*.inc       eol=crlf
+*.cpp       eol=crlf
+*.inl       eol=crlf
+*.hlsl      eol=crlf
+*.rc        eol=crlf
+*.manifest  eol=crlf
+*.vcxproj   eol=crlf
+*.filters   eol=crlf
+*.props     eol=crlf
+*.sln       eol=crlf
+*.bat       eol=crlf
+*.cmd       eol=crlf
+*.txt       eol=crlf
+*.lua       eol=crlf
+*.md        eol=crlf
+*.py        eol=crlf
+*.svg       eol=crlf
+*.mtl       eol=crlf
+*.pdf       binary
+*.pps       binary
+*.ppsx      binary
+*.ico       binary
+*.png       binary
+*.bmp       binary
+*.dds       binary
+*.DDS       binary
+*.chm       binary
+*.lib       binary
+*.dll       binary
+*.exe       binary
+
+# Some model formats might be ASCII, but treating them as such
+# can slow down GitHub Desktop if the model file is large. Just
+# mark all model formats as binary.
+*.fbx           binary
+*.sdkmesh       binary
+*.sdkmesh_anim  binary
+*.ply           binary
+*.obj           binary
+*.ma            binary
+*.mb            binary
+*.xgen          binary
+
+# The TressFX file formats that contain more data are binary, for
+# faster loading. Others are plain text, for convenience.
+*.tfxproj       eol=crlf
+*.tfxsim        eol=crlf
+*.tfxskin       binary
+*.tfx           binary
+
+# Ensure precompiled shader files are detected as C++.
+# Otherwise, if there are a lot of them, the repo can 
+# get incorrectly marked as Assembly.
+amd_tressfx/src/Shaders/inc/*.inc linguist-language=C++
+amd_tressfx_tools/ContentExporter/src/DirectXTex/Shaders/Compiled/*.inc linguist-language=C++
