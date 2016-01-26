@@ -59,3 +59,8 @@
 # get incorrectly marked as Assembly.
 amd_tressfx/src/Shaders/inc/*.inc linguist-language=C++
 amd_tressfx_tools/ContentExporter/src/DirectXTex/Shaders/Compiled/*.inc linguist-language=C++
+
+# Some example models are .ma files, but that's Maya ASCII, not Mathematica.
+# Mark them as vendor files so they aren't counted as part of the source.
+# Actually, just mark everything under amd_tressfx_example_models as vendored.
+amd_tressfx_example_models/* linguist-vendored
