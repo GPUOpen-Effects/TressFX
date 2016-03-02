@@ -92,8 +92,10 @@ void CDX11Mesh::CreateMeshFromFile(ID3D11Device* pd3dDevice, const WCHAR* strFil
 
     // Create the vertex buffer.
     hr = pd3dDevice->CreateBuffer( &bufferDesc, &InitData, &(this->pVertexBuffer) );
-    if( FAILED( hr ) )
-        ::MessageBoxA(0,"fail to create vb for obj", "d3dError", 0);
+    if ( FAILED( hr ) )
+    {
+        ::MessageBoxA(0, "fail to create vb for obj", "d3dError", 0);
+    }
 
     // Create indices.
     // Fill in a buffer description.
@@ -111,8 +113,10 @@ void CDX11Mesh::CreateMeshFromFile(ID3D11Device* pd3dDevice, const WCHAR* strFil
 
     // Create the buffer with the device.
     hr = pd3dDevice->CreateBuffer( &bufferDesc, &InitData, &(this->pIndexBuffer) );
-    if( FAILED( hr ) )
-        ::MessageBoxA(0,"fail to create vb for obj", "d3dError", 0);
+    if ( FAILED( hr ) )
+    {
+        ::MessageBoxA(0, "fail to create vb for obj", "d3dError", 0);
+    }
 
     // set directory for loading textures
     WCHAR wstrOldDir[MAX_PATH] = {0};
@@ -121,8 +125,10 @@ void CDX11Mesh::CreateMeshFromFile(ID3D11Device* pd3dDevice, const WCHAR* strFil
     WCHAR strMediaDir[MAX_PATH] = {0};
     wcscpy_s( strMediaDir, MAX_PATH - 1, strFilename );
     WCHAR* pch = wcsrchr( strMediaDir, L'\\' );
-    if( pch )
+    if ( pch )
+    {
         *pch = NULL;
+    }
     SetCurrentDirectory( strMediaDir );
 
     // load textures required in .mtl file
@@ -136,10 +142,10 @@ void CDX11Mesh::CreateMeshFromFile(ID3D11Device* pd3dDevice, const WCHAR* strFil
             bool bFound = false;
 
             // loop through previous materials to see if texture is already loaded.
-            for( int x = 0; x < (int)iMaterial; x++ )
+            for ( int x = 0; x < (int)iMaterial; x++ )
             {
                 Material* pCur = &m_model.materials[x];
-                if( 0 == wcscmp( pCur->strTexture, pMaterial->strTexture ) )
+                if ( 0 == wcscmp( pCur->strTexture, pMaterial->strTexture ) )
                 {
                     pMaterial->pTextureRV11 = pCur->pTextureRV11;
                     bFound = true;
@@ -148,14 +154,14 @@ void CDX11Mesh::CreateMeshFromFile(ID3D11Device* pd3dDevice, const WCHAR* strFil
             }
 
             // Not found, load the texture
-            if(!bFound)
+            if (!bFound)
             {
                 WCHAR wstr[ MAX_PATH ] = {0};
                 if ( SUCCEEDED(DXUTFindDXSDKMediaFileCch( wstr, MAX_PATH, pMaterial->strTexture) ) )
                 {
                     hr = CreateWICTextureFromFile( pd3dDevice, nullptr, wstr, nullptr, &pMaterial->pTextureRV11 );
                     m_TextureSRVs.push_back(pMaterial->pTextureRV11);
-                    if(FAILED(hr)) ::MessageBoxW(0, L"fail to load material texture", L"D3D11 Error", 0);
+                    if (FAILED(hr)) { ::MessageBoxW(0, L"fail to load material texture", L"D3D11 Error", 0); }
 
                 }
             }
@@ -178,8 +184,10 @@ bool CDX11Mesh::ReadBinaryFile(const WCHAR *filename)
 {
     ifstream inFile(filename, ios::binary);
 
-    if( !inFile.is_open() )
+    if ( !inFile.is_open() )
+    {
         return false;
+    }
 
     inFile.read((char *)&m_model.bSphere.center, sizeof(DirectX::XMFLOAT3));
     inFile.read((char *)&m_model.bSphere.radius, sizeof(float));
@@ -190,7 +198,9 @@ bool CDX11Mesh::ReadBinaryFile(const WCHAR *filename)
     Subset *pSubsets = new Subset[size];
     inFile.read((char *)pSubsets, size * sizeof(Subset));
     for (unsigned i = 0; i < size; i++)
+    {
         m_model.subsets.push_back(pSubsets[i]);
+    }
     delete [] pSubsets;
 
     m_model.materials.clear();
@@ -198,7 +208,9 @@ bool CDX11Mesh::ReadBinaryFile(const WCHAR *filename)
     Material *pMaterials = new Material[size];
     inFile.read((char *)pMaterials, size * sizeof(Material));
     for (unsigned i = 0; i < size; i++)
+    {
         m_model.materials.push_back(pMaterials[i]);
+    }
     delete [] pMaterials;
 
     m_model.vertexBuffer.clear();
@@ -206,7 +218,9 @@ bool CDX11Mesh::ReadBinaryFile(const WCHAR *filename)
     StandardVertex *pVertices = new StandardVertex[size];
     inFile.read((char *)pVertices, size * sizeof(StandardVertex));
     for (unsigned i = 0; i < size; i++)
+    {
         m_model.vertexBuffer.push_back(pVertices[i]);
+    }
     delete [] pVertices;
 
     m_model.indexBuffer.clear();
@@ -214,7 +228,9 @@ bool CDX11Mesh::ReadBinaryFile(const WCHAR *filename)
     UINT *pIndices = new UINT[size];
     inFile.read((char *)pIndices, size * sizeof(UINT));
     for (unsigned i = 0; i < size; i++)
+    {
         m_model.indexBuffer.push_back(pIndices[i]);
+    }
     delete [] pIndices;
 
     inFile.close();
@@ -246,7 +262,7 @@ void CDX11Mesh::OnFrameRender(ID3D11DeviceContext* pd3dContext)
 
     // loop through all subsets
     int numSubsets = (int)m_model.subsets.size();
-    for(int i=0; i<numSubsets; i++)
+    for (int i = 0; i < numSubsets; i++)
     {
         int indexCount = m_model.subsets[i].triangleCount*3;
         int startLocation = m_model.subsets[i].startIndex;
@@ -264,10 +280,10 @@ void CDX11Mesh::OnDestroy()
     SAFE_RELEASE(pVertexBuffer);
     SAFE_RELEASE(pIndexBuffer);
 
-    for(UINT i=0; i<m_TextureSRVs.size(); i++)
+    for (UINT i = 0; i < m_TextureSRVs.size(); i++)
     {
         ID3D11Resource* pRes = NULL;
-        if(m_TextureSRVs[i])
+        if (m_TextureSRVs[i])
         {
             m_TextureSRVs[i]->GetResource( &pRes );
             SAFE_RELEASE( pRes );
@@ -281,7 +297,7 @@ void CDX11Mesh::OnDestroy()
     std::vector<Material>().swap(m_model.materials);
     std::vector<ID3D11ShaderResourceView*>().swap( m_TextureSRVs);
 
-    m_model.bSphere.center = XMFLOAT3(0,0,0);
+    m_model.bSphere.center = XMFLOAT3(0, 0, 0);
     m_model.bSphere.radius = 0;
 }
 

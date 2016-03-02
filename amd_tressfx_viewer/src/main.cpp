@@ -23,7 +23,7 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-////--------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -195,7 +195,7 @@ DirectX::XMFLOAT3   g_wind_direction(1, 0, 0);
 float       g_targetFrameRateForSimulation = 1.f/60.f;
 
 
-typedef struct
+typedef struct timerData_t
 {
     float effect;
     float simulation;
@@ -219,7 +219,7 @@ static AMD::HUD             g_RenderHUD;
 //--------------------------------------------------------------------------------------
 // UI control IDs
 //--------------------------------------------------------------------------------------
-enum
+enum TRESSFX_VIEWER_IDC
 {
     IDC_TOGGLEFULLSCREEN = 1,
     IDC_CHANGEDEVICE,
@@ -485,7 +485,7 @@ void InitApp()
     g_SimulationHUD.m_GUI.AddComboBox( IDC_COMBOBOX_HAIR_SECTION, iX, iY += AMD::HUD::iElementDelta, AMD::HUD::iElementWidth+55,
         AMD::HUD::iElementHeight, L'L', false, &pComboHairSection );
 
-    if( pComboHairSection )
+    if ( pComboHairSection )
     {
         pComboHairSection->SetDropHeight( 45 );
         pComboHairSection->SetScrollBarWidth(20);
@@ -543,7 +543,7 @@ void InitApp()
 
     // Setup the camera's view parameters
     g_Camera.SetEnablePositionMovement( true );
-    g_Camera.SetScalers(0.001f,20.f);
+    g_Camera.SetScalers(0.001f, 20.f);
     g_Camera.SetViewParams(g_defaultEyePt, g_defaultLookAt);
 
     for (int i = 0; i < AVERAGE_FRAME_COUNT; i++)
@@ -566,10 +566,10 @@ bool CALLBACK ModifyDeviceSettings( DXUTDeviceSettings* pDeviceSettings, void* p
 {
     // For the first device created if its a REF device, optionally display a warning dialog box
     static bool s_bFirstTime = true;
-    if( s_bFirstTime )
+    if ( s_bFirstTime )
     {
         s_bFirstTime = false;
-        if( pDeviceSettings->d3d11.DriverType == D3D_DRIVER_TYPE_REFERENCE )
+        if ( pDeviceSettings->d3d11.DriverType == D3D_DRIVER_TYPE_REFERENCE )
         {
             DXUTDisplaySwitchingToREFWarning();
         }
@@ -596,7 +596,9 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 
 
     if ( !g_DemoModel.m_bInitialized )
+    {
         return;
+    }
 
     static double fTimeFromLastFrame = 0.0f;
     const bool bSimulationEnabled = g_DemoModel.m_TressFXParams.hairParams.bSimulation;
@@ -628,10 +630,9 @@ void RenderText()
     int strandCopies = g_DemoModel.m_TressFXParams.hairParams.strandCopies;
     int count = g_DemoModel.m_TressFXParams.numTotalHairVertices * 2; // triangle verts = number of line verts * 2
 
-    swprintf_s( wcbuf, 256, L"Number of hair strands = %d verts = %d"
-        , int(numStrands * density) * strandCopies
-        , int(density * count) * strandCopies
-        );
+    swprintf_s( wcbuf, 256, L"Number of hair strands = %d verts = %d",
+        int(numStrands * density) * strandCopies,
+        int(density * count) * strandCopies );
     g_pTxtHelper->DrawTextLine( wcbuf );
 
     g_timerResults[g_frameCount].effect = (float)TIMER_GetTime( Gpu, L"Effect"          ) * 1000.0f;
@@ -649,7 +650,9 @@ void RenderText()
         movingAverage.effect += g_timerResults[i].effect;
         // only count the non-zero simulation times, since the simulation may skip frames
         if (g_timerResults[i].simulation == 0.0f)
+        {
             simZeroCount++;
+        }
         movingAverage.simulation += g_timerResults[i].simulation;
         movingAverage.generateShadow += g_timerResults[i].generateShadow;
         movingAverage.renderScene += g_timerResults[i].renderScene;
@@ -658,7 +661,9 @@ void RenderText()
     movingAverage.effect /= AVERAGE_FRAME_COUNT;
     simCount = AVERAGE_FRAME_COUNT - simZeroCount;
     if (simCount <= 0)
+    {
         simCount = AVERAGE_FRAME_COUNT;
+    }
     movingAverage.simulation /= simCount;
     movingAverage.generateShadow /= AVERAGE_FRAME_COUNT;
     movingAverage.renderScene /= AVERAGE_FRAME_COUNT;
@@ -695,9 +700,13 @@ void RenderText()
 
     g_pTxtHelper->SetInsertionPos( 5, DXUTGetDXGIBackBufferSurfaceDesc()->Height - AMD::HUD::iElementDelta );
     if (g_bShowControls)
-        g_pTxtHelper->DrawTextLine( L"Hide Controls : F4" );
+    {
+        g_pTxtHelper->DrawTextLine(L"Hide Controls : F4");
+    }
     else
-        g_pTxtHelper->DrawTextLine( L"Show Controls : F4" );
+    {
+        g_pTxtHelper->DrawTextLine(L"Show Controls : F4");
+    }
 
     g_pTxtHelper->End();
 }
@@ -732,7 +741,9 @@ XMFLOAT3 ScaleAndNormalize(float x, float y)
         y *= scale;
     }
     else
+    {
         z = sqrtf(1.0f - mag);
+    }
 
     return XMFLOAT3(x, y, z);
 }
@@ -752,13 +763,14 @@ void MoveModel(int msg, WPARAM wParam, LPARAM lParam)
 
     int mouseX = (short)LOWORD(lParam);
     int mouseY = (short)HIWORD(lParam);
-    switch (msg) {
+    switch (msg)
+    {
         case WM_MBUTTONDOWN:
             {
-                XMMATRIX mtxTranslation = XMMatrixTranslationFromVector(XMVectorSet(0.0f,0.0f,0.0f,1.0f));
+                XMMATRIX mtxTranslation = XMMatrixTranslationFromVector(XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f));
                 XMFLOAT4X4 f4x4Rotation;
                 XMStoreFloat4x4(&f4x4Rotation, g_Camera.GetViewMatrix());
-                for (int i = 0; i<3; i++)
+                for (int i = 0; i < 3; i++)
                 {
                     f4x4Rotation.m[3][i] = 0;
                 }
@@ -767,7 +779,7 @@ void MoveModel(int msg, WPARAM wParam, LPARAM lParam)
                 mtxInvTfm = XMMatrixInverse(0, mtxTfm);
             }
 
-            CalcScreenCoordinates(XMVectorSet(0.0f,0.0f,0.0f,1.0f), g_ScreenCenterX, g_ScreenCenterY);
+            CalcScreenCoordinates(XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f), g_ScreenCenterX, g_ScreenCenterY);
             g_LastPoint = ScaleAndNormalize(mouseX - g_ScreenCenterX, mouseY - g_ScreenCenterY);
             g_LastMouse = lParam;
             g_ModelIsMoved = true;
@@ -821,10 +833,11 @@ void RotateModel(int msg, WPARAM wParam, LPARAM lParam)
 
     int mouseX = (short)LOWORD(lParam);
     int mouseY = (short)HIWORD(lParam);
-    switch (msg) {
+    switch (msg)
+    {
         case WM_MBUTTONDOWN:
             {
-                XMMATRIX mtxTranslation = XMMatrixTranslationFromVector(XMVectorSet(0.0f,0.0f,0.0f,1.0f));
+                XMMATRIX mtxTranslation = XMMatrixTranslationFromVector(XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f));
                 XMFLOAT4X4 f4x4Rotation;
                 XMStoreFloat4x4(&f4x4Rotation, g_Camera.GetViewMatrix());
                 for (int i = 0; i<3; i++)
@@ -836,7 +849,7 @@ void RotateModel(int msg, WPARAM wParam, LPARAM lParam)
                 mtxInvTfm = XMMatrixInverse(0, mtxTfm);
             }
 
-            CalcScreenCoordinates(XMVectorSet(0.0f,0.0f,0.0f,1.0f), g_ScreenCenterX, g_ScreenCenterY);
+            CalcScreenCoordinates(XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f), g_ScreenCenterX, g_ScreenCenterY);
             g_LastPoint = ScaleAndNormalize(mouseX - g_ScreenCenterX, mouseY - g_ScreenCenterY);
             g_LastMouse = lParam;
             g_ModelIsMoved = true;
@@ -888,7 +901,9 @@ void ChooseHairColor()
     DXUTDeviceSettings deviceSettings = DXUTGetDeviceSettings();
     bool fullscreen = !deviceSettings.d3d11.sd.Windowed;
     if (fullscreen)
+    {
         DXUTToggleFullScreen();
+    }
 
     ZeroMemory(&cc, sizeof(cc));
     cc.lStructSize = sizeof(cc);
@@ -905,8 +920,9 @@ void ChooseHairColor()
 
     // restore full screen mode
     if (fullscreen)
+    {
         DXUTToggleFullScreen();
-
+    }
 }
 
 //--------------------------------------------------------------------------------------
@@ -917,11 +933,13 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 {
     // Pass messages to dialog resource manager calls so GUI state is updated correctly
     *pbNoFurtherProcessing = g_DialogResourceManager.MsgProc( hWnd, uMsg, wParam, lParam );
-    if( *pbNoFurtherProcessing )
+    if (*pbNoFurtherProcessing)
+    {
         return 0;
+    }
 
     // Pass messages to settings dialog if its active
-    if( g_D3DSettingsDlg.IsActive() )
+    if (g_D3DSettingsDlg.IsActive())
     {
         g_D3DSettingsDlg.MsgProc( hWnd, uMsg, wParam, lParam );
         return 0;
@@ -929,16 +947,24 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 
     // Give the dialogs a chance to handle the message first
     *pbNoFurtherProcessing = g_RenderHUD.m_GUI.MsgProc( hWnd, uMsg, wParam, lParam );
-    if( *pbNoFurtherProcessing )
+    if (*pbNoFurtherProcessing)
+    {
         return 0;
+    }
     *pbNoFurtherProcessing = g_SimulationHUD.m_GUI.MsgProc( hWnd, uMsg, wParam, lParam );
-    if( *pbNoFurtherProcessing )
+    if (*pbNoFurtherProcessing)
+    {
         return 0;
+    }
 
-    if( DXUTIsKeyDown( VK_CONTROL ) )
+    if (DXUTIsKeyDown(VK_CONTROL))
+    {
         RotateModel(uMsg, wParam, lParam);
+    }
     else
+    {
         MoveModel(uMsg, wParam, lParam);
+    }
 
     g_Camera.HandleMessages( hWnd, uMsg, wParam, lParam );
 
@@ -951,9 +977,9 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 //--------------------------------------------------------------------------------------
 void CALLBACK OnKeyboard( UINT nChar, bool bKeyDown, bool bAltDown, void* pUserContext )
 {
-    if( bKeyDown )
+    if ( bKeyDown )
     {
-        switch( nChar )
+        switch ( nChar )
         {
         case VK_F1:
             g_bShowUI = !g_bShowUI;
@@ -1046,7 +1072,8 @@ void UpdateGUIForCurrentModel()
 
         swprintf_s(szMessage, L"Global shape range:%.2f", pSimulationParams->perSectionShapeParams[selectedGroup].globalShapeMatchingEffectiveRange);
         g_SimulationHUD.m_GUI.GetStatic(IDC_STATIC_GLOBAL_SHAPE_MATCHING_EFFECT_RANGE)->SetText(szMessage);
-        g_SimulationHUD.m_GUI.GetSlider(IDC_SLIDER_GLOBAL_SHAPE_MATCHING_EFFECT_RANGE)->SetValue((int)(100.0f * pSimulationParams->perSectionShapeParams[selectedGroup].globalShapeMatchingEffectiveRange));
+        g_SimulationHUD.m_GUI.GetSlider(IDC_SLIDER_GLOBAL_SHAPE_MATCHING_EFFECT_RANGE)->SetValue(
+            (int)(100.0f * pSimulationParams->perSectionShapeParams[selectedGroup].globalShapeMatchingEffectiveRange));
 
         swprintf_s(szMessage, L"Length constraint\n iterations:%d", pSimulationParams->numLengthConstraintIterations);
         g_SimulationHUD.m_GUI.GetStatic(IDC_STATIC_NUM_LENGTH_CONSTRAINT_ITERATIONS)->SetText(szMessage);
@@ -1078,12 +1105,15 @@ static TressFX_SimulationParams* GetCurrentSimulationParams()
 static int GetSelectedSectionIndex()
 {
     int selectedIndex = g_SimulationHUD.m_GUI.GetComboBox(IDC_COMBOBOX_HAIR_SECTION)->GetSelectedIndex();
-
-
+    
     if ( selectedIndex < 0 )
+    {
         selectedIndex = 0;
+    }
     else if ( selectedIndex >= GetCurrentSimulationParams()->numHairSections )
+    {
         selectedIndex = GetCurrentSimulationParams()->numHairSections-1;
+    }
 
     return selectedIndex;
 }
@@ -1108,7 +1138,7 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
     TressFX_SimulationParams *pSimulationParams = GetCurrentSimulationParams();
     int selectedIndex = GetSelectedSectionIndex();
 
-    switch( nControlID )
+    switch ( nControlID )
     {
         // Standard DXUT controls
         case IDC_TOGGLEFULLSCREEN:
@@ -1200,14 +1230,18 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 
         case IDC_BUTTON_STRAND_COPIES_PLUS:
             if ( pHairParams->strandCopies < MAX_STRAND_COPIES)
+            {
                  pHairParams->strandCopies++;
+            }
             swprintf_s(szMessage, L" %d",  pHairParams->strandCopies);
             g_RenderHUD.m_GUI.GetStatic( IDC_STATIC_STRAND_COPIES_VALUE )->SetText( szMessage );
             break;
 
         case IDC_BUTTON_STRAND_COPIES_MINUS:
             if ( pHairParams->strandCopies > 1)
+            {
                  pHairParams->strandCopies--;
+            }
             swprintf_s(szMessage, L" %d",  pHairParams->strandCopies);
             g_RenderHUD.m_GUI.GetStatic( IDC_STATIC_STRAND_COPIES_VALUE )->SetText( szMessage );
             break;
@@ -1358,7 +1392,7 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 
         default:
             break;
-  }
+    }
 
     // Call the MagnifyTool gui event handler
     g_MagnifyTool.OnGUIEvent( nEvent, nControlID, pControl, pUserContext );
@@ -1414,9 +1448,13 @@ bool CreateDemo(const TFXProjectFile& tfxproject, bool createShaders)
     bodyFile = tfxproject.mMeshFile.c_str();
 
     if (g_animate)
+    {
         animationFile = tfxproject.mAnimFile.c_str();
+    }
     else
+    {
         animationFile = NULL;
+    }
 
     pSceneRender->OnCreateDevice(pd3dDevice, bodyFile, animationFile, &g_ShaderCache, createShaders);
     pModel->m_SceneMesh.numMeshes = pSceneRender->m_numMeshes;
@@ -1507,7 +1545,7 @@ bool CreateDemo(const TFXProjectFile& tfxproject, bool createShaders)
     pSimulationParams->numHairSections = 0;
     const int numHairSectionsTotal = std::min(tfxproject.CountTFXFiles(), TressFX_SimulationParams::MAX_NUM_HAIR_SECTIONS);
 
-    for(int i=0; i < numHairSectionsTotal ; ++i)
+    for (int i = 0; i < numHairSectionsTotal; ++i)
     {
         // set hair section name for GUI
         pModel->m_hairSectionNames.push_back(tfxproject.mTFXFile[i].sectionNameForGUI);
@@ -1516,10 +1554,12 @@ bool CreateDemo(const TFXProjectFile& tfxproject, bool createShaders)
         tfxFile.open(tfxproject.mTFXFile[i].tfxFileName, std::ios::binary | std::ifstream::in);
 
         if (tfxFile.fail())
+        {
             return false;
+        }
 
         pbuf = tfxFile.rdbuf();
-        size = pbuf->pubseekoff (0,tfxFile.end, tfxFile.in);
+        size = pbuf->pubseekoff (0, tfxFile.end, tfxFile.in);
         pbuf->pubseekpos (0, tfxFile.in);
         hairBlob.pHair = (void *) new char[size];
         tfxFile.read((char *)hairBlob.pHair, size);
@@ -1536,7 +1576,7 @@ bool CreateDemo(const TFXProjectFile& tfxproject, bool createShaders)
             std::ifstream skinFile;
             skinFile.open(tfxproject.mTFXSkinFile[i], std::ios::binary | std::ifstream::in);
             pbuf = skinFile.rdbuf();
-            size = pbuf->pubseekoff (0,skinFile.end, skinFile.in);
+            size = pbuf->pubseekoff (0, skinFile.end, skinFile.in);
             pbuf->pubseekpos (0, skinFile.in);
             hairBlob.pAnimation = (void *) new char[size];
             skinFile.read((char *)hairBlob.pAnimation, size);
@@ -1615,9 +1655,6 @@ bool CreateDemo(const TFXProjectFile& tfxproject, bool createShaders)
     pModel->m_SceneMesh.pMeshVertices = 0;
     pModel->m_bInitialized = true;
 
-
-
-
     // Update the UI
     UpdateGUIForCurrentModel();
 
@@ -1629,7 +1666,9 @@ void DestroyDemo(bool destroyShaders)
     DemoModel *pModel = &g_DemoModel;
 
     if ( !pModel->m_bInitialized )
+    {
         return;
+    }
 
     TressFX_Release(pModel->m_TressFXParams);
     pModel->m_hairSectionNames.clear();
@@ -1726,7 +1765,6 @@ void SaveTFXSimFile(const TressFX_ShapeParams& params, const wchar_t* simFilePat
 }
 
 
-
 void SaveTFXSimFile()
 {
     int sectionIndex = GetSelectedSectionIndex();
@@ -1769,20 +1807,21 @@ void SaveTFXSimFile()
 static std::wstring GetTFXProjFilename()
 {
     std::wifstream inFile("TressFX.ini");
-    if( inFile )
+    if ( inFile )
     {
         std::wstring sLine;
         while (!inFile.eof())
         {
-
             getline(inFile, sLine);
 
             std::wistringstream iss(sLine);
             std::wstring candidate;
-            while( iss >> candidate )
+            while ( iss >> candidate )
             {
-                if(candidate.length() > 0 && candidate[0] != L'#')
+                if (candidate.length() > 0 && candidate[0] != L'#')
+                {
                     return candidate;
+                }
             }
         }
     }
@@ -1806,15 +1845,19 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
     V_RETURN( g_D3DSettingsDlg.OnD3D11CreateDevice( pd3dDevice ) );
     g_pTxtHelper = new CDXUTTextHelper( pd3dDevice, pd3dImmediateContext, &g_DialogResourceManager, 15 );
 
-    if(g_TfxProject.mProjectFile.empty())
+    if (g_TfxProject.mProjectFile.empty())
     {
         // create a demo
         bool bFoundProjectFile = false;
-        if(pUserContext && ((WCHAR*)pUserContext)[0] != L'\0' )
-            bFoundProjectFile = g_TfxProject.Read( (WCHAR*) pUserContext );
+        if (pUserContext && ((WCHAR*)pUserContext)[0] != L'\0')
+        {
+            bFoundProjectFile = g_TfxProject.Read((WCHAR*)pUserContext);
+        }
 
-        if(!bFoundProjectFile)
+        if (!bFoundProjectFile)
+        {
             g_TfxProject.Read(GetTFXProjFilename().c_str());
+        }
 
         // Zero clear some members of g_DemoModel. Some members of g_DemoModel[i], m_SceneMesh.meshOffsets for instance,
         // might be dynamically allocated and we'll decide whether to delete the array with respect to whether the pointer
@@ -1824,7 +1867,7 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
         CreateDemo(g_TfxProject, true);
         // Generate shaders ( this is an async operation - call AMD::ShaderCache::ShadersReady() to find out if they are complete )
         static bool bFirstPass = true;
-        if( bFirstPass )
+        if ( bFirstPass )
         {
             g_ShaderCache.GenerateShaders( AMD::ShaderCache::CREATE_TYPE_COMPILE_CHANGES );    // Only compile shaders that have changed (development mode)
             bFirstPass = false;
@@ -1832,12 +1875,9 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
     }
     else
     {
-
         DestroyDemo(true);
-
         CreateDemo(g_TfxProject, true);
     }
-
 
     // Create AMD_SDK resources here
     g_RenderHUD.OnCreateDevice( pd3dDevice );
@@ -1858,7 +1898,6 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain( ID3D11Device* pd3dDevice, IDXGISwapCha
                                          const DXGI_SURFACE_DESC* pBackBufferSurfaceDesc, void* pUserContext )
 {
     HRESULT hr;
-
 
     V_RETURN( g_DialogResourceManager.OnD3D11ResizedSwapChain( pd3dDevice, pBackBufferSurfaceDesc ) );
     V_RETURN( g_D3DSettingsDlg.OnD3D11ResizedSwapChain( pd3dDevice, pBackBufferSurfaceDesc ) );
@@ -1887,7 +1926,9 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain( ID3D11Device* pd3dDevice, IDXGISwapCha
     g_DemoModel.m_TressFXParams.backBufferHeight = pBackBufferSurfaceDesc->Height;
 
     if ( g_DemoModel.m_bInitialized )
+    {
         TressFX_Resize(g_DemoModel.m_TressFXParams);
+    }
 
     // Magnify tool will capture from the color buffer
     g_MagnifyTool.OnResizedSwapChain( pd3dDevice, pSwapChain, pBackBufferSurfaceDesc, pUserContext,
@@ -1917,7 +1958,7 @@ void CALLBACK OnD3D11FrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext*
     //---------------------------------
     // Settings dialog if it is active.
     //---------------------------------
-    if( g_D3DSettingsDlg.IsActive() )
+    if ( g_D3DSettingsDlg.IsActive() )
     {
         g_D3DSettingsDlg.OnRender( fElapsedTime );
         return;
@@ -1934,7 +1975,7 @@ void CALLBACK OnD3D11FrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext*
 
     DemoModel *pModel = &g_DemoModel;
 
-    if( g_ShaderCache.ShadersReady() && pModel->m_bInitialized )
+    if ( g_ShaderCache.ShadersReady() && pModel->m_bInitialized )
     {
         TIMER_Begin( 0, L"Effect" );
         {
@@ -1960,7 +2001,9 @@ void CALLBACK OnD3D11FrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext*
 
             // scene mesh animation
             if (g_animate)
+            {
                 pSceneRender->StreamOutVertices(pd3dImmediateContext, true);
+            }
             pModel->m_SceneMesh.pTransformedVerts = pSceneRender->m_pTransformedSRV;
 
             TressFX_GenerateTransforms(pModel->m_TressFXParams, pModel->m_SceneMesh);
@@ -1992,12 +2035,9 @@ void CALLBACK OnD3D11FrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext*
                 const XMVECTOR modelCenter = XMVector3TransformCoord(XMLoadFloat3(&pSceneRender->m_MeshBBoxCenter), pModel->m_modelTransformForHead);
                 XMVECTOR vCameraToHair = modelCenter - g_Camera.GetEyePt();
                 float distance = XMVectorGetX(XMVector3Length(vCameraToHair));
-                if (distance > g_maxLodDistance)
-                    distance = g_maxLodDistance;
-                if (distance <= g_minLodDistance)
-                    distance = 0;
-                else
-                    distance -= g_minLodDistance;
+                if (distance >  g_maxLodDistance) { distance = g_maxLodDistance; }
+                if (distance <= g_minLodDistance) { distance = 0; }
+                else                              { distance -= g_minLodDistance; }
                 float scaledDistance = distance / (g_maxLodDistance - g_minLodDistance);
                  pHairParams->density = (1 - scaledDistance) * pModel->m_density + scaledDistance * MIN_HAIR_DENSITY;
                  pHairParams->thickness = (1 - scaledDistance) * pModel->m_radius + scaledDistance * MAX_HAIR_RADIUS;
@@ -2032,7 +2072,7 @@ void CALLBACK OnD3D11FrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext*
 
     DXUT_BeginPerfEvent( DXUT_PERFEVENTCOLOR, L"HUD / Stats" );
 
-    if( g_ShaderCache.ShadersReady() )
+    if ( g_ShaderCache.ShadersReady() )
     {
         ID3D11BlendState *pBlendState;
         FLOAT blendFactor[4];
@@ -2090,7 +2130,7 @@ void CALLBACK OnD3D11DestroyDevice( void* pUserContext )
 
 #ifdef MEM_DEBUG
     ID3D11Debug *pd3dDebug;
-    g_pMemDebugDevice->QueryInterface(__uuidof(ID3D11Debug) , (LPVOID *) &pd3dDebug);
+    g_pMemDebugDevice->QueryInterface(__uuidof(ID3D11Debug), (LPVOID *) &pd3dDebug);
     pd3dDebug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
 #endif
 }

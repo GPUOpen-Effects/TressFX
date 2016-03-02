@@ -23,9 +23,7 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-////--------------------------------------------------------------------------------------
-
-
+//--------------------------------------------------------------------------------------
 
 #include "TFXFileIO.h"
 #include "AMD_TressFX.h"
@@ -46,7 +44,9 @@ TFXProjectFile::TFXCapsule::TFXCapsule(float x0_, float y0_, float z0_, float x1
         std::wifstream inFile(simFilepath);
 
         if ( !inFile.is_open() )
+        {
             return false;
+        }
 
         std::wstring sLine;
         std::vector<std::wstring> sTokens;
@@ -56,13 +56,17 @@ TFXProjectFile::TFXCapsule::TFXCapsule(float x0_, float y0_, float z0_, float x1
             getline(inFile, sLine);
 
             if ( sLine.length() == 0 )
+            {
                 continue;
+            }
 
             sTokens.clear();
             int numFound = StringTokenizer(sLine, std::wstring(L" "), sTokens, false);
 
             if ( numFound < 2)
+            {
                 continue;
+            }
 
             if ( sTokens[0] == L"version" )
             {
@@ -95,7 +99,9 @@ TFXProjectFile::TFXCapsule::TFXCapsule(float x0_, float y0_, float z0_, float x1
         std::wofstream outFile(simFilepath);
 
         if ( !outFile.is_open() )
+        {
             return false;
+        }
 
         outFile << L"version 3.0\n";
         outFile << L"damping " << sim.damping << L"\n";
@@ -128,7 +134,9 @@ TFXProjectFile::TFXCapsule::TFXCapsule(float x0_, float y0_, float z0_, float x1
         mProjectDir = dir;
 
         if ( !inFile.is_open() )
+        {
             return false;
+        }
 
         std::wstring sLine;
         std::vector<std::wstring> sTokens;
@@ -138,11 +146,15 @@ TFXProjectFile::TFXCapsule::TFXCapsule(float x0_, float y0_, float z0_, float x1
             getline(inFile, sLine);
 
             if ( sLine.length() == 0 )
+            {
                 continue;
+            }
 
             // If # is in the very first column in the line, it is a comment.
-            if (sLine[0] == L'#')
+            if ( sLine[0] == L'#' )
+            {
                 continue;
+            }
 
             sTokens.clear();
             int numFound = StringTokenizer(sLine, std::wstring(L" "), sTokens, false);
@@ -150,9 +162,13 @@ TFXProjectFile::TFXCapsule::TFXCapsule(float x0_, float y0_, float z0_, float x1
             std::wstring token;
 
             if ( numFound > 0 )
+            {
                 token = sTokens[0];
+            }
             else
+            {
                 token = sLine;
+            }
 
             if ( token.find(L"project_name") != std::string::npos )
             {
@@ -197,9 +213,13 @@ TFXProjectFile::TFXCapsule::TFXCapsule(float x0_, float y0_, float z0_, float x1
 
                 // section name for diplaying on GUI
                 if ( numFound > 4 )
+                {
                     tfx.sectionNameForGUI = sTokens[5];
+                }
                 else
+                {
                     tfx.sectionNameForGUI = L"";
+                }
 
                 mTFXFile.push_back(tfx);
             }
@@ -335,27 +355,31 @@ TFXProjectFile::TFXCapsule::TFXCapsule(float x0_, float y0_, float z0_, float x1
 
         std::wofstream outFile(projectFilepath);
 
-
         if ( !outFile.is_open() )
+        {
             return false;
+        }
 
 
         outFile << L"version 3.0\n";
-        if(!mProjectName.empty())
-            outFile << L"project_name " << GetFilename(mProjectName) <<L"\n\n";
+        if (!mProjectName.empty())
+        {
+            outFile << L"project_name " << GetFilename(mProjectName) << L"\n\n";
+        }
 
         // write tfx files.
-        for( size_t i = 0; i < mTFXFile.size(); ++i)
+        for ( size_t i = 0; i < mTFXFile.size(); ++i)
         {
             const TFXFormat& part = mTFXFile[i];
-            outFile << GetFilename(part.tfxFileName) << L" " << part.numFollowHairsPerGuideHair << L" " << part.radiusForFollowHair << L" " << part.tipSeparationFactor << L" " << GetFilename(mTFXSimFilename[i]) << L" " << part.sectionNameForGUI << L"\n";
+            outFile << GetFilename(part.tfxFileName) << L" " << part.numFollowHairsPerGuideHair << L" " << part.radiusForFollowHair << L" "
+                << part.tipSeparationFactor << L" " << GetFilename(mTFXSimFilename[i]) << L" " << part.sectionNameForGUI << L"\n";
         }
         outFile << L"\n"; // extra space after tfx file list.
 
         // write tfxskin files.
-        if(HasAnimation())
+        if (HasAnimation())
         {
-            for( size_t i = 0; i < mTFXFile.size(); ++i)
+            for ( size_t i = 0; i < mTFXFile.size(); ++i)
             {
                 outFile << GetFilename(mTFXSkinFile[i]) << L"\n";
             }
@@ -364,8 +388,10 @@ TFXProjectFile::TFXCapsule::TFXCapsule(float x0_, float y0_, float z0_, float x1
 
 
         outFile << GetFilename(mMeshFile) << L"\n";
-        if(HasAnimation())
+        if (HasAnimation())
+        {
             outFile << GetFilename(mAnimFile) << L"\n";
+        }
         outFile << L"\n";
 
         outFile << L"lengthConstraintIterations " << lengthConstraintIterations << L"\n";
@@ -384,12 +410,12 @@ TFXProjectFile::TFXCapsule::TFXCapsule(float x0_, float y0_, float z0_, float x1
         outFile << L"Ex2 " << Ex2 << L"\n";
         outFile << L"hairColor " << hairColor[0] << L" " << hairColor[1] << L" " << hairColor[2] << L"\n";
 
-        if(!mTFXTexFile.empty())
+        if (!mTFXTexFile.empty())
         {
             outFile << GetFilename(mTFXTexFile) << L"\n\n";
         }
 
-        for( size_t i = 0; i < mCollisionCapsule.size(); ++i)
+        for ( size_t i = 0; i < mCollisionCapsule.size(); ++i)
         {
             const TFXCapsule& capsule = mCollisionCapsule[i];
             if (capsule.shapeType == TFXCapsule::SPHERE)

@@ -51,10 +51,10 @@ struct CB_PER_FRAME_SCENE
 
 struct CB_PER_MATERIAL
 {
-    XMVECTOR        m_MatAmbient    ;
-    XMVECTOR        m_MatDiffuse    ; // alpha value: whether texture is used (yes: 1; no: -1)
-    XMVECTOR        m_MatSpecular   ; // alpha value: Specular Exponent
-    XMVECTOR        m_ScalpColor    ;
+    XMVECTOR        m_MatAmbient;
+    XMVECTOR        m_MatDiffuse;  // alpha value: whether texture is used (yes: 1; no: -1)
+    XMVECTOR        m_MatSpecular; // alpha value: Specular Exponent
+    XMVECTOR        m_ScalpColor;
 };
 
 struct CB_BLUR
@@ -99,22 +99,28 @@ void CSceneRender::CalculateMeshBoundingBox()
         XMStoreFloat3(&bBoxCenter, m_SkinnedMesh.GetMeshBBoxCenter(i));
         XMStoreFloat3(&bBoxHalf, m_SkinnedMesh.GetMeshBBoxExtents(i));
 
-        if ((bBoxCenter.x - bBoxHalf.x) < lower.x) {
+        if ((bBoxCenter.x - bBoxHalf.x) < lower.x)
+        {
             lower.x = (bBoxCenter.x - bBoxHalf.x);
         }
-        if ((bBoxCenter.y - bBoxHalf.y) < lower.y) {
+        if ((bBoxCenter.y - bBoxHalf.y) < lower.y)
+        {
             lower.y = (bBoxCenter.y - bBoxHalf.y);
         }
-        if ((bBoxCenter.z - bBoxHalf.z) < lower.z) {
+        if ((bBoxCenter.z - bBoxHalf.z) < lower.z)
+        {
             lower.z = (bBoxCenter.z - bBoxHalf.z);
         }
-        if ((bBoxCenter.x + bBoxHalf.x) > upper.x) {
+        if ((bBoxCenter.x + bBoxHalf.x) > upper.x)
+        {
             upper.x = (bBoxCenter.x + bBoxHalf.x);
         }
-        if ((bBoxCenter.y + bBoxHalf.y) > upper.y) {
+        if ((bBoxCenter.y + bBoxHalf.y) > upper.y)
+        {
             upper.y = (bBoxCenter.y + bBoxHalf.y);
         }
-        if ((bBoxCenter.z + bBoxHalf.z) > upper.z) {
+        if ((bBoxCenter.z + bBoxHalf.z) > upper.z)
+        {
             upper.z = (bBoxCenter.z + bBoxHalf.z);
         }
     }
@@ -139,21 +145,21 @@ void CSceneRender::CalculateMeshBoundingBox()
 void CSceneRender::CalculateMeshAmbient()
 {
     float fCounter = 0.0f;
-    XMVECTOR AmbientAccumulator = XMVectorSet(0,0,0,0);
+    XMVECTOR AmbientAccumulator = XMVectorSet(0, 0, 0, 0);
 
     // Render the skinned mesh
-    for( UINT m = 0; m < m_SkinnedMesh.GetNumMeshes(); m++ )
+    for ( UINT m = 0; m < m_SkinnedMesh.GetNumMeshes(); m++ )
     {
         // Set materials
         SDKMESH_SUBSET* pSubset = NULL;
         SDKMESH_MATERIAL* pMat = NULL;
 
-        for( UINT subset = 0; subset < m_SkinnedMesh.GetNumSubsets( m ); subset++ )
+        for ( UINT subset = 0; subset < m_SkinnedMesh.GetNumSubsets( m ); subset++ )
         {
             pSubset = m_SkinnedMesh.GetSubset( m, subset );
 
             pMat = m_SkinnedMesh.GetMaterial( pSubset->MaterialID );
-            if( pMat )
+            if ( pMat )
             {
                 AmbientAccumulator += XMVectorSet(pMat->Ambient.x, pMat->Ambient.y, pMat->Ambient.z, 0);
                 fCounter += 1.0f;
@@ -179,23 +185,23 @@ void CSceneRender::CreateShaderAndLayout( ID3D11Device* pd3dDevice, AMD::ShaderC
     // skinned mesh layout
     const D3D11_INPUT_ELEMENT_DESC skinnedlayout[] =
     {
-        { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,        0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "WEIGHTS", 0, DXGI_FORMAT_R8G8B8A8_UNORM, 0,          12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "BONES", 0, DXGI_FORMAT_R8G8B8A8_UINT, 0,             16, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "NORMAL", 0, DXGI_FORMAT_R16G16B16A16_FLOAT , 0,      20, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "TEXCOORD", 0, DXGI_FORMAT_R16G16_FLOAT, 0,           28, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "TANGENT", 0, DXGI_FORMAT_R16G16B16A16_FLOAT , 0,     32, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "BINORMAL", 0, DXGI_FORMAT_R16G16B16A16_FLOAT , 0,    40, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-   };
+        { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT,    0,  0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "WEIGHTS",  0, DXGI_FORMAT_R8G8B8A8_UNORM,     0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "BONES",    0, DXGI_FORMAT_R8G8B8A8_UINT,      0, 16, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "NORMAL",   0, DXGI_FORMAT_R16G16B16A16_FLOAT, 0, 20, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "TEXCOORD", 0, DXGI_FORMAT_R16G16_FLOAT,       0, 28, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "TANGENT",  0, DXGI_FORMAT_R16G16B16A16_FLOAT, 0, 32, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "BINORMAL", 0, DXGI_FORMAT_R16G16B16A16_FLOAT, 0, 40, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+    };
 
     const D3D11_INPUT_ELEMENT_DESC scenelayout[] =
     {
-        { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,        0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "NORMAL", 0, DXGI_FORMAT_R16G16B16A16_FLOAT , 0,      12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "TEXCOORD", 0, DXGI_FORMAT_R16G16_FLOAT, 0,           20, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "TANGENT", 0, DXGI_FORMAT_R16G16B16A16_FLOAT , 0,     24, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "BINORMAL", 0, DXGI_FORMAT_R16G16B16A16_FLOAT , 0,    32, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-   };
+        { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT,    0,  0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "NORMAL",   0, DXGI_FORMAT_R16G16B16A16_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "TEXCOORD", 0, DXGI_FORMAT_R16G16_FLOAT,       0, 20, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "TANGENT",  0, DXGI_FORMAT_R16G16B16A16_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "BINORMAL", 0, DXGI_FORMAT_R16G16B16A16_FLOAT, 0, 32, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+    };
 
 
     // screen quad layout
@@ -213,31 +219,31 @@ void CSceneRender::CreateShaderAndLayout( ID3D11Device* pd3dDevice, AMD::ShaderC
     // Shader creation might be deferred in shader cache, so we have to assgin ID3D11InputLayout* pointer
     // for each VS shader to track the created ID3D11InputLayout object.
     pShaderCache->AddShader( (ID3D11DeviceChild**)&m_pVSStreamOutVerts, AMD::ShaderCache::SHADER_TYPE_VERTEX,
-        L"vs_5_0", L"StreamOutVS",L"SceneRender.hlsl", 0, NULL, &m_pStreamOutLayout,
+        L"vs_5_0", L"StreamOutVS", L"SceneRender.hlsl", 0, NULL, &m_pStreamOutLayout,
         (D3D11_INPUT_ELEMENT_DESC*)skinnedlayout, ARRAYSIZE( skinnedlayout ) );
 
     pShaderCache->AddShader( (ID3D11DeviceChild**)&m_pVSStreamOutSkinned, AMD::ShaderCache::SHADER_TYPE_VERTEX,
-        L"vs_5_0", L"SkinStreamOutVS",L"SceneRender.hlsl", 0, NULL, &m_pStreamOutLayoutSkinned,
+        L"vs_5_0", L"SkinStreamOutVS", L"SceneRender.hlsl", 0, NULL, &m_pStreamOutLayoutSkinned,
         (D3D11_INPUT_ELEMENT_DESC*)skinnedlayout, ARRAYSIZE( skinnedlayout ) );
 
     pShaderCache->AddShader( (ID3D11DeviceChild**)&m_pVSScene, AMD::ShaderCache::SHADER_TYPE_VERTEX,
-        L"vs_5_0", L"SceneVS",L"SceneRender.hlsl", 0, NULL, &m_pScenelayout,
+        L"vs_5_0", L"SceneVS", L"SceneRender.hlsl", 0, NULL, &m_pScenelayout,
         (D3D11_INPUT_ELEMENT_DESC*)scenelayout, ARRAYSIZE( scenelayout ) );
 
     pShaderCache->AddShader( (ID3D11DeviceChild**)&m_pVSGenerateSceneSM, AMD::ShaderCache::SHADER_TYPE_VERTEX,
-        L"vs_5_0", L"VS_GenerateSceneSM",L"SceneRender.hlsl", 0, NULL, &m_pSceneSMLayout,
+        L"vs_5_0", L"VS_GenerateSceneSM", L"SceneRender.hlsl", 0, NULL, &m_pSceneSMLayout,
         (D3D11_INPUT_ELEMENT_DESC*)scenelayout, ARRAYSIZE( scenelayout ) );
 
     pShaderCache->AddShader( (ID3D11DeviceChild**)&m_pVSSkinning, AMD::ShaderCache::SHADER_TYPE_VERTEX,
-        L"vs_5_0", L"SkinningVS",L"SceneRender.hlsl", 0, NULL, &m_pSkinningLayout,
+        L"vs_5_0", L"SkinningVS", L"SceneRender.hlsl", 0, NULL, &m_pSkinningLayout,
         (D3D11_INPUT_ELEMENT_DESC*)skinnedlayout, ARRAYSIZE( skinnedlayout ) );
 
     pShaderCache->AddShader( (ID3D11DeviceChild**)&m_pVSGenerateSkinnedSM, AMD::ShaderCache::SHADER_TYPE_VERTEX,
-        L"vs_5_0", L"VS_GenerateSkinnedSM",L"SceneRender.hlsl", 0, NULL, &m_pLayoutSceneSM,
+        L"vs_5_0", L"VS_GenerateSkinnedSM", L"SceneRender.hlsl", 0, NULL, &m_pLayoutSceneSM,
         (D3D11_INPUT_ELEMENT_DESC*)skinnedlayout, ARRAYSIZE( skinnedlayout ) );
 
     pShaderCache->AddShader( (ID3D11DeviceChild**)&m_pVSScreenQuad, AMD::ShaderCache::SHADER_TYPE_VERTEX,
-        L"vs_5_0", L"VS_ScreenQuad",L"SceneRender.hlsl", 0, NULL, &m_pQuadLayout,
+        L"vs_5_0", L"VS_ScreenQuad", L"SceneRender.hlsl", 0, NULL, &m_pQuadLayout,
         (D3D11_INPUT_ELEMENT_DESC*)layout_mesh, ARRAYSIZE( layout_mesh ) );
 
     // pixel shaders
@@ -272,8 +278,10 @@ void CSceneRender::CreateShaderAndLayout( ID3D11Device* pd3dDevice, AMD::ShaderC
         wchar_t *errorString;
         char *msg = (char *)pErrors->GetBufferPointer();
         errorString = new wchar_t[(int)pErrors->GetBufferSize()];
-        for (int i=0; i < (int)pErrors->GetBufferSize(); i++)
+        for (int i = 0; i < (int)pErrors->GetBufferSize(); i++)
+        {
             errorString[i] = wchar_t(msg[i]);
+        }
         OutputDebugString(errorString);
         delete []errorString;
     }
@@ -282,7 +290,7 @@ void CSceneRender::CreateShaderAndLayout( ID3D11Device* pd3dDevice, AMD::ShaderC
     {
         {0, "POSITION", 0, 0, 4, 0 },
     };
-    UINT bufferStrides[] = {sizeof(float) * 4};
+    UINT bufferStrides[] = { sizeof(float) * 4 };
 
     // create the geometry shader for skinning
     hr = pd3dDevice->CreateGeometryShaderWithStreamOutput(pStreamOutVS->GetBufferPointer(), pStreamOutVS->GetBufferSize(),
@@ -295,8 +303,10 @@ void CSceneRender::CreateShaderAndLayout( ID3D11Device* pd3dDevice, AMD::ShaderC
         wchar_t *errorString;
         char *msg = (char *)pErrors->GetBufferPointer();
         errorString = new wchar_t[(int)pErrors->GetBufferSize()];
-        for (int i=0; i < (int)pErrors->GetBufferSize(); i++)
+        for (int i = 0; i < (int)pErrors->GetBufferSize(); i++)
+        {
             errorString[i] = wchar_t(msg[i]);
+        }
         OutputDebugString(errorString);
         delete []errorString;
     }
@@ -330,24 +340,30 @@ void CSceneRender::CreateTextureAndViews( ID3D11Device* pd3dDevice )
     tex2D_desc.SampleDesc.Quality = 0;
 
     hr = pd3dDevice->CreateTexture2D(&tex2D_desc, 0, &m_pSMSceneTx);
-    if(FAILED(hr))
+    if (FAILED(hr))
+    {
         ::MessageBoxW(0, L"fail to create m_pSMSceneTx", L"d3d Error", 0);
+    }
 
     D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc;
-    dsvDesc.Flags = 0  ;
+    dsvDesc.Flags = 0;
     dsvDesc.Format = DXGI_FORMAT_D32_FLOAT;
-    dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D ;
+    dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
     dsvDesc.Texture2D.MipSlice = 0;
-    if(FAILED(pd3dDevice->CreateDepthStencilView(m_pSMSceneTx, &dsvDesc, &m_pSMSceneDSV)))
+    if (FAILED(pd3dDevice->CreateDepthStencilView(m_pSMSceneTx, &dsvDesc, &m_pSMSceneDSV)))
+    {
         ::MessageBoxW(0, L"fail to create m_pSMSceneDSV", L"d3d Error", 0);
+    }
 
     D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
     srvDesc.Format = DXGI_FORMAT_R32_FLOAT;
     srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
     srvDesc.Texture2D.MipLevels = 1;
     srvDesc.Texture2D.MostDetailedMip = 0;
-    if(FAILED(pd3dDevice->CreateShaderResourceView(m_pSMSceneTx, &srvDesc, &m_pSMSceneSRV)))
+    if (FAILED(pd3dDevice->CreateShaderResourceView(m_pSMSceneTx, &srvDesc, &m_pSMSceneSRV)))
+    {
         ::MessageBoxW(0, L"fail to create m_pMSceneSRV", L"d3d Error", 0);
+    }
 
     // Shadow texture for scene rendering
     tex2D_desc.Width =  SM_SCENE_WIDTH;
@@ -363,12 +379,16 @@ void CSceneRender::CreateTextureAndViews( ID3D11Device* pd3dDevice )
     tex2D_desc.MiscFlags = 0;
 
     hr = pd3dDevice->CreateTexture2D(&tex2D_desc, 0, &m_pSceneShadowTexture);
-    if(FAILED(hr))
+    if (FAILED(hr))
+    {
         ::MessageBoxW(0, L"fail to create m_pSceneShadowTexture", L"d3d Error", 0);
+    }
 
     hr = pd3dDevice->CreateTexture2D(&tex2D_desc, 0, &m_pSceneShadowTexture_temp);
-    if(FAILED(hr))
+    if (FAILED(hr))
+    {
         ::MessageBoxW(0, L"fail to create m_pSceneShadowTexture_temp", L"d3d Error", 0);
+    }
 
     D3D11_SHADER_RESOURCE_VIEW_DESC srDesc;
     srDesc.Format = DXGI_FORMAT_R8_UNORM;
@@ -419,12 +439,12 @@ void CSceneRender::CreateVertexBuffers(ID3D11Device* pd3dDevice)
     // Create the screen quad vertex buffer(use StandardVertex for simplicity)
     const StandardVertex screenQuad[6] =
     {
-        { XMFLOAT3(-1.0f, -1.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(0.0f, 1.0f) },//0
-        { XMFLOAT3(-1.0f,  1.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(0.0f, 0.0f) },//1
-        { XMFLOAT3( 1.0f, -1.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(1.0f, 1.0f) },//2
-        { XMFLOAT3( 1.0f, -1.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(1.0f, 1.0f) },//2
-        { XMFLOAT3(-1.0f,  1.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(0.0f, 0.0f) },//1
-        { XMFLOAT3( 1.0f,  1.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(1.0f, 0.0f) } //3
+        { XMFLOAT3(-1.0f, -1.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(0.0f, 1.0f) }, //0
+        { XMFLOAT3(-1.0f,  1.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(0.0f, 0.0f) }, //1
+        { XMFLOAT3( 1.0f, -1.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(1.0f, 1.0f) }, //2
+        { XMFLOAT3( 1.0f, -1.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(1.0f, 1.0f) }, //2
+        { XMFLOAT3(-1.0f,  1.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(0.0f, 0.0f) }, //1
+        { XMFLOAT3( 1.0f,  1.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(1.0f, 0.0f) }  //3
     };
 
     D3D11_BUFFER_DESC bd;
@@ -439,23 +459,25 @@ void CSceneRender::CreateVertexBuffers(ID3D11Device* pd3dDevice)
     initData.SysMemPitch = 0;
     initData.SysMemSlicePitch = 0;
     hr = pd3dDevice->CreateBuffer( &bd, &initData, &m_pScreenQuadVB );
-    if( FAILED( hr ) )
+    if ( FAILED( hr ) )
+    {
         ::MessageBoxA(0, "Fail to create screen quad vertex buffer", "d3d error", 0);
+    }
 
     m_numMeshes = m_SkinnedMesh.GetNumMeshes();
     m_pMeshIndexCount = new unsigned[m_numMeshes];
     unsigned totalIndexCount = 0;
 
-    for( UINT m = 0; m < m_SkinnedMesh.GetNumMeshes(); m++ )
+    for ( UINT m = 0; m < m_SkinnedMesh.GetNumMeshes(); m++ )
     {
         m_pMeshIndexCount[m] = 0;
-        for( UINT subset = 0; subset < m_SkinnedMesh.GetNumSubsets( m ); subset++ )
+        for ( UINT subset = 0; subset < m_SkinnedMesh.GetNumSubsets( m ); subset++ )
         {
             SDKMESH_SUBSET *pSubset = m_SkinnedMesh.GetSubset( m, subset );
             m_pMeshIndexCount[m] += (unsigned)pSubset->IndexCount;
-       }
-       totalIndexCount += m_pMeshIndexCount[m];
-   }
+        }
+        totalIndexCount += m_pMeshIndexCount[m];
+    }
 
     // Stream Out Buffers
     bd.Usage =          D3D11_USAGE_DEFAULT;
@@ -466,8 +488,10 @@ void CSceneRender::CreateVertexBuffers(ID3D11Device* pd3dDevice)
 
    // Create a buffer that will hold all of the un-transformed vertices
     hr = pd3dDevice->CreateBuffer( &bd, NULL, &m_pMeshVertices );
-    if( FAILED( hr ) )
+    if ( FAILED( hr ) )
+    {
         ::MessageBoxA(0, "Failed to allocate untransformed vertex buffers", "d3d error", 0);
+    }
 
     // create an SRV for the un-transformed vertices
     D3D11_SHADER_RESOURCE_VIEW_DESC descSRV;
@@ -476,19 +500,24 @@ void CSceneRender::CreateVertexBuffers(ID3D11Device* pd3dDevice)
     descSRV.Buffer.ElementOffset = 0;
     descSRV.Buffer.ElementWidth = totalIndexCount;
     hr = pd3dDevice->CreateShaderResourceView(m_pMeshVertices, &descSRV, &m_pMeshVerticesSRV);
-    if( FAILED( hr ) )
+    if ( FAILED( hr ) )
+    {
         ::MessageBoxA(0, "Fail to create transformed vertex buffer SRV", "d3d error", 0);
+    }
 
     // Create a buffer that will hold all of the transformed vertices
     hr = pd3dDevice->CreateBuffer( &bd, NULL, &m_pTransformedVerts );
-    if( FAILED( hr ) )
+    if ( FAILED( hr ) )
+    {
         ::MessageBoxA(0, "Failed to allocate transformed vertex buffers", "d3d error", 0);
+    }
 
     // create an SRV for the transformed vertices
     hr = pd3dDevice->CreateShaderResourceView(m_pTransformedVerts, &descSRV, &m_pTransformedSRV);
-    if( FAILED( hr ) )
+    if ( FAILED( hr ) )
+    {
         ::MessageBoxA(0, "Fail to create transformed vertex buffer SRV", "d3d error", 0);
-
+    }
 }
 
 //--------------------------------------------------------------------------------------
@@ -507,17 +536,21 @@ void CSceneRender::CreateConstantBuffer( ID3D11Device* pd3dDevice )
     cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
     cbDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
     cbDesc.ByteWidth = sizeof( CB_PER_MATERIAL );
-    hr = pd3dDevice->CreateBuffer( &cbDesc, NULL, &m_pcbPerMaterial ) ;
+    hr = pd3dDevice->CreateBuffer( &cbDesc, NULL, &m_pcbPerMaterial );
     if (FAILED(hr))
+    {
         ::MessageBoxA(0, "Fail to create constant buffer for material", "d3d error", 0);
+    }
 
     cbDesc.Usage = D3D11_USAGE_DYNAMIC;
     cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
     cbDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
     cbDesc.ByteWidth = sizeof( CB_PER_FRAME_SCENE );
-    hr = pd3dDevice->CreateBuffer( &cbDesc, NULL, &m_pcbPerFrame ) ;
+    hr = pd3dDevice->CreateBuffer( &cbDesc, NULL, &m_pcbPerFrame );
     if (FAILED(hr))
+    {
         ::MessageBoxA(0, "Fail to create constant buffer for frame", "d3d error", 0);
+    }
 
     cbDesc.ByteWidth = sizeof( CB_BLUR );
     cbDesc.Usage = D3D11_USAGE_IMMUTABLE;
@@ -530,9 +563,11 @@ void CSceneRender::CreateConstantBuffer( ID3D11Device* pd3dDevice )
 
     D3D11_SUBRESOURCE_DATA subResourceData;
     subResourceData.pSysMem = (void *)&initData;
-    hr = pd3dDevice->CreateBuffer( &cbDesc, &subResourceData, &m_pcbBlur ) ;
+    hr = pd3dDevice->CreateBuffer( &cbDesc, &subResourceData, &m_pcbBlur );
     if (FAILED(hr))
+    {
         ::MessageBoxA(0, "Fail to create constant buffer for shadow blur", "d3d error", 0);
+    }
 }
 
 //--------------------------------------------------------------------------------------
@@ -579,14 +614,18 @@ void CSceneRender::CreateRenderStateObjects( ID3D11Device* pd3dDevice )
     samDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
     samDesc.MinLOD = 0;
     samDesc.MaxLOD = D3D11_FLOAT32_MAX;
-    hr = pd3dDevice->CreateSamplerState( &samDesc, &m_pSamplerStateLinearWrap ) ;
-    if(FAILED(hr))
+    hr = pd3dDevice->CreateSamplerState( &samDesc, &m_pSamplerStateLinearWrap );
+    if (FAILED(hr))
+    {
         ::MessageBoxA(0, "Fail to create linear wrap sampler state", "D3D Error", 0);
+    }
 
     samDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
-    hr = pd3dDevice->CreateSamplerState( &samDesc, &m_pSamplerStatePointClamp ) ;
-    if(FAILED(hr))
+    hr = pd3dDevice->CreateSamplerState( &samDesc, &m_pSamplerStatePointClamp );
+    if (FAILED(hr))
+    {
         ::MessageBoxA(0, "Fail to create point sampler state", "D3D Error", 0);
+    }
 
     ZeroMemory( &samDesc, sizeof(samDesc) );
     samDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
@@ -594,15 +633,20 @@ void CSceneRender::CreateRenderStateObjects( ID3D11Device* pd3dDevice )
     samDesc.MaxAnisotropy = 1;
     samDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
     samDesc.MaxLOD = D3D11_FLOAT32_MAX;
-    if(FAILED( pd3dDevice->CreateSamplerState( &samDesc, &m_pLinearClampSampler ) ) )
+    if (FAILED(pd3dDevice->CreateSamplerState(&samDesc, &m_pLinearClampSampler)))
+    {
         ::MessageBoxA(0, "Fail to create linear clamp sampler state", "D3D error", 0);
+    }
     // Point sampler
     samDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
-    if(FAILED( pd3dDevice->CreateSamplerState( &samDesc, &m_pPointSampler ) ) )
+    if (FAILED(pd3dDevice->CreateSamplerState(&samDesc, &m_pPointSampler)))
+    {
         ::MessageBoxA(0, "Fail to create linear point sampler state", "D3D error", 0);
+    }
 
      // Create rasterizer state for scene rendering
-    D3D11_RASTERIZER_DESC rasterizerDesc = {
+    D3D11_RASTERIZER_DESC rasterizerDesc =
+    {
         D3D11_FILL_SOLID,   //D3D11_FILL_MODE FillMode;
         //D3D11_FILL_WIREFRAME,//D3D11_FILL_MODE FillMode;
         D3D11_CULL_BACK,    //D3D11_CULL_MODE CullMode;
@@ -616,11 +660,14 @@ void CSceneRender::CreateRenderStateObjects( ID3D11Device* pd3dDevice )
         FALSE               //BOOL AntialiasedLineEnable;
     };
     hr = pd3dDevice->CreateRasterizerState(&rasterizerDesc, &m_pRasterizerStateScene);
-    if(FAILED(hr))
-      ::MessageBoxA(0, "Fail to create rasterizer state: sceneShadowmap", "D3D Error", 0);
+    if (FAILED(hr))
+    {
+        ::MessageBoxA(0, "Fail to create rasterizer state: sceneShadowmap", "D3D Error", 0);
+    }
 
     // Create rasterizer state for shadow map rendering
-    D3D11_RASTERIZER_DESC drd = {
+    D3D11_RASTERIZER_DESC drd =
+    {
         D3D11_FILL_SOLID,   //D3D11_FILL_MODE FillMode;
         D3D11_CULL_NONE,    //D3D11_CULL_MODE CullMode;
         FALSE,              //BOOL FrontCounterClockwise;
@@ -633,8 +680,10 @@ void CSceneRender::CreateRenderStateObjects( ID3D11Device* pd3dDevice )
         FALSE               //BOOL AntialiasedLineEnable;
     };
     hr = pd3dDevice->CreateRasterizerState(&drd, &m_pRasterizerStateShadowmap);
-    if(FAILED(hr))
-      ::MessageBoxA(0, "Fail to create rasterizer state: sceneShadowmap", "D3D Error", 0);
+    if (FAILED(hr))
+    {
+        ::MessageBoxA(0, "Fail to create rasterizer state: sceneShadowmap", "D3D Error", 0);
+    }
 }
 
 //--------------------------------------------------------------------------------------
@@ -653,7 +702,9 @@ void CSceneRender::OnCreateDevice( ID3D11Device* pd3dDevice, const WCHAR *bodyFi
         m_bAnimation = true;
     }
     else
+    {
         m_bAnimation = false;
+    }
 
     DirectX::XMMATRIX mIdentity = DirectX::XMMatrixIdentity();
     m_SkinnedMesh.TransformBindPose( mIdentity );
@@ -716,14 +767,16 @@ void CSceneRender::OnFrameMove( double fTime)
 void CSceneRender::SetBoneMatrices(ID3D11DeviceContext* pd3dImmediateContext, UINT iMesh )
 {
     if (!m_bAnimation)
+    {
         return;
+    }
 
     DirectX::XMMATRIX* pMatrices;
     D3D11_MAPPED_SUBRESOURCE MappedResource;
 
     pd3dImmediateContext->Map( m_pBoneBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &MappedResource );
     pMatrices = (DirectX::XMMATRIX *)MappedResource.pData;
-    for( UINT i = 0; i < m_SkinnedMesh.GetNumInfluences( iMesh ); i++ )
+    for ( UINT i = 0; i < m_SkinnedMesh.GetNumInfluences( iMesh ); i++ )
     {
         pMatrices[i] = m_SkinnedMesh.GetMeshInfluenceMatrix( iMesh, i );
     }
@@ -759,10 +812,14 @@ void CSceneRender::GenerateShadowMap(TressFX_Desc & desc)
     pd3dContext->OMSetRenderTargets(0, 0, m_pSMSceneDSV);
     pd3dContext->RSSetState( m_pRasterizerStateShadowmap );
 
-    if(m_bAnimation)
+    if (m_bAnimation)
+    {
         RenderSceneGeometry(desc, m_pVSGenerateSkinnedSM, NULL);
+    }
     else
+    {
         RenderSceneGeometry(desc, m_pVSGenerateSceneSM, NULL);
+    }
 
     // reset view port
     D3D11_VIEWPORT viewportWin = {0, 0, (float)g_ScreenWidth, (float)g_ScreenHeight, 0.0f, 1.0f};
@@ -812,7 +869,7 @@ void CSceneRender::StreamOutVertices(ID3D11DeviceContext* pd3dContext, bool doSk
 
     UINT vertexOffset = 0;
 
-    for( UINT m = 0; m < m_numMeshes; m++ )
+    for ( UINT m = 0; m < m_numMeshes; m++ )
     {
         // Turn on stream out
         offsetSO[0] = vertexOffset;
@@ -828,10 +885,12 @@ void CSceneRender::StreamOutVertices(ID3D11DeviceContext* pd3dContext, bool doSk
 
         // Set the bone matrices
         if (doSkinning)
-            SetBoneMatrices( pd3dContext, m );
+        {
+            SetBoneMatrices(pd3dContext, m);
+        }
 
         SDKMESH_SUBSET* pSubset = NULL;
-        for( UINT subset = 0; subset < m_SkinnedMesh.GetNumSubsets( m ); subset++ )
+        for ( UINT subset = 0; subset < m_SkinnedMesh.GetNumSubsets( m ); subset++ )
         {
             pSubset = m_SkinnedMesh.GetSubset( m, subset );
             pd3dContext->DrawIndexed( ( UINT )pSubset->IndexCount, ( UINT )pSubset->IndexStart,
@@ -856,9 +915,11 @@ void CSceneRender::UpdateSceneCB(TressFX_Desc & desc)
 {
     // set per-frame CB
     D3D11_MAPPED_SUBRESOURCE MappedResource;
-    HRESULT hr = desc.pd3dDeviceContext->Map( m_pcbPerFrame, 0, D3D11_MAP_WRITE_DISCARD, 0, &MappedResource ) ;
+    HRESULT hr = desc.pd3dDeviceContext->Map( m_pcbPerFrame, 0, D3D11_MAP_WRITE_DISCARD, 0, &MappedResource );
     if (FAILED(hr))
+    {
         ::MessageBoxA(0, "Fail to map constant buffer frame", "d3d error", 0);
+    }
 
     CB_PER_FRAME_SCENE* pcbPerFrame = ( CB_PER_FRAME_SCENE* )MappedResource.pData;
     pcbPerFrame->m_mWorld = XMMatrixTranspose(desc.modelTransformForHead);
@@ -894,9 +955,13 @@ void CSceneRender::RenderSceneGeometry(TressFX_Desc & desc, ID3D11VertexShader* 
 
     // Set vertex Layout
     if (m_bAnimation)
-        pd3dContext->IASetInputLayout( m_pSkinningLayout );
+    {
+        pd3dContext->IASetInputLayout(m_pSkinningLayout);
+    }
     else
-        pd3dContext->IASetInputLayout( m_pSceneSMLayout );
+    {
+        pd3dContext->IASetInputLayout(m_pSceneSMLayout);
+    }
 
 
     // silence truncation and pointer truncation warnings
@@ -904,7 +969,7 @@ void CSceneRender::RenderSceneGeometry(TressFX_Desc & desc, ID3D11VertexShader* 
 #pragma warning(disable : 4302)
 #pragma warning(disable : 4311)
     // Render the skinned mesh
-    for( UINT m = 0; m < m_SkinnedMesh.GetNumMeshes(); m++ )
+    for ( UINT m = 0; m < m_SkinnedMesh.GetNumMeshes(); m++ )
     {
 
         // Set IA parameters
@@ -933,18 +998,20 @@ void CSceneRender::RenderSceneGeometry(TressFX_Desc & desc, ID3D11VertexShader* 
         SDKMESH_SUBSET* pSubset = NULL;
         SDKMESH_MATERIAL* pMat = NULL;
 
-        for( UINT subset = 0; subset < m_SkinnedMesh.GetNumSubsets( m ); subset++ )
+        for ( UINT subset = 0; subset < m_SkinnedMesh.GetNumSubsets( m ); subset++ )
         {
             pSubset = m_SkinnedMesh.GetSubset( m, subset );
 
             pMat = m_SkinnedMesh.GetMaterial( pSubset->MaterialID );
-            if( pMat )
+            if ( pMat )
             {
                 // Set material value for each subset
                 D3D11_MAPPED_SUBRESOURCE MappedResource;
-                hr = pd3dContext->Map( m_pcbPerMaterial, 0, D3D11_MAP_WRITE_DISCARD, 0, &MappedResource ) ;
+                hr = pd3dContext->Map( m_pcbPerMaterial, 0, D3D11_MAP_WRITE_DISCARD, 0, &MappedResource );
                 if (FAILED(hr))
+                {
                     ::MessageBoxA(0, "Fail to map constant buffer material", "d3d error", 0);
+                }
 
                 CB_PER_MATERIAL* pcbPerMaterial = ( CB_PER_MATERIAL* )MappedResource.pData;
 
@@ -954,10 +1021,11 @@ void CSceneRender::RenderSceneGeometry(TressFX_Desc & desc, ID3D11VertexShader* 
                 pcbPerMaterial->m_ScalpColor = XMVectorSet(desc.hairParams.color.x, desc.hairParams.color.y, desc.hairParams.color.z, 1.0);
 
                 // Set shader resource views
-                    if( pMat->pDiffuseRV11 && (int)pMat->pDiffuseRV11 != ERROR_RESOURCE_VALUE)
+                    if ( pMat->pDiffuseRV11 && (int)pMat->pDiffuseRV11 != ERROR_RESOURCE_VALUE)
                     {
                         // change pcbPerMaterial->m_MatDiffuse.w to 1
-                        //pcbPerMaterial->m_MatDiffuse = XMVectorSet(XMVectorGetX(pcbPerMaterial->m_MatDiffuse), XMVectorGetY(pcbPerMaterial->m_MatDiffuse), XMVectorGetZ(pcbPerMaterial->m_MatDiffuse), 1);
+                        //pcbPerMaterial->m_MatDiffuse = XMVectorSet(XMVectorGetX(pcbPerMaterial->m_MatDiffuse),
+                        //    XMVectorGetY(pcbPerMaterial->m_MatDiffuse), XMVectorGetZ(pcbPerMaterial->m_MatDiffuse), 1);
                         pcbPerMaterial->m_MatDiffuse = XMVectorSet(1, 1, 1, 1);
                         pd3dContext->PSSetShaderResources(IDSRV_SCENE_DIFFUSE, 1, &pMat->pDiffuseRV11);
                     }
@@ -966,7 +1034,7 @@ void CSceneRender::RenderSceneGeometry(TressFX_Desc & desc, ID3D11VertexShader* 
                         ID3D11ShaderResourceView* pNULL = NULL;
                         pd3dContext->PSSetShaderResources(IDSRV_SCENE_DIFFUSE, 1, &pNULL);
                     }
-                    if( pMat->pNormalRV11 && (int)pMat->pNormalRV11 != ERROR_RESOURCE_VALUE)
+                    if ( pMat->pNormalRV11 && (int)pMat->pNormalRV11 != ERROR_RESOURCE_VALUE)
                     {
                         pd3dContext->PSSetShaderResources(IDSRV_SCENE_NORMAL_MAP, 1, &pMat->pNormalRV11);
                     }
@@ -975,7 +1043,7 @@ void CSceneRender::RenderSceneGeometry(TressFX_Desc & desc, ID3D11VertexShader* 
                         ID3D11ShaderResourceView* pNULL = NULL;
                         pd3dContext->PSSetShaderResources(IDSRV_SCENE_NORMAL_MAP, 1, &pNULL);
                     }
-                    if( pMat->pSpecularRV11 && (int)pMat->pSpecularRV11 != ERROR_RESOURCE_VALUE)
+                    if ( pMat->pSpecularRV11 && (int)pMat->pSpecularRV11 != ERROR_RESOURCE_VALUE)
                     {
                         pcbPerMaterial->m_MatSpecular = XMVectorSet(0.5, 0.5, 0.5, 0.5);
                         pd3dContext->PSSetShaderResources(IDSRV_SCENE_SPEC_MASK, 1, &pMat->pSpecularRV11);
@@ -1067,9 +1135,13 @@ void CSceneRender::RenderScene(TressFX_Desc & desc, bool shadow)
     pd3dContext->RSGetState( &pRSTemp );
     pd3dContext->RSSetState( m_pRasterizerStateScene );
     if (m_bAnimation)
+    {
         RenderSceneGeometry(desc, m_pVSSkinning, m_pPSRenderScene);
+    }
     else
+    {
         RenderSceneGeometry(desc, m_pVSScene, m_pPSRenderScene);
+    }
     pd3dContext->RSSetState( pRSTemp );
     pRSTemp->Release();
 }

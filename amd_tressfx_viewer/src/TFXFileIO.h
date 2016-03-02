@@ -118,4 +118,3 @@ private:
     bool bAnimation;
 
 };
-

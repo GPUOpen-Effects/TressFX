@@ -83,7 +83,7 @@ struct KernelData
 // Compute what happens at the kernels center
 //--------------------------------------------------------------------------------------
 #define KERNEL_CENTER( _KernelData, _iPixel, _iNumPixels, _O, _RAWDataItem ) \
-    [unroll] for( _iPixel = 0; _iPixel < _iNumPixels; ++_iPixel ) { \
+    [unroll] for ( _iPixel = 0; _iPixel < _iNumPixels; ++_iPixel ) { \
         GAUSSIAN_WEIGHT( 0, GAUSSIAN_DEVIATION, _KernelData[_iPixel].fWeight ) \
         _KernelData[_iPixel].fWeightSum = _KernelData[_iPixel].fWeight; \
         _O.f4Color[_iPixel].xyz = _RAWDataItem[_iPixel].f3Color * _KernelData[_iPixel].fWeight; }
@@ -93,7 +93,7 @@ struct KernelData
 // Compute what happens for each iteration of the kernel
 //--------------------------------------------------------------------------------------
 #define KERNEL_ITERATION( _iIteration, _KernelData, _iPixel, _iNumPixels, _O, _RAWDataItem ) \
-    [unroll] for( _iPixel = 0; _iPixel < _iNumPixels; ++_iPixel ) { \
+    [unroll] for ( _iPixel = 0; _iPixel < _iNumPixels; ++_iPixel ) { \
         GAUSSIAN_WEIGHT( ( _iIteration - KERNEL_RADIUS + ( 1.0f - 1.0f / float( STEP_SIZE ) ) ), GAUSSIAN_DEVIATION, _KernelData[_iPixel].fWeight ) \
         _KernelData[_iPixel].fWeightSum += _KernelData[_iPixel].fWeight; \
         _O.f4Color[_iPixel].xyz += _RAWDataItem[_iPixel].f3Color * _KernelData[_iPixel].fWeight; }
@@ -103,7 +103,7 @@ struct KernelData
 // Perform final weighting operation
 //--------------------------------------------------------------------------------------
 #define KERNEL_FINAL_WEIGHT( _KernelData, _iPixel, _iNumPixels, _O ) \
-    [unroll] for( _iPixel = 0; _iPixel < _iNumPixels; ++_iPixel ) { \
+    [unroll] for ( _iPixel = 0; _iPixel < _iNumPixels; ++_iPixel ) { \
         _O.f4Color[_iPixel].xyz /= _KernelData[_iPixel].fWeightSum; \
         _O.f4Color[_iPixel].w = 1.0f; }
 
@@ -112,8 +112,8 @@ struct KernelData
 // Output to chosen UAV
 //--------------------------------------------------------------------------------------
 #define KERNEL_OUTPUT( _i2Center, _i2Inc, _iPixel, _iNumPixels, _O, _KernelData ) \
-    [unroll] for( _iPixel = 0; _iPixel < _iNumPixels; ++_iPixel ) \
-        g_uavOutput[_i2Center + _iPixel * _i2Inc] = _O.f4Color[_iPixel];
+    [unroll] for ( _iPixel = 0; _iPixel < _iNumPixels; ++_iPixel ) { \
+        g_uavOutput[_i2Center + _iPixel * _i2Inc] = _O.f4Color[_iPixel]; }
 
 
 //--------------------------------------------------------------------------------------

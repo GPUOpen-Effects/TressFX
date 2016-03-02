@@ -167,4 +167,3 @@ public:
     void RenderScene(AMD::TressFX_Desc & desc, bool shadow);
     void OnDestroy(bool destroyShaders);
 };
-

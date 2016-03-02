@@ -169,7 +169,7 @@ SkinnedInfo SkinVert( VSSkinnedIn Input )
 {
     SkinnedInfo Output = (SkinnedInfo)0;
 
-    float4 Pos = float4(Input.Pos,1);
+    float4 Pos = float4(Input.Pos, 1);
     float3 Norm = Input.Norm;
     float3 Tan = Input.Tan;
 
@@ -217,10 +217,13 @@ VSPositionsOut SkinStreamOutVS(VSSkinnedIn input )
 
     SkinnedInfo vSkinned = SkinVert( input );
 
-    matrix scale = {1.0, 0, 0, 0,
-                    0, 1.0, 0, 0,
-                    0, 0, 1.0, 0,
-                    0, 0, 0, 1.0};
+    matrix scale =
+    {
+        1.0,   0,   0,   0,
+        0,   1.0,   0,   0,
+        0,     0, 1.0,   0,
+        0,     0,   0, 1.0
+    };
     matrix tfm = mul(scale, g_mWorld);
 
     output.Pos = mul(vSkinned.Pos, tfm);
@@ -235,10 +238,13 @@ VSPositionsOut StreamOutVS(VSSkinnedIn input )
 {
     VSPositionsOut output = (VSPositionsOut)0;
     float4 pos = float4(input.Pos, 1);
-    matrix scale = {1.0, 0, 0, 0,
-                    0, 1.0, 0, 0,
-                    0, 0, 1.0, 0,
-                    0, 0, 0, 1.0};
+    matrix scale =
+    {
+        1.0,   0,   0,   0,
+        0,   1.0,   0,   0,
+        0,     0, 1.0,   0,
+        0,     0,   0, 1.0
+    };
     matrix tfm = mul(scale, g_mWorld);
 
     output.Pos = mul(pos, tfm);
@@ -347,13 +353,12 @@ void DoLighting(in float3 vPosition, in float3 vNorm, in float3 vViewDir, out fl
     float3 vToLight = g_PointLightPos.xyz - vPosition;
     float3 vLightDir = normalize(vToLight);
 
-    LightColorDiffuseResult = g_PointLightColor.rgb * saturate(dot(vLightDir,vNorm));
+    LightColorDiffuseResult = g_PointLightColor.rgb * saturate(dot(vLightDir, vNorm));
 
     float exponent = g_MatSpecular.w;
     float3 vHalfAngle = normalize( vViewDir + vLightDir );
     LightColorSpecularResult = pow( saturate(dot( vHalfAngle, vNorm )), exponent );
 }
-
 
 
 //--------------------------------------------------------------------------------------
@@ -369,7 +374,7 @@ float4 ComputeSceneShading(float3 iPos, float3 iNormal, float3 iTangent, float2 
     // get normal from normal map
     float3 vNorm = g_txNorm.Sample( g_samLinearWrap, tex ).xyz;
     vNorm *= 2;
-    vNorm -= float3(1,1,1);
+    vNorm -= float3(1, 1, 1);
 
     // transform normal into world space
     float3 vBinorm = normalize( cross( iNormal, iTangent ) );
@@ -391,7 +396,7 @@ float4 ComputeSceneShading(float3 iPos, float3 iNormal, float3 iTangent, float2 
 
     float3 vColor = texColor * ( matAmbient * LightAmbient + amountLight * matDiffuse * LightDiffuse ) + amountLight*specMask*(matSpecular * LightSpecular);
 
-    return float4(vColor,1);
+    return float4(vColor, 1);
 }
 
 
@@ -409,7 +414,7 @@ PS_SHADOW_OUTPUT PS_RenderSceneShadow(VS_OUTPUT_SCREENQUAD input)
 {
     PS_SHADOW_OUTPUT Output;
 
-    float shadowMapVal = g_txShadow.Sample(g_samPointClamp,input.vTex).x;
+    float shadowMapVal = g_txShadow.Sample(g_samPointClamp, input.vTex).x;
     // Areas in shadow will have a value < 1. Output 0.5 (the darkness of the shadow) if in shadow, otherwise output 1
     Output.color = saturate(step(1, shadowMapVal) + 0.5);
     Output.depth = shadowMapVal;
@@ -428,9 +433,8 @@ float4 PS_RenderScene(PSSkinnedIn input):SV_Target
 {
     // Use light projected texture coordinates (same as shadowmap) since the shadow buffer was
     // generated from the hair shadow map.
-    float4 projPosLight = mul(float4(input.vPos,1), g_mViewProjLight);
+    float4 projPosLight = mul(float4(input.vPos, 1), g_mViewProjLight);
     float2 texSM = float2(projPosLight.x/projPosLight.w+1, -projPosLight.y/projPosLight.w+1)*0.5;
     float shadow = g_txShadow.SampleLevel(g_samLinearWrap, texSM, 0).x;
     return ComputeSceneShading(input.vPos, input.Norm, input.Tangent, input.Tex, shadow);
 }
-

@@ -109,7 +109,7 @@ public:
     float radius;
     BSphere()
     {
-        center = DirectX::XMFLOAT3(0,0,0);
+        center = DirectX::XMFLOAT3(0, 0, 0);
         radius = 0;
     }
 
