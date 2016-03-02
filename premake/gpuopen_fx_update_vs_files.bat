@@ -13,11 +13,12 @@ cd "%~dp0"
 echo --- amd_lib ---
 cd ..\amd_lib\premake
 call :createvsfilesincluding2010
+call :createvsfileswithminimaldependencies
 
 echo --- amd_sdk ---
 cd ..\..\amd_sdk\premake
 call :createvsfilesincluding2010
-call :createvsfilesforamdsdkwithminimaldependencies
+call :createvsfileswithminimaldependencies
 
 echo --- dxut core ---
 cd ..\..\dxut\Core
@@ -35,19 +36,8 @@ cd %arg1%\premake
 call :createvsfiles
 cd ..\..\
 
-if exist %arg1%_Sample (
-    echo --- %arg1%_Sample ---
-    cd %arg1%_Sample\premake
-    call :createvsfiles
-    cd ..\..\
-)
-
-if exist %arg1%_Capture_Viewer (
-    echo --- %arg1%_Capture_Viewer ---
-    cd %arg1%_Capture_Viewer\premake
-    call :createvsfiles
-    cd ..\..\
-)
+:: sample, capture_viewer, etc.
+for /f %%a in ('dir /a:d /b %arg1%_* 2^>nul') do call :createvsfilesforsamples %%a
 
 cd "%startdir%"
 
@@ -56,6 +46,16 @@ goto :EOF
 ::--------------------------
 :: SUBROUTINES
 ::--------------------------
+
+:: sample, capture_viewer, etc.
+:createvsfilesforsamples
+if exist %1\premake (
+    echo --- %1 ---
+    cd %1\premake
+    call :createvsfiles
+    cd ..\..\
+)
+goto :EOF
 
 :: run premake for vs2012, vs2013, and vs2015
 :createvsfiles
@@ -73,7 +73,7 @@ goto :EOF
 goto :EOF
 
 :: run premake for vs2010, vs2012, vs2013, and vs2015
-:createvsfilesforamdsdkwithminimaldependencies
+:createvsfileswithminimaldependencies
 ..\..\premake\premake5.exe --file=premake5_minimal.lua vs2010
 ..\..\premake\premake5.exe --file=premake5_minimal.lua vs2012
 ..\..\premake\premake5.exe --file=premake5_minimal.lua vs2013
@@ -86,6 +86,11 @@ del /f /q amd_lib\build\AMD_LIB_2010.sln
 del /f /q amd_lib\build\AMD_LIB_2012.sln
 del /f /q amd_lib\build\AMD_LIB_2013.sln
 del /f /q amd_lib\build\AMD_LIB_2015.sln
+
+del /f /q amd_lib\build\AMD_LIB_Minimal_2010.sln
+del /f /q amd_lib\build\AMD_LIB_Minimal_2012.sln
+del /f /q amd_lib\build\AMD_LIB_Minimal_2013.sln
+del /f /q amd_lib\build\AMD_LIB_Minimal_2015.sln
 
 del /f /q amd_sdk\build\AMD_SDK_2010.sln
 del /f /q amd_sdk\build\AMD_SDK_2012.sln
