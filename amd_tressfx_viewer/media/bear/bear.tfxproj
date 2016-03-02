@@ -4,7 +4,7 @@ version 3.0
 project_name Bear_model
 
 # tfx file name (relative path), follow hairs per guide hair (0 means no follow hairs), follow hair growing radius, tip separation factor for guide/follow, simulation setting file name, hair section name appearing on GUI
-bear.tfx 4 0.2 2.0 bear.tfxsim fur
+bear.tfx 4 1.2 2.0 bear.tfxsim fur
 
 bear.tfxskin
 bear.sdkmesh

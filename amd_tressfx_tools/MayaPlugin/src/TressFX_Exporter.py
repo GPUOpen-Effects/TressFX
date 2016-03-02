@@ -12,6 +12,7 @@ import ctypes
 import random
 
 selected_mesh_shape_name = ''
+tressfx_exporter_version = '1.0.1'
 
 class ProgressBar:
     def __init__ (self,title,steps):
@@ -33,8 +34,9 @@ def UI():
     if cmds.window("TressFXExporterUI", exists = True):
         cmds.deleteUI("TressFXExporterUI")
 
-    window = cmds.window("TressFXExporterUI", title = "TressFX Exporter v1.0", w=270, h = 240, mnb=False, sizeable=False)
-    mainLayout = cmds.columnLayout(w=270, h=240)
+    windowTitle = 'TressFX Exporter' + ' ' + 'v' + tressfx_exporter_version
+    window = cmds.window("TressFXExporterUI", title = windowTitle, w=280, h = 260, mnb=False, sizeable=False)
+    mainLayout = cmds.columnLayout(w=280, h=260)
 
     cmds.separator(h=8, style='in')
     cmds.text(label='Number of vertices per strand (4, 8, 16, 32 or 64):', align='left')
@@ -52,6 +54,11 @@ def UI():
     
     cmds.separator(height=10, style='none')
     cmds.button(label="Export as binary (*.tfx)", w=170, h=30, command=ExportBinary)
+    
+    cmds.separator(h=15)
+    
+    version_text = 'v' + tressfx_exporter_version
+    cmds.text(label=version_text, align='left')
     
     global selected_mesh_shape_name
     selected_mesh_shape_name = ''
@@ -214,20 +221,30 @@ def ExportBinary(*args):
     SaveTFXSkinBinaryFile(filepath_tfxskin[0], faceIdList, baryCoordList, uvCoordList)
     return
            
+           
+def RecursiveSearchCurve(curves, objNode):
+    if objNode.hasFn(OpenMaya.MFn.kNurbsCurve):
+        curveFn = OpenMaya.MFnNurbsCurve(objNode)
+        curves.append(curveFn)
+    elif objNode.hasFn(OpenMaya.MFn.kTransform):
+        objFn = OpenMaya.MFnTransform(objNode)
+        
+        for j in range(objFn.childCount()):
+            childObjNode = objFn.child(j)
+            RecursiveSearchCurve(curves, childObjNode)
+            
 def GetSelectedNurbsCurves():
     slist = OpenMaya.MSelectionList()
     OpenMaya.MGlobal.getActiveSelectionList( slist )
     iter = OpenMaya.MItSelectionList(slist)
     curves = []
-        
-    for i in range(slist.length()):
-        dagPath = OpenMaya.MDagPath()
-        slist.getDagPath(i, dagPath)
-        
-        dagPath.extendToShape()
-        curveFn = OpenMaya.MFnNurbsCurve(dagPath)
-        curves.append(curveFn)
 
+    # Find all nurbs curves under the selected node recursively. 
+    for i in range(slist.length()):
+        selObj = OpenMaya.MObject()
+        slist.getDependNode(i, selObj)
+        RecursiveSearchCurve(curves, selObj)
+        
     return curves    
 
 class TressFXFileObject(ctypes.Structure):

@@ -4,7 +4,7 @@ version 3.0
 project_name Test_model
 
 # tfx file name (relative path), follow hairs per guide hair (0 means no follow hairs), follow hair growing radius, tip separation factor for guide/follow, simulation setting file name, hair section name appearing on GUI
-TestHair1.tfx 0 0 5.0 TestHair1.tfxsim TestHair
+TestHair1.tfx 4 1.3 1.0 TestHair1.tfxsim TestHair
 
 # mesh file name (relative path)
 TestObject1.sdkmesh
