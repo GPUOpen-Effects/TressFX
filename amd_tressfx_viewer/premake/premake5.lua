@@ -25,11 +25,11 @@ externalproject ("AMD_" .. _AMD_LIBRARY_NAME)
       ["Debug"] = "DLL_Debug",
       ["Release"] = "DLL_Release" }
 
-externalproject "AMD_LIB"
+externalproject "AMD_LIB_Minimal"
    kind "StaticLib"
    language "C++"
    location "../../AMD_LIB/build"
-   filename ("AMD_LIB" .. _AMD_VS_SUFFIX)
+   filename ("AMD_LIB_Minimal" .. _AMD_VS_SUFFIX)
    uuid "0D2AEA47-7909-69E3-8221-F4B9EE7FCF44"
 
 externalproject "AMD_SDK_Minimal"
@@ -73,7 +73,7 @@ project (_AMD_LIBRARY_NAME .. "_Viewer")
 
    files { "../src/**.h", "../src/**.cpp", "../src/**.rc", "../src/**.manifest", "../src/**.hlsl" }
    includedirs { "../src/ResourceFiles", "../../AMD_%{_AMD_LIBRARY_NAME}/inc", "../../AMD_LIB/inc", "../../AMD_SDK/inc", "../../DXUT/Core", "../../DXUT/Optional" }
-   links { "AMD_%{_AMD_LIBRARY_NAME}", "AMD_LIB", "AMD_SDK_Minimal", "DXUT", "DXUTOpt", "d3dcompiler", "dxguid", "winmm", "comctl32", "Usp10", "Shlwapi" }
+   links { "AMD_%{_AMD_LIBRARY_NAME}", "AMD_LIB_Minimal", "AMD_SDK_Minimal", "DXUT", "DXUTOpt", "d3dcompiler", "dxguid", "winmm", "comctl32", "Usp10", "Shlwapi" }
    defines { "AMD_%{_AMD_LIBRARY_NAME_ALL_CAPS}_COMPILE_DYNAMIC_LIB=1" }
 
    filter "configurations:Debug"

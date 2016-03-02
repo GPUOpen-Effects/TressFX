@@ -149,7 +149,7 @@ if exist "..\..\AMD_TressFX\lib\GPUOpen_TressFX_x64.dll"  xcopy "..\..\AMD_Tress
     <ResourceCompile Include="..\src\ResourceFiles\TressFXViewer.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\AMD_LIB\build\AMD_LIB_2013.vcxproj">
+    <ProjectReference Include="..\..\AMD_LIB\build\AMD_LIB_Minimal_2013.vcxproj">
       <Project>{0D2AEA47-7909-69E3-8221-F4B9EE7FCF44}</Project>
     </ProjectReference>
     <ProjectReference Include="..\..\AMD_TressFX\build\AMD_TressFX_2013.vcxproj">
