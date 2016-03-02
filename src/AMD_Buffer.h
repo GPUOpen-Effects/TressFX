@@ -20,44 +20,43 @@
 // THE SOFTWARE.
 //
 
-#ifndef __AMD_BUFFER_H__
-#define __AMD_BUFFER_H__
+#ifndef AMD_LIB_BUFFER_H
+#define AMD_LIB_BUFFER_H
 
 #include <d3d11.h>
 #include <assert.h>
 
 namespace AMD
 {
-  class Buffer
-  {
-  public:
-    ID3D11Buffer              * _b1d;
-    ID3D11ShaderResourceView  * _srv;
-    ID3D11UnorderedAccessView * _uav;
-    ID3D11Buffer              * _staging_b1d;
-    ID3D11Buffer              * _staging_counter_b1d;
+    class Buffer
+    {
+    public:
+        ID3D11Buffer              * _b1d;
+        ID3D11ShaderResourceView  * _srv;
+        ID3D11UnorderedAccessView * _uav;
+        ID3D11Buffer              * _staging_b1d;
+        ID3D11Buffer              * _staging_counter_b1d;
 
-    uint                        _size_in_bytes;
+        uint                        _size_in_bytes;
 
-    Buffer();
-    ~Buffer();
-    void    Release();
-    HRESULT CreateBuffer( ID3D11Device * device,
-      unsigned int                       uSizeInBytes,
-      unsigned int                       uSizeOfStructure = 0,
-      unsigned int                       uCPUAccess = 0,
-      unsigned int                       uBindFlags = D3D11_BIND_SHADER_RESOURCE,
-      D3D11_USAGE                        usage = D3D11_USAGE_DEFAULT,
-      DXGI_FORMAT                        SRV_Format = DXGI_FORMAT_UNKNOWN,
-      DXGI_FORMAT                        UAV_Format = DXGI_FORMAT_UNKNOWN,
-      unsigned int                       uUAVFlags  = 0,
-      unsigned int                       uB1DFlags  = 0,
-      void *                             data = NULL);
+        Buffer();
+        ~Buffer();
+        void    Release();
+        HRESULT CreateBuffer( ID3D11Device * device,
+            unsigned int                       uSizeInBytes,
+            unsigned int                       uSizeOfStructure = 0,
+            unsigned int                       uCPUAccess = 0,
+            unsigned int                       uBindFlags = D3D11_BIND_SHADER_RESOURCE,
+            D3D11_USAGE                        usage = D3D11_USAGE_DEFAULT,
+            DXGI_FORMAT                        SRV_Format = DXGI_FORMAT_UNKNOWN,
+            DXGI_FORMAT                        UAV_Format = DXGI_FORMAT_UNKNOWN,
+            unsigned int                       uUAVFlags  = 0,
+            unsigned int                       uB1DFlags  = 0,
+            void *                             data = NULL);
 
-    int     UAVCounter( ID3D11DeviceContext * context );
-    void    ReadStgBuffer( ID3D11DeviceContext * context, void * ptr);
-  };
+        int     UAVCounter( ID3D11DeviceContext * context );
+        void    ReadStgBuffer( ID3D11DeviceContext * context, void * ptr);
+    };
 }
 
-
-#endif // __AMD_BUFFER_H__
+#endif // AMD_LIB_BUFFER_H

@@ -20,8 +20,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef __AMD_FULLSCREEN_PASS_H__
-#define __AMD_FULLSCREEN_PASS_H__
+#ifndef AMD_LIB_FULLSCREEN_PASS_H
+#define AMD_LIB_FULLSCREEN_PASS_H
 
 #include <d3d11.h>
 
@@ -30,6 +30,7 @@ namespace AMD
     extern "C++"
     {
         HRESULT CreateFullscreenPass(ID3D11VertexShader** ppVS, ID3D11Device* pDevice);
+        HRESULT CreateScreenQuadPass(ID3D11VertexShader** ppVS, ID3D11Device* pDevice);
         HRESULT CreateFullscreenPass(ID3D11PixelShader** ppPS, ID3D11Device* pDevice);
 
         HRESULT RenderFullscreenPass(

@@ -1072,6 +1072,11 @@ static HRESULT CreateD3DResources( _In_ ID3D11Device* d3dDevice,
                             SRVDesc.Texture2D.MipLevels = (!mipCount) ? -1 : desc.MipLevels;
                         }
 
+                        if (SRVDesc.Format == DXGI_FORMAT_R32_TYPELESS)
+                        {
+                            SRVDesc.Format = DXGI_FORMAT_R32_FLOAT;
+                        }
+
                         hr = d3dDevice->CreateShaderResourceView( tex,
                                                                   &SRVDesc,
                                                                   textureView

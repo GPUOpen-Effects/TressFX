@@ -20,19 +20,18 @@
 // THE SOFTWARE.
 //
 
-#ifndef _AMD_COMMON_H_
-#define _AMD_COMMON_H_
+#ifndef AMD_LIB_COMMON_H
+#define AMD_LIB_COMMON_H
 
 namespace AMD
 {
     void    outputDebugString(const char * format, ...);
 }
 
-#if defined(_DEBUG) || defined(DEBUG)   
+#if defined(_DEBUG) || defined(DEBUG)
 #define AMD_OUTPUT_DEBUG_STRING(format, ...) AMD::outputDebugString(format, ##__VA_ARGS__)
 #else
-#define AMD_OUTPUT_DEBUG_STRING(format, ...) 
+#define AMD_OUTPUT_DEBUG_STRING(format, ...)
 #endif
 
-
-#endif // _AMD_COMMON_H_
+#endif // AMD_LIB_COMMON_H

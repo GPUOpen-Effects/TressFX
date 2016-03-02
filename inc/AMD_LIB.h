@@ -25,8 +25,8 @@
 //
 // Library include file, to drag in all AMD LIB helper classes and functions.
 //--------------------------------------------------------------------------------------
-#ifndef __AMD_LIB_H__
-#define __AMD_LIB_H__
+#ifndef AMD_LIB_H
+#define AMD_LIB_H
 
 // AMD helper classes and functions
 #include "AMD_Types.h"
@@ -46,8 +46,3 @@
 #endif
 
 #endif
-
-//--------------------------------------------------------------------------------------
-// EOF
-//--------------------------------------------------------------------------------------
-

@@ -20,8 +20,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef __AMD_TEXTURE_2D_H__
-#define __AMD_TEXTURE_2D_H__
+#ifndef AMD_LIB_TEXTURE_2D_H
+#define AMD_LIB_TEXTURE_2D_H
 
 #include <d3d11.h>
 
@@ -30,50 +30,49 @@ struct AGSContext;
 
 namespace AMD
 {
-  class Texture2D
-  {
-  public:
-    ID3D11Texture2D *           _t2d;
-    ID3D11ShaderResourceView *  _srv;
-    ID3D11ShaderResourceView *  _srv_cube;
-    ID3D11RenderTargetView *    _rtv;
-    ID3D11RenderTargetView *    _rtv_cube[6];
-    ID3D11DepthStencilView *    _dsv;
-    ID3D11DepthStencilView *    _dsv_cube[6];
-    ID3D11DepthStencilView *    _dsv_ro;
-    ID3D11UnorderedAccessView * _uav;
+    class Texture2D
+    {
+    public:
+        ID3D11Texture2D *           _t2d;
+        ID3D11ShaderResourceView *  _srv;
+        ID3D11ShaderResourceView *  _srv_cube;
+        ID3D11RenderTargetView *    _rtv;
+        ID3D11RenderTargetView *    _rtv_cube[6];
+        ID3D11DepthStencilView *    _dsv;
+        ID3D11DepthStencilView *    _dsv_cube[6];
+        ID3D11DepthStencilView *    _dsv_ro;
+        ID3D11UnorderedAccessView * _uav;
 
-    unsigned int                _width;
-    unsigned int                _height;
-    unsigned int                _array;
-    unsigned int                _mips;
-    unsigned int                _sample;
+        unsigned int                _width;
+        unsigned int                _height;
+        unsigned int                _array;
+        unsigned int                _mips;
+        unsigned int                _sample;
 
-    Texture2D();
-    ~Texture2D();
+        Texture2D();
+        ~Texture2D();
 
-    void Release();
+        void Release();
 
-    HRESULT CreateSurface( ID3D11Device * pDevice,
-      unsigned int uWidth,
-      unsigned int uHeight,
-      unsigned int uSampleCount /*= 1*/,
-      unsigned int uArraySize /*= 1*/,
-      unsigned int uMipLevels /*= 1*/, 
-      DXGI_FORMAT T2D_Format /* = DXGI_FORMAT_UNKNOWN */,
-      DXGI_FORMAT SRV_Format /* = DXGI_FORMAT_UNKNOWN */,
-      DXGI_FORMAT RTV_Format /* = DXGI_FORMAT_UNKNOWN */,
-      DXGI_FORMAT DSV_Format /* = DXGI_FORMAT_UNKNOWN */,
-      DXGI_FORMAT UAV_Format /* = DXGI_FORMAT_UNKNOWN */,
-      DXGI_FORMAT DSV_RO_Format /* = DXGI_FORMAT_UNKNOWN */,
-      D3D11_USAGE usage /* = D3D11_USAGE_DEFAULT */,
-      bool bCube,
-      unsigned int pitch /* = 0 */,
-      void * data /*= NULL */,
-      AGSContext * agsContext /* = NULL*/, 
-      int cfxTransferType /*= (AGSAfrTransferType)0*/);
-  };
+        HRESULT CreateSurface( ID3D11Device * pDevice,
+            unsigned int uWidth,
+            unsigned int uHeight,
+            unsigned int uSampleCount /*= 1*/,
+            unsigned int uArraySize /*= 1*/,
+            unsigned int uMipLevels /*= 1*/,
+            DXGI_FORMAT T2D_Format /* = DXGI_FORMAT_UNKNOWN */,
+            DXGI_FORMAT SRV_Format /* = DXGI_FORMAT_UNKNOWN */,
+            DXGI_FORMAT RTV_Format /* = DXGI_FORMAT_UNKNOWN */,
+            DXGI_FORMAT DSV_Format /* = DXGI_FORMAT_UNKNOWN */,
+            DXGI_FORMAT UAV_Format /* = DXGI_FORMAT_UNKNOWN */,
+            DXGI_FORMAT DSV_RO_Format /* = DXGI_FORMAT_UNKNOWN */,
+            D3D11_USAGE usage /* = D3D11_USAGE_DEFAULT */,
+            bool bCube,
+            unsigned int pitch /* = 0 */,
+            void * data /*= NULL */,
+            AGSContext * agsContext /* = NULL*/,
+            int cfxTransferType /*= (AGSAfrTransferType)0*/);
+    };
 }
-
 
 #endif

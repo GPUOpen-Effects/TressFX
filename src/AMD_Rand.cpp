@@ -27,16 +27,16 @@
 
 namespace AMD
 {
-  float noise(uint x)
-  {
-    x = (x<<13) ^ x;
-    return ( 1.0f - ( (x * (x * x * 15731 + 789221) + 1376312589) & 0x7fffffff) / 1073741824.0f);
-  }
+    float noise(uint x)
+    {
+        x = (x<<13) ^ x;
+        return ( 1.0f - ( (x * (x * x * 15731 + 789221) + 1376312589) & 0x7fffffff) / 1073741824.0f);
+    }
 
-  float random_float(uint seed, float a, float b)
-  {
-    float random = noise(seed) + 1.0f;
+    float random_float(uint seed, float a, float b)
+    {
+        float random = noise(seed) + 1.0f;
 
-    return a + random * 0.5f * (b - a);
-  }
+        return a + random * 0.5f * (b - a);
+    }
 }

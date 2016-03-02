@@ -56,10 +56,10 @@ RAWDataItem Sample( int2 i2Position, float2 f2Offset )
     //--------------------------------------------------------------------------------------
     #define CACHE_LDS_READS( _iIteration, _iLineOffset, _iPixelOffset, _RDI ) \
         /* Trickle LDS values down within the GPRs*/ \
-        [unroll] for( iPixel = 0; iPixel < PIXELS_PER_THREAD - STEP_SIZE; ++iPixel ) { \
+        [unroll] for ( iPixel = 0; iPixel < PIXELS_PER_THREAD - STEP_SIZE; ++iPixel ) { \
             _RDI[iPixel] = _RDI[iPixel + STEP_SIZE]; } \
         /* Load new LDS value(s) */ \
-        [unroll] for( iPixel = 0; iPixel < STEP_SIZE; ++iPixel ) { \
+        [unroll] for ( iPixel = 0; iPixel < STEP_SIZE; ++iPixel ) { \
             READ_FROM_LDS( _iLineOffset, ( _iPixelOffset + _iIteration + iPixel ), _RDI[(PIXELS_PER_THREAD - STEP_SIZE + iPixel)] ) }
 
 
@@ -68,7 +68,7 @@ RAWDataItem Sample( int2 i2Position, float2 f2Offset )
     //--------------------------------------------------------------------------------------
     void ComputeFilterKernel( int iPixelOffset, int iLineOffset, int2 i2Center, int2 i2Inc )
     {
-        CS_Output O = (CS_Output)0;
+        CS_Output Output = (CS_Output)0;
         KernelData KD[PIXELS_PER_THREAD];
         int iPixel, iIteration;
         RAWDataItem RDI[PIXELS_PER_THREAD];
@@ -78,7 +78,7 @@ RAWDataItem Sample( int2 i2Position, float2 f2Offset )
             // Read the kernel center values in directly from the input surface(s), as the LDS
             // values are pre-filtered, and therefore do not represent the kernel center
             [unroll]
-            for( iPixel = 0; iPixel < PIXELS_PER_THREAD; ++iPixel )
+            for ( iPixel = 0; iPixel < PIXELS_PER_THREAD; ++iPixel )
             {
                 float2 f2SamplePosition = ( float2( i2Center + ( iPixel * i2Inc ) ) + float2( 0.5f, 0.5f ) ) * g_f4OutputSize.zw;
                 SAMPLE_FROM_INPUT( g_PointSampler, f2SamplePosition, RDI[iPixel] )
@@ -88,7 +88,7 @@ RAWDataItem Sample( int2 i2Position, float2 f2Offset )
 
             // Read the kernel center values in from the LDS
             [unroll]
-            for( iPixel = 0; iPixel < PIXELS_PER_THREAD; ++iPixel )
+            for ( iPixel = 0; iPixel < PIXELS_PER_THREAD; ++iPixel )
             {
                 READ_FROM_LDS( iLineOffset, ( iPixelOffset + KERNEL_RADIUS + iPixel ), RDI[iPixel] )
             }
@@ -97,11 +97,11 @@ RAWDataItem Sample( int2 i2Position, float2 f2Offset )
 
 
         // Macro defines what happens at the kernel center
-        KERNEL_CENTER( KD, iPixel, PIXELS_PER_THREAD, O, RDI )
+        KERNEL_CENTER( KD, iPixel, PIXELS_PER_THREAD, Output, RDI )
 
         // Prime the GPRs for the first half of the kernel
         [unroll]
-        for( iPixel = 0; iPixel < PIXELS_PER_THREAD; ++iPixel )
+        for ( iPixel = 0; iPixel < PIXELS_PER_THREAD; ++iPixel )
         {
             READ_FROM_LDS( iLineOffset, ( iPixelOffset + iPixel ), RDI[iPixel] )
         }
@@ -111,10 +111,10 @@ RAWDataItem Sample( int2 i2Position, float2 f2Offset )
 
         // First half of the kernel
         [unroll]
-        for( iIteration = 0; iIteration < KERNEL_RADIUS; iIteration += STEP_SIZE )
+        for ( iIteration = 0; iIteration < KERNEL_RADIUS; iIteration += STEP_SIZE )
         {
             // Macro defines what happens for each kernel iteration
-            KERNEL_ITERATION( iIteration, KD, iPixel, PIXELS_PER_THREAD, O, RDI )
+            KERNEL_ITERATION( iIteration, KD, iPixel, PIXELS_PER_THREAD, Output, RDI )
 
             // Macro to cache LDS reads in GPRs
             CACHE_LDS_READS( iIteration, iLineOffset, iPixelOffset, RDI )
@@ -122,25 +122,25 @@ RAWDataItem Sample( int2 i2Position, float2 f2Offset )
 
         // Prime the GPRs for the second half of the kernel
         [unroll]
-        for( iPixel = 0; iPixel < PIXELS_PER_THREAD; ++iPixel )
+        for ( iPixel = 0; iPixel < PIXELS_PER_THREAD; ++iPixel )
         {
             READ_FROM_LDS( iLineOffset, ( iPixelOffset - PIXELS_PER_THREAD + iIteration + 1 + iPixel ), RDI[iPixel] )
         }
 
         // Second half of the kernel
         [unroll]
-        for( iIteration = KERNEL_RADIUS + 1; iIteration < KERNEL_DIAMETER; iIteration += STEP_SIZE )
+        for ( iIteration = KERNEL_RADIUS + 1; iIteration < KERNEL_DIAMETER; iIteration += STEP_SIZE )
         {
             // Macro defines what happens for each kernel iteration
-            KERNEL_ITERATION( iIteration, KD, iPixel, PIXELS_PER_THREAD, O, RDI )
+            KERNEL_ITERATION( iIteration, KD, iPixel, PIXELS_PER_THREAD, Output, RDI )
 
             // Macro to cache LDS reads in GPRs
             CACHE_LDS_READS( iIteration, iLineOffset, iPixelOffset, RDI )
         }
 
         // Macros define final weighting and output
-        KERNEL_FINAL_WEIGHT( KD, iPixel, PIXELS_PER_THREAD, O )
-        KERNEL_OUTPUT( i2Center, i2Inc, iPixel, PIXELS_PER_THREAD, O, KD )
+        KERNEL_FINAL_WEIGHT( KD, iPixel, PIXELS_PER_THREAD, Output )
+        KERNEL_OUTPUT( i2Center, i2Inc, iPixel, PIXELS_PER_THREAD, Output, KD )
     }
 
 #endif

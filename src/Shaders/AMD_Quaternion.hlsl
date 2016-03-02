@@ -20,8 +20,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef _AMD_LIB_QUATERNION_HLSL_
-#define _AMD_LIB_QUATERNION_HLSL_
+#ifndef AMD_LIB_QUATERNION_HLSL
+#define AMD_LIB_QUATERNION_HLSL
 
 float4 MakeQuaternion(float angle_radian, float3 axis)
 {
@@ -41,7 +41,9 @@ float4 InverseQuaternion(float4 q)
   float lengthSqr = q.x*q.x + q.y*q.y + q.z*q.z + q.w*q.w;
 
   if (lengthSqr < 0.001)
+  {
     return float4(0, 0, 0, 1.0f);
+  }
 
   q.x = -q.x / lengthSqr;
   q.y = -q.y / lengthSqr;
@@ -91,4 +93,4 @@ float3 MultWorldInertiaInvAndVector(float4 orientation, float3 inertia, float3 v
   return Rot_InertiaInv_RotT_vec;
 }
 
-#endif // _AMD_LIB_QUATERNION_HLSL_
+#endif // AMD_LIB_QUATERNION_HLSL
