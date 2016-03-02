@@ -53,9 +53,9 @@
 #define SUPERSIMPLESHADING      // constant diffuse (doesn't change with light angle)
 //#define COLORDEBUG            // shows the number of overlapping hair fragments with color
 
-//#if (KBUFFER_SIZE <= 16)
-//  #define ALU_INDEXING            // avoids using an indexed array for better performance
-//#endif
+#if (KBUFFER_SIZE <= 16)
+#define ALU_INDEXING            // avoids using an indexed array for better performance
+#endif
 
 //--------------------------------------------------------------------------------------
 // TressFX Structures
@@ -698,22 +698,22 @@ float ComputeSimpleShadow(float3 worldPos, float alpha, int iTechSM)
 //--------------------------------------------------------------------------------------
 uint PackFloat4IntoUint(float4 vValue)
 {
-    return ( (uint(vValue.x*255)& 0xFFUL) << 24 ) | ( (uint(vValue.y*255)& 0xFFUL) << 16 ) | ( (uint(vValue.z*255)& 0xFFUL) << 8) | (uint(vValue.w * 255)& 0xFFUL);
+    return (uint)( ( ( (uint)(vValue.x*255.0f) & 0xFFu ) << 24 ) | ( ( (uint)(vValue.y*255.0f) & 0xFFu ) << 16 ) | ( ( (uint)(vValue.z*255.0f) & 0xFFu ) << 8) | ( (uint)(vValue.w * 255.0f) & 0xFFu ) );
 }
 
 float4 UnpackUintIntoFloat4(uint uValue)
 {
-    return float4( ( (uValue & 0xFF000000)>>24 ) / 255.0, ( (uValue & 0x00FF0000)>>16 ) / 255.0, ( (uValue & 0x0000FF00)>>8 ) / 255.0, ( (uValue & 0x000000FF) ) / 255.0);
+    return float4( (float)( (uint)(uValue & 0xFF000000u) >> 24 ) / 255.0f, (float)( (uint)(uValue & 0x00FF0000u) >> 16 ) / 255.0f, (float)( (uint)(uValue & 0x0000FF00u) >> 8 ) / 255.0f, (float)( (uint)(uValue & 0x000000FFu) ) / 255.0f );
 }
 
 uint PackTangentAndCoverage(float3 tangent, float coverage)
 {
-    return PackFloat4IntoUint( float4(tangent.xyz*0.5 + 0.5, coverage) );
+    return PackFloat4IntoUint( float4(tangent.xyz*0.5f + 0.5f, coverage) );
 }
 
 float3 GetTangent(uint packedTangent)
 {
-    return 2.0 * UnpackUintIntoFloat4(packedTangent).xyz - 1.0;
+    return 2.0f * UnpackUintIntoFloat4(packedTangent).xyz - 1.0f;
 }
 
 float GetCoverage(uint packedCoverage)
@@ -874,6 +874,7 @@ float4 PS_KBuffer_Hair(VS_OUTPUT_SCREENQUAD In): SV_Target
 
     uint4 kBufferDepthV03, kBufferDepthV47, kBufferDepthV811, kBufferDepthV1215;
     uint4 kBufferPackedTangentV03, kBufferPackedTangentV47, kBufferPackedTangentV811, kBufferPackedTangentV1215;
+    uint4 kBufferStrandColorV03, kBufferStrandColorV47, kBufferStrandColorV811, kBufferStrandColorV1215;
     kBufferDepthV03 = uint4(asuint(100000.0f), asuint(100000.0f), asuint(100000.0f), asuint(100000.0f));
     kBufferDepthV47 = uint4(asuint(100000.0f), asuint(100000.0f), asuint(100000.0f), asuint(100000.0f));
     kBufferDepthV811 = uint4(asuint(100000.0f), asuint(100000.0f), asuint(100000.0f), asuint(100000.0f));
@@ -882,6 +883,10 @@ float4 PS_KBuffer_Hair(VS_OUTPUT_SCREENQUAD In): SV_Target
     kBufferPackedTangentV47 = uint4(0,0,0,0);
     kBufferPackedTangentV811 = uint4(0,0,0,0);
     kBufferPackedTangentV1215 = uint4(0,0,0,0);
+    kBufferStrandColorV03 = uint4(0,0,0,0);
+    kBufferStrandColorV47 = uint4(0,0,0,0);
+    kBufferStrandColorV811 = uint4(0,0,0,0);
+    kBufferStrandColorV1215 = uint4(0,0,0,0);
 
     // Get the first k elements in the linked list
     int nNumFragments = 0;
@@ -891,6 +896,7 @@ float4 PS_KBuffer_Hair(VS_OUTPUT_SCREENQUAD In): SV_Target
         {
             StoreUintAtIndex_Size16(kBufferDepthV03, kBufferDepthV47, kBufferDepthV811, kBufferDepthV1215, p, LinkedListSRV[pointer].depth);
             StoreUintAtIndex_Size16(kBufferPackedTangentV03, kBufferPackedTangentV47, kBufferPackedTangentV811, kBufferPackedTangentV1215, p, LinkedListSRV[pointer].TangentAndCoverage);
+            StoreUintAtIndex_Size16(kBufferStrandColorV03, kBufferStrandColorV47, kBufferStrandColorV811, kBufferStrandColorV1215, p, LinkedListSRV[pointer].strandColor);
             pointer = LinkedListSRV[pointer].uNext;
 #ifdef COLORDEBUG
             nNumFragments++;
@@ -971,6 +977,9 @@ float4 PS_KBuffer_Hair(VS_OUTPUT_SCREENQUAD In): SV_Target
             tmp                                     = GetUintFromIndex_Size16(kBufferPackedTangentV03, kBufferPackedTangentV47, kBufferPackedTangentV811, kBufferPackedTangentV1215, id);
             StoreUintAtIndex_Size16(kBufferPackedTangentV03, kBufferPackedTangentV47, kBufferPackedTangentV811, kBufferPackedTangentV1215, id, nodePackedTangent);
             nodePackedTangent                       = tmp;
+            uint tmpColor                           = GetUintFromIndex_Size16(kBufferStrandColorV03, kBufferStrandColorV47, kBufferStrandColorV811, kBufferStrandColorV1215, id);
+            StoreUintAtIndex_Size16(kBufferStrandColorV03, kBufferStrandColorV47, kBufferStrandColorV811,  kBufferDepthV1215, id, strandColor);
+            strandColor                             = tmpColor;
 #else
             uint tmp                                = kBuffer[id].depthTangentColor.x;
             kBuffer[id].depthTangentColor.x = nodeDepth;
@@ -1035,11 +1044,12 @@ float4 PS_KBuffer_Hair(VS_OUTPUT_SCREENQUAD In): SV_Target
         }
 
 
-        // take this node out of the next search
 #ifdef ALU_INDEXING
         uint nodePackedTangent = GetUintFromIndex_Size16(kBufferPackedTangentV03, kBufferPackedTangentV47, kBufferPackedTangentV811, kBufferPackedTangentV1215, id);
         uint nodeDepth         = GetUintFromIndex_Size16(kBufferDepthV03, kBufferDepthV47, kBufferDepthV811, kBufferDepthV1215, id);
+        uint strandColor       = GetUintFromIndex_Size16(kBufferStrandColorV03, kBufferStrandColorV47, kBufferStrandColorV811, kBufferStrandColorV1215, id);
 
+        // take this node out of the next search
         StoreUintAtIndex_Size16(kBufferDepthV03, kBufferDepthV47, kBufferDepthV811, kBufferDepthV1215, id, 0);
 #else
         uint nodePackedTangent = kBuffer[id].depthTangentColor.y;
