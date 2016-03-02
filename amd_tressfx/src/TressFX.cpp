@@ -217,7 +217,9 @@ TRESSFX_RETURN_CODE AMD_TRESSFX_DLL_API TressFX_Resize(TressFX_Desc & desc)
 TRESSFX_RETURN_CODE AMD_TRESSFX_DLL_API TressFX_Release(TressFX_Desc & desc)
 {
     if ( !desc.pOpaque )
+    {
         return TRESSFX_RETURN_CODE_SUCCESS;
+    }
 
     desc.pOpaque->Release();
     TressFXMesh *pTressFXMesh = (TressFXMesh *)desc.pTressFXMesh;

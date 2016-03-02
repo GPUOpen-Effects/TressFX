@@ -25,8 +25,8 @@
 // THE SOFTWARE.
 //
 //--------------------------------------------------------------------------------------
-#ifndef __AMD_SDK_TRESSFXASSET_H__
-#define __AMD_SDK_TRESSFXASSET_H__
+#ifndef AMD_TRESSFX_ASSET_H
+#define AMD_TRESSFX_ASSET_H
 
 #include <DirectXMath.h>
 #include "AMD_TressFX.h"
@@ -37,63 +37,59 @@
 
 #define THREAD_GROUP_SIZE 64        // This needs to match THREAD_GROUP_SIZE in TressFXSimulation.hlsl
 
-
 namespace AMD
 {
 
 struct TressFXAsset
 {
-    int*                        m_pHairStrandType;
-    DirectX::XMFLOAT4*          m_pRefVectors;
-    DirectX::XMFLOAT4*          m_pGlobalRotations;
-    DirectX::XMFLOAT4*          m_pLocalRotations;
-    DirectX::XMFLOAT4*          m_pVertices;
-    DirectX::XMFLOAT4*          m_pTangents;
-    DirectX::XMFLOAT2*          m_pStrandTexCoords;
-    DirectX::XMFLOAT2*          m_pVertexTexCoords;
-    DirectX::XMFLOAT4*          m_pVertexColors;
-    DirectX::XMFLOAT4*          m_pFollowRootOffset;
-    HairToTriangleMapping*      m_pMapping;
-    StrandVertex*               m_pTriangleVertices;
-    float*                      m_pThicknessCoeffs;
-    std::vector<int>            m_LineIndices;
-    std::vector<int>            m_TriangleIndices;
-    float*                      m_pRestLengths;
-    BSphere                     m_bSphere;
-    int                         m_NumTotalHairStrands;
-    int                         m_NumTotalHairVertices;
-    int                         m_NumOfVerticesInStrand;
-    int                         m_NumGuideHairStrands;
-    int                         m_NumGuideHairVertices;
-    int                         m_NumFollowHairsPerGuideHair;
-    int                         m_NumPerStrandTexCoords;
-    int                         m_NumPerVertexColors;
-    int                         m_NumPerVertexTexCoords;
-    int                         m_NumHairToTriangleMappings;
-    float                       m_TipSeparationFactor;
+    int*                   m_pHairStrandType;
+    DirectX::XMFLOAT4*     m_pRefVectors;
+    DirectX::XMFLOAT4*     m_pGlobalRotations;
+    DirectX::XMFLOAT4*     m_pLocalRotations;
+    DirectX::XMFLOAT4*     m_pVertices;
+    DirectX::XMFLOAT4*     m_pTangents;
+    DirectX::XMFLOAT2*     m_pStrandTexCoords;
+    DirectX::XMFLOAT2*     m_pVertexTexCoords;
+    DirectX::XMFLOAT4*     m_pVertexColors;
+    DirectX::XMFLOAT4*     m_pFollowRootOffset;
+    HairToTriangleMapping* m_pMapping;
+    StrandVertex*          m_pTriangleVertices;
+    float*                 m_pThicknessCoeffs;
+    float*                 m_pRestLengths;
+    std::vector<int>       m_LineIndices;
+    std::vector<int>       m_TriangleIndices;
+    BSphere                m_bSphere;
+    int                    m_NumTotalHairStrands;
+    int                    m_NumTotalHairVertices;
+    int                    m_NumOfVerticesInStrand;
+    int                    m_NumGuideHairStrands;
+    int                    m_NumGuideHairVertices;
+    int                    m_NumFollowHairsPerGuideHair;
+    int                    m_NumPerStrandTexCoords;
+    int                    m_NumPerVertexColors;
+    int                    m_NumPerVertexTexCoords;
+    int                    m_NumHairToTriangleMappings;
+    float                  m_TipSeparationFactor;
 };
 
-struct HairVertex
+struct TressFXHairVertex
 {
-    CVector3D position;
+    tressfx_vec3 position;
     float invMass; // In case mass is infinite, inverse mass is zero
 
-    CTransform globalTransform;
-    CTransform localTransform;
+    tressfx_transform globalTransform;
+    tressfx_transform localTransform;
 
-    CVector3D referenceVector;
-    CVector3D tangent;
-    CVector3D texcoord;
+    tressfx_vec3 referenceVector;
+    tressfx_vec3 tangent;
+    tressfx_vec3 texcoord;
 };
 
 struct TressFXStrand
 {
-    std::vector<HairVertex> m_VertexArray;
     bool m_bGuideHair;
     int m_GroupID;
     DirectX::XMFLOAT2 m_texCoord;
-
-    void ConstructAsset();
 };
 
 class TressFXAssetLoader
@@ -102,19 +98,24 @@ public:
     TressFXAssetLoader(void);
     ~TressFXAssetLoader(void);
 
-    TressFXAsset        m_HairAsset;
-private:
-    std::vector<TressFXStrand*> m_HairStrands;
+    TressFXAsset m_HairAsset;
 
-    float               m_maxRadiusAroundGuideHair;
-    bool                m_usingPerStrandTexCoords;
-    bool                m_usingPerVertexColors;
-    bool                m_usingPerVertexTexCoords;
+private:
+    std::vector<TressFXStrand> m_HairStrands;
+    std::vector<TressFXHairVertex> m_Vertices;
+    std::vector<tressfx_vec3> m_SlaveOffset;
+
+    float m_maxRadiusAroundGuideHair;
+    bool m_usingPerStrandTexCoords;
+    bool m_usingPerVertexColors;
+    bool m_usingPerVertexTexCoords;
 
     std::vector<HairToTriangleMapping> mapping;
 
-    void ComputeStrandTangent(std::vector<HairVertex>& vertices);
-    void ComputeDistanceToRoot(std::vector<HairVertex>& vertices);
+    // prepare internal data
+    void ConstructTransforms();
+    void ComputeDistanceToRoot();
+    void ComputeStrandTangent();
 
     void DestroyAll();
 

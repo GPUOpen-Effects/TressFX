@@ -26,53 +26,58 @@
 
 #include "Transform.h"
 
-CTransform::CTransform(void)
+namespace AMD
+{
+
+tressfx_transform::tressfx_transform(void)
 {
 }
 
-CTransform::CTransform(const CTransform& other)
+tressfx_transform::tressfx_transform(const tressfx_transform& other)
 {
     m_Translation = other.m_Translation;
     m_Rotation = other.m_Rotation;
 }
 
-CTransform::CTransform(const CVector3D& translation, const CQuaternion& rotation)
+tressfx_transform::tressfx_transform(const tressfx_vec3& translation, const tressfx_quat& rotation)
 {
     m_Translation = translation;
     m_Rotation = rotation;
 }
 
-CTransform::~CTransform(void)
+tressfx_transform::~tressfx_transform(void)
 {
 }
 
-void CTransform::Inverse()
+void tressfx_transform::Inverse()
 {
     m_Rotation.Inverse();
     m_Translation = m_Rotation * (-m_Translation);
 }
 
-CTransform CTransform::InverseOther() const
+tressfx_transform tressfx_transform::InverseOther() const
 {
-    CTransform other(*this);
+    tressfx_transform other(*this);
     other.Inverse();
     return other;
 }
 
-CVector3D CTransform::operator*(const CVector3D& vector) const
+tressfx_vec3 tressfx_transform::operator*(const tressfx_vec3& vector) const
 {
     return m_Rotation * vector + m_Translation;
 }
 
-CTransform CTransform::operator*(const CTransform& transform) const
+tressfx_transform tressfx_transform::operator*(const tressfx_transform& transform) const
 {
-    return CTransform(m_Rotation * transform.GetTranslation() + m_Translation, m_Rotation * transform.GetRotation());
+    return tressfx_transform(m_Rotation * transform.GetTranslation() + m_Translation, m_Rotation * transform.GetRotation());
 }
 
-CTransform& CTransform::operator=(const CTransform& other)
+tressfx_transform& tressfx_transform::operator=(const tressfx_transform& other)
 {
     if ( this == &other )
+    {
         return (*this);
+    }
 
     m_Translation = other.m_Translation;
     m_Rotation = other.m_Rotation;
@@ -80,3 +85,4 @@ CTransform& CTransform::operator=(const CTransform& other)
     return (*this);
 }
 
+} // namespace AMD

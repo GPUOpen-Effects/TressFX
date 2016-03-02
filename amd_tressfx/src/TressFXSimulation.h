@@ -55,7 +55,7 @@ public:
 
     HRESULT OnCreateDevice(ID3D11Device* pd3dDevice, TressFX_CollisionCapsule *pCollision);
     HRESULT Simulate(ID3D11DeviceContext* pd3dContext, float fElapsedTime, float density,
-                        CVector3D &windDir, float windMag, DirectX::XMMATRIX *pModelTransformForHead,
+                        tressfx_vec3 &windDir, float windMag, DirectX::XMMATRIX *pModelTransformForHead,
                         ID3D11UnorderedAccessView *pSkinningTransforms,
                         float targetFrameRate = 1.0f/60.0f, bool singleHeadTransform = true, bool warp = false);
     HRESULT GenerateTransforms(ID3D11DeviceContext* pd3dContext, TressFX_SceneMesh sceneMesh,

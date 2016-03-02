@@ -28,250 +28,260 @@
 #include <cassert>
 #include "Quaternion.h"
 
-CQuaternion::CQuaternion(float x/* = 0.0*/, float y/* = 0.0*/, float z/* = 0.0*/, float w/* = 1.0*/) : m_X(x), m_Y(y), m_Z(z), m_W(w)
+namespace AMD
+{
+
+tressfx_quat::tressfx_quat(float x/* = 0.0*/, float y/* = 0.0*/, float z/* = 0.0*/, float w/* = 1.0*/) : x(x), y(y), z(z), w(w)
 {
 }
 
-CQuaternion::~CQuaternion(void)
+tressfx_quat::~tressfx_quat(void)
 {
 }
 
-CQuaternion::CQuaternion(const CQuaternion& other)
+tressfx_quat::tressfx_quat(const tressfx_quat& other)
 {
-    m_X = other.m_X;
-    m_Y = other.m_Y;
-    m_Z = other.m_Z;
-    m_W = other.m_W;
+    x = other.x;
+    y = other.y;
+    z = other.z;
+    w = other.w;
 }
 
-CQuaternion::CQuaternion(const CMatrix33& rotMat)
+tressfx_quat::tressfx_quat(const tressfx_mat33& rotMat)
 {
     SetRotation(rotMat);
 }
 
-CQuaternion::CQuaternion(const CVector3D& axis, float angle_radian)
+tressfx_quat::tressfx_quat(const tressfx_vec3& axis, float angle_radian)
 {
     SetRotation(axis, angle_radian);
 }
 
-CQuaternion& CQuaternion::Normalize()
+tressfx_quat& tressfx_quat::Normalize()
 {
-    float n = m_W * m_W + m_X * m_X + m_Y * m_Y + m_Z * m_Z;
+    float n = w * w + x * x + y * y + z * z;
 
     if ( n == 0 )
     {
-        m_W = 1;
+        w = 1;
         return (*this);
     }
 
-    n = 1.0f/sqrt(n);
+    n = 1.0f / sqrt(n);
 
-    m_W *= n;
-    m_X *= n;
-    m_Y *= n;
-    m_Z *= n;
+    w *= n;
+    x *= n;
+    y *= n;
+    z *= n;
 
     return (*this);
 }
 
-void CQuaternion::SetRotation(const CVector3D& axis, float angle_radian)
+void tressfx_quat::SetRotation(const tressfx_vec3& axis, float angle_radian)
 {
     // This function assumes that the axis vector has been normalized.
     float halfAng = 0.5f * angle_radian;
     float sinHalf = sin(halfAng);
-    m_W = cos(halfAng);
+    w = cos(halfAng);
 
-    m_X = sinHalf * axis.m_X;
-    m_Y = sinHalf * axis.m_Y;
-    m_Z = sinHalf * axis.m_Z;
+    x = sinHalf * axis.x;
+    y = sinHalf * axis.y;
+    z = sinHalf * axis.z;
 }
 
-void CQuaternion::SetRotation(const CMatrix33& rotMat)
+void tressfx_quat::SetRotation(const tressfx_mat33& rotMat)
 {
-    float fTrace = rotMat.e[0][0]+rotMat.e[1][1]+rotMat.e[2][2];
+    float fTrace = rotMat.m[0][0] + rotMat.m[1][1] + rotMat.m[2][2];
     float fRoot;
 
     if ( fTrace > 0.0f )
     {
         // |w| > 1/2, may as well choose w > 1/2
         fRoot = sqrt(fTrace + 1.0f);  // 2w
-        m_W = 0.5f*fRoot;
-        fRoot = 0.5f/fRoot;  // 1/(4w)
-        m_X = (rotMat.e[2][1]-rotMat.e[1][2])*fRoot;
-        m_Y = (rotMat.e[0][2]-rotMat.e[2][0])*fRoot;
-        m_Z = (rotMat.e[1][0]-rotMat.e[0][1])*fRoot;
+        w = 0.5f*fRoot;
+        fRoot = 0.5f / fRoot;  // 1/(4w)
+        x = (rotMat.m[2][1] - rotMat.m[1][2])*fRoot;
+        y = (rotMat.m[0][2] - rotMat.m[2][0])*fRoot;
+        z = (rotMat.m[1][0] - rotMat.m[0][1])*fRoot;
     }
     else
     {
         // |w| <= 1/2
-        static size_t s_iNext[3] = { 1, 2, 0 };
+        static size_t s_iNext[3] = {1, 2, 0};
         size_t i = 0;
-        if ( rotMat.e[1][1] > rotMat.e[0][0] )
+        if ( rotMat.m[1][1] > rotMat.m[0][0] )
+        {
             i = 1;
-        if ( rotMat.e[2][2] > rotMat.e[i][i] )
+        }
+        if ( rotMat.m[2][2] > rotMat.m[i][i] )
+        {
             i = 2;
+        }
         size_t j = s_iNext[i];
         size_t k = s_iNext[j];
 
-        fRoot = sqrt(rotMat.e[i][i]-rotMat.e[j][j]-rotMat.e[k][k] + 1.0f);
-        float* apkQuat[3] = { &m_X, &m_Y, &m_Z };
+        fRoot = sqrt(rotMat.m[i][i] - rotMat.m[j][j] - rotMat.m[k][k] + 1.0f);
+        float* apkQuat[3] = {&x, &y, &z};
         *apkQuat[i] = 0.5f*fRoot;
-        fRoot = 0.5f/fRoot;
-        m_W = (rotMat.e[k][j]-rotMat.e[j][k])*fRoot;
-        *apkQuat[j] = (rotMat.e[j][i]+rotMat.e[i][j])*fRoot;
-        *apkQuat[k] = (rotMat.e[k][i]+rotMat.e[i][k])*fRoot;
+        fRoot = 0.5f / fRoot;
+        w = (rotMat.m[k][j] - rotMat.m[j][k])*fRoot;
+        *apkQuat[j] = (rotMat.m[j][i] + rotMat.m[i][j])*fRoot;
+        *apkQuat[k] = (rotMat.m[k][i] + rotMat.m[i][k])*fRoot;
     }
 }
 
-void CQuaternion::SetRotation(const CQuaternion& quaternion)
+void tressfx_quat::SetRotation(const tressfx_quat& quaternion)
 {
     *this = quaternion;
 }
 
-void CQuaternion::GetRotation(CVector3D* pAxis, float* pAngle_radian) const
+void tressfx_quat::GetRotation(tressfx_vec3* pAxis, float* pAngle_radian) const
 {
-    *pAngle_radian= 2.0f * acos(m_W);
+    *pAngle_radian = 2.0f * acos(w);
 
-     float scale = sqrt(m_X * m_X + m_Y * m_Y + m_Z * m_Z);
+    float scale = sqrt(x * x + y * y + z * z);
 
-     if ( scale > 0 )
-     {
-         pAxis->m_X = m_X / scale;
-         pAxis->m_Y = m_Y / scale;
-         pAxis->m_Z = m_Z / scale;
-     }
-     else
+    if ( scale > 0 )
     {
-         pAxis->m_X = 0;
-         pAxis->m_Y = 0;
-         pAxis->m_Z = 0;
-     }
+        pAxis->x = x / scale;
+        pAxis->y = y / scale;
+        pAxis->z = z / scale;
+    }
+    else
+    {
+        pAxis->x = 0;
+        pAxis->y = 0;
+        pAxis->z = 0;
+    }
 }
 
-void CQuaternion::GetRotation(CMatrix33* pMat33) const
+void tressfx_quat::GetRotation(tressfx_mat33* pMat33) const
 {
-    float nQ = m_X*m_X + m_Y*m_Y + m_Z*m_Z + m_W*m_W;
+    float nQ = x*x + y*y + z*z + w*w;
     float s = 0.0;
 
-    if (nQ > 0.0) {
-        s = 2.0f/nQ;
+    if ( nQ > 0.0 )
+    {
+        s = 2.0f / nQ;
     }
 
-    float xs = m_X*s;
-    float ys = m_Y*s;
-    float zs = m_Z*s;
-    float wxs = m_W*xs;
-    float wys = m_W*ys;
-    float wzs = m_W*zs;
-    float xxs = m_X*xs;
-    float xys = m_X*ys;
-    float xzs = m_X*zs;
-    float yys = m_Y*ys;
-    float yzs = m_Y*zs;
-    float zzs = m_Z*zs;
+    float xs = x*s;
+    float ys = y*s;
+    float zs = z*s;
+    float wxs = w*xs;
+    float wys = w*ys;
+    float wzs = w*zs;
+    float xxs = x*xs;
+    float xys = x*ys;
+    float xzs = x*zs;
+    float yys = y*ys;
+    float yzs = y*zs;
+    float zzs = z*zs;
 
-    pMat33->Set(1.0f-yys-zzs, xys-wzs, xzs + wys,
-                xys + wzs, 1.0f-xxs-zzs, yzs-wxs,
-                xzs-wys, yzs + wxs, 1.0f-xxs-yys);
+    pMat33->Set(1.0f - yys - zzs, xys - wzs, xzs + wys,
+                xys + wzs, 1.0f - xxs - zzs, yzs - wxs,
+                xzs - wys, yzs + wxs, 1.0f - xxs - yys);
 }
 
-CMatrix33 CQuaternion::GetMatrix33() const
+tressfx_mat33 tressfx_quat::GetMatrix33() const
 {
-    CMatrix33 mat;
+    tressfx_mat33 mat;
     GetRotation(&mat);
     return mat;
 }
 
-float CQuaternion::Length() const
+float tressfx_quat::Length() const
 {
-    return sqrt(m_X*m_X + m_Y*m_Y + m_Z*m_Z + m_W*m_W);
+    return sqrt(x*x + y*y + z*z + w*w);
 }
 
-void CQuaternion::SetIdentity()
+void tressfx_quat::SetIdentity()
 {
-    m_X = m_Y = m_Z = 0.0;
-    m_W = 1.0;
+    x = y = z = 0.0;
+    w = 1.0;
 }
 
-void CQuaternion::Inverse()
+void tressfx_quat::Inverse()
 {
-    float lengthSqr = m_X*m_X + m_Y*m_Y + m_Z*m_Z + m_W*m_W;
+    float lengthSqr = x*x + y*y + z*z + w*w;
 
     assert(lengthSqr != 0.0);
 
-    m_X = -m_X / lengthSqr;
-    m_Y = -m_Y / lengthSqr;
-    m_Z = -m_Z / lengthSqr;
-    m_W = m_W / lengthSqr;
+    x = -x / lengthSqr;
+    y = -y / lengthSqr;
+    z = -z / lengthSqr;
+    w = w / lengthSqr;
 }
 
-CQuaternion CQuaternion::InverseOther() const
+tressfx_quat tressfx_quat::InverseOther() const
 {
-    CQuaternion q(*this);
+    tressfx_quat q(*this);
     q.Inverse();
     return q;
 }
 
-CQuaternion& CQuaternion::operator=(const CQuaternion& other)
+tressfx_quat& tressfx_quat::operator=(const tressfx_quat& other)
 {
-    m_W = other.m_W;
-    m_X = other.m_X;
-    m_Y = other.m_Y;
-    m_Z = other.m_Z;
+    w = other.w;
+    x = other.x;
+    y = other.y;
+    z = other.z;
 
     return (*this);
 }
 
-CQuaternion CQuaternion::operator+(const CQuaternion& other) const
+tressfx_quat tressfx_quat::operator+(const tressfx_quat& other) const
 {
-    CQuaternion q;
+    tressfx_quat q;
 
-    q.m_W = m_W + other.m_W;
-    q.m_X = m_X + other.m_X;
-    q.m_Y = m_Y + other.m_Y;
-    q.m_Z = m_Z + other.m_Z;
+    q.w = w + other.w;
+    q.x = x + other.x;
+    q.y = y + other.y;
+    q.z = z + other.z;
 
     return q;
 }
 
-CQuaternion CQuaternion::operator+(const CVector3D& vec) const
+tressfx_quat tressfx_quat::operator+(const tressfx_vec3& vec) const
 {
-    CQuaternion q;
+    tressfx_quat q;
 
-    q.m_W = m_W;
-    q.m_X = m_X + vec.m_X;
-    q.m_Y = m_Y + vec.m_Y;
-    q.m_Z = m_Z + vec.m_Z;
+    q.w = w;
+    q.x = x + vec.x;
+    q.y = y + vec.y;
+    q.z = z + vec.z;
 
     return q;
 }
 
-CQuaternion CQuaternion::operator* (const CQuaternion& other) const
+tressfx_quat tressfx_quat::operator* (const tressfx_quat& other) const
 {
-    CQuaternion q(*this);
+    tressfx_quat q(*this);
 
-    q.m_W = m_W * other.m_W - m_X * other.m_X - m_Y * other.m_Y - m_Z * other.m_Z;
-    q.m_X = m_W * other.m_X + m_X * other.m_W + m_Y * other.m_Z - m_Z * other.m_Y;
-    q.m_Y = m_W * other.m_Y + m_Y * other.m_W + m_Z * other.m_X - m_X * other.m_Z;
-    q.m_Z = m_W * other.m_Z + m_Z * other.m_W + m_X * other.m_Y - m_Y * other.m_X;
+    q.w = w * other.w - x * other.x - y * other.y - z * other.z;
+    q.x = w * other.x + x * other.w + y * other.z - z * other.y;
+    q.y = w * other.y + y * other.w + z * other.x - x * other.z;
+    q.z = w * other.z + z * other.w + x * other.y - y * other.x;
 
     return q;
 }
 
-CVector3D CQuaternion::operator* (const CVector3D& vec) const
+tressfx_vec3 tressfx_quat::operator* (const tressfx_vec3& vec) const
 {
 
-    CVector3D uv, uuv;
-    CVector3D qvec(m_X, m_Y, m_Z);
+    tressfx_vec3 uv, uuv;
+    tressfx_vec3 qvec(x, y, z);
     uv = qvec.Cross(vec);
     uuv = qvec.Cross(uv);
-    uv *= (2.0f * m_W);
+    uv *= (2.0f * w);
     uuv *= 2.0f;
 
     return vec + uv + uuv;
 }
 
-CVector3D operator*(const CVector3D& vec, const CQuaternion& q)
+tressfx_vec3 operator*(const tressfx_vec3& vec, const tressfx_quat& q)
 {
     return q * vec;
 }
+
+}  // namespace AMD

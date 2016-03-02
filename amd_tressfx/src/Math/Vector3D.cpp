@@ -27,213 +27,175 @@
 #include <assert.h>
 #include "Vector3D.h"
 
-CVector3D::CVector3D(const CVector3D& other)
+namespace AMD
 {
-    m_X = other.m_X;
-    m_Y = other.m_Y;
-    m_Z = other.m_Z;
+
+tressfx_vec3::tressfx_vec3(const tressfx_vec3& other)
+{
+    x = other.x;
+    y = other.y;
+    z = other.z;
+    w = other.w;
 }
 
-CVector3D::CVector3D(const CVector3D& begin, const CVector3D& end)
+tressfx_vec3::tressfx_vec3(const tressfx_vec3& begin, const tressfx_vec3& end)
 {
-    m_X = end.m_X - begin.m_X;
-    m_Y = end.m_Y - begin.m_Y;
-    m_Z = end.m_Z - begin.m_Z;
+    x = end.x - begin.x;
+    y = end.y - begin.y;
+    z = end.z - begin.z;
 }
 
-CVector3D& CVector3D::Normalize()
+tressfx_vec3& tressfx_vec3::Normalize()
 {
-    float d = sqrt(m_X * m_X + m_Y * m_Y + m_Z * m_Z);
+    float d = sqrt(x * x + y * y + z * z);
 
     if ( d == 0 )
+    {
         return *this;
+    }
 
-    m_X = m_X / d;
-    m_Y = m_Y / d;
-    m_Z = m_Z / d;
+    x = x / d;
+    y = y / d;
+    z = z / d;
 
     return *this;
 }
 
-CVector3D CVector3D::NormalizeOther() const
+tressfx_vec3 tressfx_vec3::NormalizeOther() const
 {
-    CVector3D n(*this);
+    tressfx_vec3 n(*this);
     return n.Normalize();
 }
 
-void CVector3D::RotateW(const CVector3D& axis, float ang)
+tressfx_vec3 tressfx_vec3::operator-(const tressfx_vec3& other) const
 {
-    CMatrix44 mat44;
-    mat44.SetIdentity();
-    mat44.SetRotation(axis, ang);
-
-    RotateW(mat44);
+    return tressfx_vec3(x - other.x, y - other.y, z - other.z);
 }
 
-void CVector3D::RotateW(CMatrix44 mat44)
+tressfx_vec3 tressfx_vec3::operator+(const tressfx_vec3& other) const
 {
-    *this = mat44 * (*this);
+    return tressfx_vec3(x + other.x, y + other.y, z + other.z);
 }
 
-CVector3D CVector3D::operator-(const CVector3D& other) const
-{
-    return CVector3D(m_X - other.m_X, m_Y - other.m_Y, m_Z - other.m_Z);
-}
-
-CVector3D CVector3D::operator+(const CVector3D& other) const
-{
-    return CVector3D(m_X + other.m_X, m_Y + other.m_Y, m_Z + other.m_Z);
-}
-
-CVector3D CVector3D::operator/(float val) const
+tressfx_vec3 tressfx_vec3::operator/(float val) const
 {
     if ( val != 0.0f )
-        return CVector3D(m_X / val, m_Y / val, m_Z / val);
+    {
+        return tressfx_vec3(x / val, y / val, z / val);
+    }
     else
-        return CVector3D(0.0f, 0.0f, 0.0f);
+    {
+        return tressfx_vec3(0.0f, 0.0f, 0.0f);
+    }
 }
 
-CVector3D& CVector3D::operator=(const CVector3D& other)
+tressfx_vec3& tressfx_vec3::operator=(const tressfx_vec3& other)
 {
-    m_X = other.m_X;
-    m_Y = other.m_Y;
-    m_Z = other.m_Z;
+    x = other.x;
+    y = other.y;
+    z = other.z;
+    w = other.w;
 
     return *this;
 }
 
-CVector3D& CVector3D::operator=(float val)
+tressfx_vec3& tressfx_vec3::operator=(float val)
 {
-    m_X = val;
-    m_Y = val;
-    m_Z = val;
+    x = val;
+    y = val;
+    z = val;
 
     return *this;
 }
 
-bool CVector3D::operator<(float val) const
+bool tressfx_vec3::operator<(float val) const
 {
     return (LengthSqr() < val*val);
 }
 
-bool CVector3D::operator>(float val) const
+bool tressfx_vec3::operator>(float val) const
 {
     return (LengthSqr() > val*val);
 }
 
-bool CVector3D::operator!=(float val) const
+bool tressfx_vec3::operator!=(float val) const
 {
-    return (m_X != val || m_Y != val || m_Z != val );
+    return (x != val || y != val || z != val);
 }
 
-bool CVector3D::operator==(float val) const
+bool tressfx_vec3::operator==(float val) const
 {
-    return (m_X == val && m_Y == val && m_Z == val );
+    return (x == val && y == val && z == val);
 }
 
-bool CVector3D::operator==(const CVector3D& other) const
+bool tressfx_vec3::operator==(const tressfx_vec3& other) const
 {
-    return (m_X == other.m_X && m_Y == other.m_Y && m_Z == other.m_Z );
+    return (x == other.x && y == other.y && z == other.z);
 }
 
-bool CVector3D::operator!=(const CVector3D& other) const
+bool tressfx_vec3::operator!=(const tressfx_vec3& other) const
 {
-    return (m_X != other.m_X || m_Y != other.m_Y || m_Z != other.m_Z );
+    return (x != other.x || y != other.y || z != other.z);
 }
 
-CVector3D& CVector3D::operator-=(const CVector3D& other)
+tressfx_vec3& tressfx_vec3::operator-=(const tressfx_vec3& other)
 {
-    m_X -= other.m_X;
-    m_Y -= other.m_Y;
-    m_Z -= other.m_Z;
+    x -= other.x;
+    y -= other.y;
+    z -= other.z;
 
     return *this;
 }
 
-CVector3D& CVector3D::operator+=(const CVector3D& other)
+tressfx_vec3& tressfx_vec3::operator+=(const tressfx_vec3& other)
 {
-    m_X += other.m_X;
-    m_Y += other.m_Y;
-    m_Z += other.m_Z;
+    x += other.x;
+    y += other.y;
+    z += other.z;
 
     return *this;
 }
 
-CVector3D& CVector3D::operator*=(float val)
+tressfx_vec3& tressfx_vec3::operator*=(float val)
 {
-    m_X *= val;
-    m_Y *= val;
-    m_Z *= val;
+    x *= val;
+    y *= val;
+    z *= val;
 
     return *this;
 }
 
-CVector3D CVector3D::operator*(float val) const
+tressfx_vec3 tressfx_vec3::operator*(float val) const
 {
-    CVector3D vec(*this);
+    tressfx_vec3 vec(*this);
 
-    vec.m_X *= val;
-    vec.m_Y *= val;
-    vec.m_Z *= val;
+    vec.x *= val;
+    vec.y *= val;
+    vec.z *= val;
 
     return vec;
 }
 
-float CVector3D::operator*(const CVector3D& other) const
+float tressfx_vec3::operator*(const tressfx_vec3& other) const
 {
     return Dot(other);
 }
 
-CVector3D CVector3D::operator/(const CVector3D& other) const
-{
-    CVector3D vec;
 
-    float e = 1e-10f;
-
-    float x = 0;
-    float y = 0;
-    float z = 0;
-
-    if ( 0 <= other.m_X && other.m_X <= e )
-        x = other.m_X + e;
-    else if ( -e <= other.m_X && other.m_X <= 0 )
-        x = other.m_X - e;
-    else
-        x = other.m_X;
-
-    if ( 0 <= other.m_Y && other.m_Y <= e )
-        y = other.m_Y + e;
-    else if ( -e <= other.m_Y && other.m_Y <= 0 )
-        y = other.m_Y - e;
-    else
-        y = other.m_Y;
-
-    if ( 0 <= other.m_Z && other.m_Z <= e )
-        z = other.m_Z + e;
-    else if ( -e <= other.m_Z && other.m_Z <= 0 )
-        z = other.m_Z - e;
-    else
-        z = other.m_Z;
-
-    vec.m_X = m_X / x;
-    vec.m_Y = m_Y / y;
-    vec.m_Z = m_Z / z;
-
-    return vec;
-}
-
-CVector3D operator*(float val, const CVector3D& other)
+tressfx_vec3 operator*(float val, const tressfx_vec3& other)
 {
     return other * val;
 }
 
-CVector3D operator-(const CVector3D& other)
+tressfx_vec3 operator-(const tressfx_vec3& other)
 {
-    CVector3D vec(other);
+    tressfx_vec3 vec(other);
 
-    vec.m_X = -vec.m_X;
-    vec.m_Y = -vec.m_Y;
-    vec.m_Z = -vec.m_Z;
+    vec.x = -vec.x;
+    vec.y = -vec.y;
+    vec.z = -vec.z;
 
     return vec;
 }
+
+} // namespace AMD

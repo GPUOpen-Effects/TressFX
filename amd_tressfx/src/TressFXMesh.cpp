@@ -33,7 +33,7 @@
 #include <sstream>
 
 #ifndef AMD_V_RETURN
-#define AMD_V_RETURN(x)    { hr = (x); if( FAILED(hr) ) { return hr; } }
+#define AMD_V_RETURN(x)    { hr = (x); if ( FAILED(hr) ) { return hr; } }
 #endif
 
 using namespace std;
@@ -190,8 +190,10 @@ HRESULT TressFXMesh::OnCreate(ID3D11Device* pd3dDevice, TressFX_HairBlob *pHairB
     InitData.pSysMem = &(m_HairAsset.m_LineIndices[0]);
     hr = pd3dDevice->CreateBuffer( &bd, &InitData, &m_pIndexBuffer );
 
-    if( FAILED(hr) )
+    if ( FAILED(hr) )
+    {
         return hr;
+    }
 
     // Triangle index buffer
     m_TotalTriangleIndexCount = (int)m_HairAsset.m_TriangleIndices.size();
@@ -204,8 +206,10 @@ HRESULT TressFXMesh::OnCreate(ID3D11Device* pd3dDevice, TressFX_HairBlob *pHairB
     InitData.pSysMem = &(m_HairAsset.m_TriangleIndices[0]);
     hr = pd3dDevice->CreateBuffer( &bd, &InitData, &m_pTriangleIndexBuffer );
 
-    if( FAILED(hr) )
+    if ( FAILED(hr) )
+    {
         return hr;
+    }
 
     // triangle index buffer srv
     {
@@ -543,7 +547,9 @@ HRESULT TressFXMesh::CreateBufferAndViews(ID3D11Device* pd3dDevice, TressFX_Scen
 
             // "flatten" the mapping for one big vertex array
             for (int i = 0; i < m_HairAsset.m_NumTotalHairStrands; i++)
+            {
                 m_HairAsset.m_pMapping[i].triangle += sceneMesh->meshOffsets[m_HairAsset.m_pMapping[i].mesh];
+            }
 
             initialData.pSysMem = m_HairAsset.m_pMapping;
             D3D11_BUFFER_DESC bufferDesc;
@@ -577,14 +583,22 @@ HRESULT TressFXMesh::CreateBufferAndViews(ID3D11Device* pd3dDevice, TressFX_Scen
                     for (int k = 0; k < 4; k++)
                     {
                         if (j == k)
+                        {
                             pTransforms[i].matrix[j][k] = 1.0f;
+                        }
                         else
+                        {
                             pTransforms[i].matrix[j][k] = 0.0f;
+                        }
                     }
                     if (j == 3)
+                    {
                         pTransforms[i].quaternion[j] = 1.0f;
+                    }
                     else
+                    {
                         pTransforms[i].quaternion[j] = 0.0f;
+                    }
                 }
             }
 
@@ -709,7 +723,6 @@ void TressFXMesh::OnDestroy()
 }
 
 
-
 //--------------------------------------------------------------------------------------
 //
 // Deserialize
@@ -775,7 +788,9 @@ bool TressFXMesh::Deserialize(TressFX_HairBlob *pHairBlob)
     int *pIndices = new int[size];
     buffer.sgetn((char *)pIndices, size * sizeof(int));
     for (int i = 0; i < size; i++)
+    {
         m_HairAsset.m_TriangleIndices.push_back(pIndices[i]);
+    }
     AMD_SAFE_DELETE_ARRAY(pIndices);
 
     m_HairAsset.m_LineIndices.clear();
@@ -783,7 +798,9 @@ bool TressFXMesh::Deserialize(TressFX_HairBlob *pHairBlob)
     pIndices = new int[size];
     buffer.sgetn((char *)pIndices, size * sizeof(int));
     for (int i = 0; i < size; i++)
+    {
         m_HairAsset.m_LineIndices.push_back(pIndices[i]);
+    }
     AMD_SAFE_DELETE_ARRAY(pIndices);
 
     if (m_HairAsset.m_NumPerStrandTexCoords)
@@ -828,7 +845,6 @@ bool TressFXMesh::Deserialize(TressFX_HairBlob *pHairBlob)
 
     return true;
 }
-
 
 
 //--------------------------------------------------------------------------------------
@@ -915,4 +931,3 @@ void TressFXMesh::DestroyAsset(void)
 }
 
 } // namespace AMD
-

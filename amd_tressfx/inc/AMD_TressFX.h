@@ -20,8 +20,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef __AMD_TRESSFX_H__
-#define __AMD_TRESSFX_H__
+#ifndef AMD_TRESSFX_H
+#define AMD_TRESSFX_H
 
 #include <d3d11.h>
 #include <DirectXMath.h>
@@ -243,4 +243,4 @@ extern "C"
 
 } // namespace AMD
 
-#endif // __AMD_TRESSFX_H__
+#endif // AMD_TRESSFX_H

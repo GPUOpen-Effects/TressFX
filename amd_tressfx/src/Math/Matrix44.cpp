@@ -28,9 +28,19 @@
 #include "Matrix44.h"
 #include "Vector3D.h"
 
-#define vsin(x) ((1.0f) - cos(x))
+namespace AMD
+{
 
-CMatrix44::CMatrix44()
+const tressfx_mat44 tressfx_mat44::IDENTITY = tressfx_mat44(1.0f, 0.0f, 0.0f, 0.0f,
+                                                            0.0f, 1.0f, 0.0f, 0.0f,
+                                                            0.0f, 0.0f, 1.0f, 0.0f,
+                                                            0.0f, 0.0f, 0.0f, 1.0f);
+const tressfx_mat44 tressfx_mat44::ZERO = tressfx_mat44(0.0f, 0.0f, 0.0f, 0.0f,
+                                                        0.0f, 0.0f, 0.0f, 0.0f,
+                                                        0.0f, 0.0f, 0.0f, 0.0f,
+                                                        0.0f, 0.0f, 0.0f, 0.0f);
+
+tressfx_mat44::tressfx_mat44()
 {
     int i = 0;
     int j = 0;
@@ -38,11 +48,11 @@ CMatrix44::CMatrix44()
     for ( i = 0; i < 4; i++ )
     {
         for ( j = 0; j < 4; j++ )
-            Row[i][j] = 0.0f;
+            m[i][j] = 0.0f;
     }
 }
 
-CMatrix44::CMatrix44(const CMatrix44& other)
+tressfx_mat44::tressfx_mat44(const tressfx_mat44& other)
 {
     int i = 0;
     int j = 0;
@@ -50,119 +60,123 @@ CMatrix44::CMatrix44(const CMatrix44& other)
     for ( i = 0; i < 4; i++ )
     {
         for ( j = 0; j < 4; j++ )
-            Row[i][j] = other.Row[i][j];
+            m[i][j] = other.m[i][j];
     }
 }
 
-CMatrix44::CMatrix44(float R1[4], float R2[4], float R3[4], float R4[4])
+tressfx_mat44::tressfx_mat44(float R1[4], float R2[4], float R3[4], float R4[4])
 {
     int i;
 
     for ( i = 0; i < 4; i++ )
     {
-        Row[0][i] = R1[i];
+        m[0][i] = R1[i];
     }
 
     for ( i = 0; i < 4; i++ )
     {
-        Row[1][i] = R2[i];
+        m[1][i] = R2[i];
     }
 
     for ( i = 0; i < 4; i++ )
     {
-        Row[2][i] = R3[i];
+        m[2][i] = R3[i];
     }
 
     for ( i = 0; i < 4; i++ )
     {
-        Row[3][i] = R4[i];
+        m[3][i] = R4[i];
     }
 }
 
-CMatrix44::CMatrix44(float e00, float e01, float e02, float e03,
-              float e10, float e11, float e12, float e13,
-              float e20, float e21, float e22, float e23,
-              float e30, float e31, float e32, float e33)
+tressfx_mat44::tressfx_mat44(float e00, float e01, float e02, float e03,
+                                float e10, float e11, float e12, float e13,
+                                float e20, float e21, float e22, float e23,
+                                float e30, float e31, float e32, float e33)
 {
-    Row[0][0] = e00; Row[0][1] = e01; Row[0][2] = e02; Row[0][3] = e03;
-    Row[1][0] = e10; Row[1][1] = e11; Row[1][2] = e12; Row[1][3] = e13;
-    Row[2][0] = e20; Row[2][1] = e21; Row[2][2] = e22; Row[2][3] = e23;
-    Row[3][0] = e30; Row[3][1] = e31; Row[3][2] = e32; Row[3][3] = e33;
+    m[0][0] = e00; m[0][1] = e01; m[0][2] = e02; m[0][3] = e03;
+    m[1][0] = e10; m[1][1] = e11; m[1][2] = e12; m[1][3] = e13;
+    m[2][0] = e20; m[2][1] = e21; m[2][2] = e22; m[2][3] = e23;
+    m[3][0] = e30; m[3][1] = e31; m[3][2] = e32; m[3][3] = e33;
 }
 
-CMatrix44::~CMatrix44()
+tressfx_mat44::~tressfx_mat44()
 {
 }
 
-void CMatrix44::SetIdentity()
+void tressfx_mat44::SetIdentity()
 {
-    Row[0][0] = 1.0f; Row[0][1] = 0.0f; Row[0][2] = 0.0f; Row[0][3] = 0.0f;
-    Row[1][0] = 0.0f; Row[1][1] = 1.0f; Row[1][2] = 0.0f; Row[1][3] = 0.0f;
-    Row[2][0] = 0.0f; Row[2][1] = 0.0f; Row[2][2] = 1.0f; Row[2][3] = 0.0f;
-    Row[3][0] = 0.0f; Row[3][1] = 0.0f; Row[3][2] = 0.0f; Row[3][3] = 1.0f;
+    m[0][0] = 1.0f; m[0][1] = 0.0f; m[0][2] = 0.0f; m[0][3] = 0.0f;
+    m[1][0] = 0.0f; m[1][1] = 1.0f; m[1][2] = 0.0f; m[1][3] = 0.0f;
+    m[2][0] = 0.0f; m[2][1] = 0.0f; m[2][2] = 1.0f; m[2][3] = 0.0f;
+    m[3][0] = 0.0f; m[3][1] = 0.0f; m[3][2] = 0.0f; m[3][3] = 1.0f;
 }
 
-void CMatrix44::SetRotation(const CVector3D& axis, float ang)
+void tressfx_mat44::SetRotation(const tressfx_vec3& axis, float ang)
 {
-    float nx = axis.m_X;
-    float ny = axis.m_Y;
-    float nz = axis.m_Z;
+#define vsin(x) ((1.0f) - cos(x))
 
-    Row[0][0] = nx*nx*vsin(ang) + cos(ang);
-    Row[0][1] = nx*ny*vsin(ang) - nz*sin(ang);
-    Row[0][2] = nx*nz*vsin(ang) + ny*sin(ang);
+    float nx = axis.x;
+    float ny = axis.y;
+    float nz = axis.z;
 
-    Row[1][0] = nx*ny*vsin(ang) + nz*sin(ang);
-    Row[1][1] = ny*ny*vsin(ang) + cos(ang);
-    Row[1][2] = ny*nz*vsin(ang) - nx*sin(ang);
+    m[0][0] = nx*nx*vsin(ang) + cos(ang);
+    m[0][1] = nx*ny*vsin(ang) - nz*sin(ang);
+    m[0][2] = nx*nz*vsin(ang) + ny*sin(ang);
 
-    Row[2][0] = nx*nz*vsin(ang) - ny*sin(ang);
-    Row[2][1] = ny*nz*vsin(ang) + nx*sin(ang);
-    Row[2][2] = nz*nz*vsin(ang) + cos(ang);
+    m[1][0] = nx*ny*vsin(ang) + nz*sin(ang);
+    m[1][1] = ny*ny*vsin(ang) + cos(ang);
+    m[1][2] = ny*nz*vsin(ang) - nx*sin(ang);
 
-    Row[3][0] = 0.0f;
-    Row[3][1] = 0.0f;
-    Row[3][2] = 0.0f;
-    Row[3][3] = 1.0f;
+    m[2][0] = nx*nz*vsin(ang) - ny*sin(ang);
+    m[2][1] = ny*nz*vsin(ang) + nx*sin(ang);
+    m[2][2] = nz*nz*vsin(ang) + cos(ang);
+
+    m[3][0] = 0.0f;
+    m[3][1] = 0.0f;
+    m[3][2] = 0.0f;
+    m[3][3] = 1.0f;
+
+#undef vsin
 }
 
-void CMatrix44::SetTranslate(float x, float y, float z)
+void tressfx_mat44::SetTranslate(float x, float y, float z)
 {
-    Row[0][3] = x;
-    Row[1][3] = y;
-    Row[2][3] = z;
+    m[0][3] = x;
+    m[1][3] = y;
+    m[2][3] = z;
 }
 
-float CMatrix44::GetElement(int nRow, int nCol) const
+float tressfx_mat44::GetElement(int i, int j) const
 {
-    return Row[nRow][nCol];
+    return m[i][j];
 }
 
-CVector3D CMatrix44::operator*(const CVector3D &vec) const
+tressfx_vec3 tressfx_mat44::operator*(const tressfx_vec3 &vec) const
 {
-    CVector3D retVal;
+    tressfx_vec3 retVal;
 
-    retVal.m_X = Row[0][0]*vec.m_X + Row[0][1]*vec.m_Y + Row[0][2]*vec.m_Z + Row[0][3];
-    retVal.m_Y = Row[1][0]*vec.m_X + Row[1][1]*vec.m_Y + Row[1][2]*vec.m_Z + Row[1][3];
-    retVal.m_Z = Row[2][0]*vec.m_X + Row[2][1]*vec.m_Y + Row[2][2]*vec.m_Z + Row[2][3];
+    retVal.x = m[0][0] * vec.x + m[0][1] * vec.y + m[0][2] * vec.z + m[0][3];
+    retVal.y = m[1][0] * vec.x + m[1][1] * vec.y + m[1][2] * vec.z + m[1][3];
+    retVal.z = m[2][0] * vec.x + m[2][1] * vec.y + m[2][2] * vec.z + m[2][3];
 
     return retVal;
 }
 
-CMatrix44 CMatrix44::operator*(const CMatrix44& other) const
+tressfx_mat44 tressfx_mat44::operator*(const tressfx_mat44& other) const
 {
-    CMatrix44 retMat;
+    tressfx_mat44 retMat;
 
     for ( int i = 0; i < 4; i++ )
     {
         for ( int j = 0; j < 4; j++ )
-            retMat.Row[i][j] = Row[i][0] * other.Row[0][j] + Row[i][1] * other.Row[1][j] + Row[i][2] * other.Row[2][j] + Row[i][3] * other.Row[3][j];
+            retMat.m[i][j] = m[i][0] * other.m[0][j] + m[i][1] * other.m[1][j] + m[i][2] * other.m[2][j] + m[i][3] * other.m[3][j];
     }
 
     return retMat;
 }
 
-CMatrix44& CMatrix44::operator=(const CMatrix44& other)
+tressfx_mat44& tressfx_mat44::operator=(const tressfx_mat44& other)
 {
     int i = 0;
     int j = 0;
@@ -170,8 +184,10 @@ CMatrix44& CMatrix44::operator=(const CMatrix44& other)
     for ( i = 0; i < 4; i++ )
     {
         for ( j = 0; j < 4; j++ )
-            Row[i][j] = other.Row[i][j];
+            m[i][j] = other.m[i][j];
     }
 
     return *this;
 }
+
+} // namespace AMD

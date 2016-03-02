@@ -32,7 +32,7 @@
 #include "TressFXPrecompiledShaders.h"
 
 #ifndef AMD_V_RETURN
-#define AMD_V_RETURN(x)    { hr = (x); if( FAILED(hr) ) { return hr; } }
+#define AMD_V_RETURN(x)    { hr = (x); if ( FAILED(hr) ) { return hr; } }
 #endif
 
 // unreferenced formal parameter
@@ -138,9 +138,9 @@ HRESULT TressFXRenderer::CreateShaderAndLayout(ID3D11Device* pd3dDevice)
     // Hair vertex layout
     const D3D11_INPUT_ELEMENT_DESC layout_hair[] =
     {
-        { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT,   0,  0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "TANGENT",  0, DXGI_FORMAT_R32G32B32_FLOAT,   0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "TEXCOORD", 0, DXGI_FORMAT_R32G32B32A32_FLOAT,0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT,    0,  0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "TANGENT",  0, DXGI_FORMAT_R32G32B32_FLOAT,    0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "TEXCOORD", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 },
     };
 
     // Full screen quad layout structure
@@ -198,9 +198,9 @@ HRESULT TressFXRenderer::CreateTextureAndViews( ID3D11Device* pd3dDevice )
     AMD_V_RETURN(pd3dDevice->CreateTexture2D(&tex2D_desc, 0, &m_pSMHairTx));
 
     D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc;
-    dsvDesc.Flags = 0  ;
+    dsvDesc.Flags = 0;
     dsvDesc.Format = DXGI_FORMAT_D32_FLOAT;
-    dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D ;
+    dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
     dsvDesc.Texture2D.MipSlice = 0;
     AMD_V_RETURN(pd3dDevice->CreateDepthStencilView(m_pSMHairTx, &dsvDesc, &m_pSMHairDSV));
 
@@ -219,14 +219,14 @@ HRESULT TressFXRenderer::CreateTextureAndViews( ID3D11Device* pd3dDevice )
     texDesc.ArraySize = 1;
     texDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
     texDesc.Usage = D3D11_USAGE_DEFAULT;
-    texDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE ;
+    texDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
     texDesc.MiscFlags = 0;
     texDesc.CPUAccessFlags = 0;
     texDesc.SampleDesc.Count=1;
     texDesc.SampleDesc.Quality=0;
 
     XMFLOAT4* noiseArray = new XMFLOAT4[texDesc.Width*texDesc.Height];
-    for(UINT i=0; i<texDesc.Width*texDesc.Height ; i++)
+    for (UINT i = 0; i < texDesc.Width*texDesc.Height; i++)
     {
         noiseArray[i].x = rand()/(float)RAND_MAX;
         noiseArray[i].y = rand()/(float)RAND_MAX;
@@ -268,12 +268,12 @@ HRESULT TressFXRenderer::CreateVertexBuffers(ID3D11Device* pd3dDevice)
     // Create the screen quad vertex buffer(use StandardVertex for simplicity)
     const StandardVertex screenQuad[6] =
     {
-        { XMFLOAT3(-1.0f, -1.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(0.0f, 1.0f) },//0
-        { XMFLOAT3(-1.0f,  1.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(0.0f, 0.0f) },//1
-        { XMFLOAT3( 1.0f, -1.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(1.0f, 1.0f) },//2
-        { XMFLOAT3( 1.0f, -1.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(1.0f, 1.0f) },//2
-        { XMFLOAT3(-1.0f,  1.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(0.0f, 0.0f) },//1
-        { XMFLOAT3( 1.0f,  1.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(1.0f, 0.0f) } //3
+        { XMFLOAT3(-1.0f, -1.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(0.0f, 1.0f) }, //0
+        { XMFLOAT3(-1.0f,  1.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(0.0f, 0.0f) }, //1
+        { XMFLOAT3( 1.0f, -1.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(1.0f, 1.0f) }, //2
+        { XMFLOAT3( 1.0f, -1.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(1.0f, 1.0f) }, //2
+        { XMFLOAT3(-1.0f,  1.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(0.0f, 0.0f) }, //1
+        { XMFLOAT3( 1.0f,  1.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(1.0f, 0.0f) }  //3
     };
 
     D3D11_BUFFER_DESC bd;
@@ -405,12 +405,12 @@ HRESULT TressFXRenderer::CreateRenderStateObjects(ID3D11Device* pd3dDevice)
     blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
     blendDesc.AlphaToCoverageEnable = false;
     blendDesc.RenderTarget[0].BlendEnable = true;
-    blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE ;
+    blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
     blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_SRC_ALPHA;
     blendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-    blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ZERO;//D3D11_BLEND_SRC_ALPHA  ;
-    blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO ;
-    blendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD ;
+    blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ZERO; //D3D11_BLEND_SRC_ALPHA;
+    blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+    blendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
     AMD_V_RETURN(pd3dDevice->CreateBlendState(&blendDesc, &m_pBlendStateBlendToBg));
 
     // Create a blend state to disable color writes
@@ -465,7 +465,7 @@ HRESULT TressFXRenderer::CreatePPLL(ID3D11Device* pd3dDevice, int winWidth, int 
         AMD_SAFE_RELEASE(g_PPLBuffers.pHeadPPLL_UAV);
         AMD_SAFE_RELEASE(g_PPLBuffers.pPPLL_Buffer);
         AMD_SAFE_RELEASE(g_PPLBuffers.pPPLL_UAV);
-        AMD_SAFE_RELEASE(g_PPLBuffers.pPPLL_SRV) ;
+        AMD_SAFE_RELEASE(g_PPLBuffers.pPPLL_SRV);
 
         // linked list head texture
         D3D11_TEXTURE2D_DESC texDesc;
@@ -530,12 +530,16 @@ HRESULT TressFXRenderer::CreatePPLL(ID3D11Device* pd3dDevice, int winWidth, int 
 
         // if the refCount is non-zero, then we're just resizing the buffers
         if (g_PPLBuffers.refCount == 0)
+        {
             g_PPLBuffers.refCount++;
+        }
     }
     else
     {
         if (!resize)
+        {
             g_PPLBuffers.refCount++;
+        }
     }
 
     m_pHeadPPLL_Buffer = g_PPLBuffers.pHeadPPLL_Buffer;
@@ -609,12 +613,12 @@ void TressFXRenderer::BeginHairFrame(ID3D11DeviceContext* pd3dContext,
 
     // Set up camera parameters for when the camera is at the position of the light for rendering the shadow map
     XMMATRIX mViewLight, mProjLight;
-    XMVECTOR modelCenter= XMVector3TransformCoord(XMLoadFloat3(&m_pTressFXMesh->m_HairAsset.m_bSphere.center), *pModelTransformForHead);
+    XMVECTOR modelCenter = XMVector3TransformCoord(XMLoadFloat3(&m_pTressFXMesh->m_HairAsset.m_bSphere.center), *pModelTransformForHead);
     XMVECTOR vLightAt = modelCenter;
-    XMVECTOR vUp = XMVectorSet(0,1,0,0);
+    XMVECTOR vUp = XMVectorSet(0, 1, 0, 0);
     mViewLight = XMMatrixLookAtLH(lightPosition, vLightAt, vUp);
 
-    XMVECTOR vLightToObject = lightPosition - modelCenter;
+    XMVECTOR vLightToObject = XMVectorSubtract(lightPosition, modelCenter);
     float dis = XMVectorGetX(XMVector3Length(vLightToObject));
 
     float min_dis = max(0.001f, dis - m_pTressFXMesh->m_HairAsset.m_bSphere.radius);
@@ -630,7 +634,7 @@ void TressFXRenderer::BeginHairFrame(ID3D11DeviceContext* pd3dContext,
 
     // Map the per-frame constant buffer
     D3D11_MAPPED_SUBRESOURCE MappedResource;
-    pd3dContext->Map( m_pcbPerFrame, 0, D3D11_MAP_WRITE_DISCARD, 0, &MappedResource ) ;
+    pd3dContext->Map( m_pcbPerFrame, 0, D3D11_MAP_WRITE_DISCARD, 0, &MappedResource );
     CB_PER_FRAME* pcbPerFrame = ( CB_PER_FRAME* )MappedResource.pData;
 
     // camera parameters
@@ -905,19 +909,27 @@ void TressFXRenderer::RenderHair(ID3D11DeviceContext* pd3dContext)
     pd3dContext->OMSetDepthStencilState(m_pDepthTestEnabledNoDepthWritesStencilWriteIncrementDSS, 0x00);
 
     // Pass 1: A-Buffer pass
-    if(m_hairParams.bAntialias)
+    if (m_hairParams.bAntialias)
     {
-        if(m_hairParams.strandCopies > 1)
+        if (m_hairParams.strandCopies > 1)
+        {
             RenderHairGeometry(pd3dContext, m_pVSRenderHairAAStrandCopies, m_pPSABuffer_Hair, m_hairParams.density, false, m_hairParams.strandCopies);
+        }
         else
+        {
             RenderHairGeometry(pd3dContext, m_pVSRenderHairAA, m_pPSABuffer_Hair, m_hairParams.density, false, 1);
+        }
     }
     else
     {
-        if(m_hairParams.strandCopies > 1)
+        if (m_hairParams.strandCopies > 1)
+        {
             RenderHairGeometry(pd3dContext, m_pVSRenderHairStrandCopies, m_pPSABuffer_Hair, m_hairParams.density, false, m_hairParams.strandCopies);
+        }
         else
+        {
             RenderHairGeometry(pd3dContext, m_pVSRenderHair, m_pPSABuffer_Hair, m_hairParams.density, false, 1);
+        }
     }
 
     // Pass 2: K-Buffer pass
@@ -984,7 +996,7 @@ void TressFXRenderer::OnDestroy(bool destroyShaders)
         // A-buffer
         AMD_SAFE_RELEASE(m_pPSABuffer_Hair);
         // PS composite nearest k hair fragments
-        AMD_SAFE_RELEASE(m_pPSKBuffer_Hair) ;
+        AMD_SAFE_RELEASE(m_pPSKBuffer_Hair);
 
         AMD_SAFE_RELEASE(m_pVSScreenQuad);
 
@@ -1020,4 +1032,3 @@ void TressFXRenderer::OnDestroy(bool destroyShaders)
 }
 
 } // namespace AMD
-

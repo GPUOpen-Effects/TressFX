@@ -67,4 +67,3 @@ struct TressFXFileObject
 
     UINT reserved2[32];                         // Reserved for future versions
 };
-

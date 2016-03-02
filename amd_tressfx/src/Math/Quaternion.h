@@ -29,40 +29,51 @@
 #include "Matrix33.h"
 #include "Vector3D.h"
 
-class CQuaternion
+#pragma warning(push)
+#pragma warning(disable:4201) // disablewarning C4201: nonstandard extension used : nameless struct/union
+
+namespace AMD
+{
+
+class tressfx_quat
 {
 public:
-    CQuaternion(float x = 0.0, float y = 0.0, float z = 0.0, float w = 1.0);
-    CQuaternion(const CQuaternion& other);
-    CQuaternion(const CMatrix33& rotMat);
-    CQuaternion(const CVector3D& axis, float angle_radian);
-    ~CQuaternion(void);
+    tressfx_quat(float x = 0.0, float y = 0.0, float z = 0.0, float w = 1.0);
+    tressfx_quat(const tressfx_quat& other);
+    tressfx_quat(const tressfx_mat33& rotMat);
+    tressfx_quat(const tressfx_vec3& axis, float angle_radian);
+    ~tressfx_quat(void);
 
 public:
-    float m_X;
-    float m_Y;
-    float m_Z;
-    float m_W;
+    union
+    {
+        struct{ float m[4]; }; // x, y, z, w
+        struct { float x, y, z, w; };
+    };
 
-    CQuaternion& Normalize();
+    tressfx_quat& Normalize();
 
-    void SetRotation(const CVector3D& axis, float angle_radian);
-    void SetRotation(const CMatrix33& rotMat);
-    void SetRotation(const CQuaternion& quaternion);
-    void GetRotation(CVector3D* pAxis, float* pAngle_radian) const;
-    void GetRotation(CMatrix33* pMat33) const;
-    CMatrix33 GetMatrix33() const;
+    void SetRotation(const tressfx_vec3& axis, float angle_radian);
+    void SetRotation(const tressfx_mat33& rotMat);
+    void SetRotation(const tressfx_quat& quaternion);
+    void GetRotation(tressfx_vec3* pAxis, float* pAngle_radian) const;
+    void GetRotation(tressfx_mat33* pMat33) const;
+    tressfx_mat33 GetMatrix33() const;
     float Length() const;
 
     void SetIdentity();
     void Inverse();
-    CQuaternion InverseOther() const;
+    tressfx_quat InverseOther() const;
 
-    CQuaternion& operator=(const CQuaternion& other);
-    CQuaternion operator+(const CQuaternion& other) const;
-    CQuaternion operator+(const CVector3D& vec) const;
-    CQuaternion operator* (const CQuaternion& other) const;
-    CVector3D operator* (const CVector3D& vec) const;
+    tressfx_quat& operator=(const tressfx_quat& other);
+    tressfx_quat operator+(const tressfx_quat& other) const;
+    tressfx_quat operator+(const tressfx_vec3& vec) const;
+    tressfx_quat operator* (const tressfx_quat& other) const;
+    tressfx_vec3 operator* (const tressfx_vec3& vec) const;
 
-    friend CVector3D operator*(const CVector3D& vec, const CQuaternion& q);
+    friend tressfx_vec3 operator*(const tressfx_vec3& vec, const tressfx_quat& q);
 };
+
+} // namespace AMD
+
+#pragma warning(pop)

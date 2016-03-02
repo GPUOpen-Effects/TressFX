@@ -39,11 +39,11 @@ typedef double StatsCounterType;
 #define RAY_EPSILON 1e-3f
 
 #if defined(WIN32)
-#define memalign(a,b) _aligned_malloc(b, a)
+#define memalign(a, b) _aligned_malloc(b, a)
 #elif defined(__APPLE__)
-#define memalign(a,b) valloc(b)
+#define memalign(a, b) valloc(b)
 #elif defined(__OpenBSD__)
-#define memalign(a,b) malloc(b)
+#define memalign(a, b) malloc(b)
 #endif
 
 

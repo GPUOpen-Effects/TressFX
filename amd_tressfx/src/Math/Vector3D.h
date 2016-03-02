@@ -24,85 +24,69 @@
 //
 //--------------------------------------------------------------------------------------
 
-#ifndef __VECTOR3D_H__
-#define __VECTOR3D_H__
+#pragma once
+
+#pragma warning(push)
+#pragma warning(disable:4201) // disablewarning C4201: nonstandard extension used : nameless struct/union
 
 #include <cmath>
-#include "Matrix44.h"
 
-class CVector3D
+namespace AMD
+{
+
+class tressfx_vec3
 {
 public:
-    float m_X;
-    float m_Y;
-    float m_Z;
-
-    CVector3D()
+    union
     {
-        m_X = 0.0;
-        m_Y = 0.0;
-        m_Z = 0.0;
+        struct{ float m[4]; }; // x, y, z, w
+        struct { float x, y, z, w; };
+    };
+
+    tressfx_vec3()
+    {
+        x = y = z = 0;
+        w = 1.f;
     }
 
-    CVector3D(float x, float y, float z) { m_X = x; m_Y = y; m_Z = z; };
-    CVector3D(float val) { m_X = val; m_Y = val; m_Z = val; };
-    CVector3D(const CVector3D& other);
-    CVector3D(const CVector3D& begin, const CVector3D& end);
-    virtual ~CVector3D() {};
+    tressfx_vec3(float x, float y, float z) { m[0] = x; m[1] = y; m[2] = z; };
+    tressfx_vec3(const tressfx_vec3& other);
+    tressfx_vec3(const tressfx_vec3& begin, const tressfx_vec3& end);
+    virtual ~tressfx_vec3() {};
 
 public:
-    CVector3D& Normalize();
-    CVector3D NormalizeOther() const;
-    CVector3D Cross(const CVector3D& v) const { return CVector3D(m_Y*v.m_Z - m_Z*v.m_Y, m_Z*v.m_X - m_X*v.m_Z, m_X*v.m_Y - m_Y*v.m_X); };
-    float Dot(const CVector3D& v) const { return m_X * v.m_X + m_Y * v.m_Y + m_Z * v.m_Z; };
-    float Length() const { return sqrt(m_X*m_X + m_Y*m_Y + m_Z*m_Z); };
-    float LengthSqr() const { return (m_X*m_X + m_Y*m_Y + m_Z*m_Z); };
-    void Set(float x, float y, float z) { m_X = x; m_Y = y; m_Z = z; };
+    tressfx_vec3& Normalize();
+    tressfx_vec3 NormalizeOther() const;
+    tressfx_vec3 Cross(const tressfx_vec3& v) const { return tressfx_vec3(y*v.z - z*v.y, z*v.x - x*v.z, x*v.y - y*v.x); };
+    float Dot(const tressfx_vec3& v) const { return x * v.x + y * v.y + z * v.z; };
+    float Length() const { return sqrt(x*x + y*y + z*z); };
+    float LengthSqr() const { return (x*x + y*y + z*z); };
+    void Set(float xIn, float yIn, float zIn) { m[0] = xIn; m[1] = yIn; m[2] = zIn; };
 
-    void RotateW(const CVector3D& axis, float ang);
-    void RotateW(CMatrix44 mat44);
+    const float& operator[](unsigned int i) const { return m[i]; }
+    float& operator[](unsigned int i) { return m[i]; }
 
-    const float& operator[](unsigned int i) const
-    {
-        if ( i == 0 )
-            return m_X;
-        else if ( i == 1)
-            return m_Y;
-        else /*if ( i == 2 )*/
-            return m_Z;
-    }
-
-    float& operator[](unsigned int i)
-    {
-        if ( i == 0 )
-            return m_X;
-        else if ( i == 1)
-            return m_Y;
-        else /*if ( i == 2 )*/
-            return m_Z;
-    }
-
-    CVector3D& operator=(const CVector3D& other);
-    CVector3D& operator=(float val);
+    tressfx_vec3& operator=(const tressfx_vec3& other);
+    tressfx_vec3& operator=(float val);
     bool operator!=(float val) const;
     bool operator<(float val) const;
     bool operator>(float val) const;
     bool operator==(float val) const;
-    bool operator==(const CVector3D& other) const;
-    bool operator!=(const CVector3D& other) const;
-    CVector3D& operator-=(const CVector3D& other);
-    CVector3D& operator+=(const CVector3D& other);
-    CVector3D& operator*=(float val);
-    CVector3D operator-(const CVector3D& other) const;
-    CVector3D operator+(const CVector3D& other) const;
-    CVector3D operator/(float val) const;
-    CVector3D operator*(float val) const;
-    float operator*(const CVector3D& other) const;
-    CVector3D operator/(const CVector3D& other) const;
+    bool operator==(const tressfx_vec3& other) const;
+    bool operator!=(const tressfx_vec3& other) const;
+    tressfx_vec3& operator-=(const tressfx_vec3& other);
+    tressfx_vec3& operator+=(const tressfx_vec3& other);
+    tressfx_vec3& operator*=(float val);
+    tressfx_vec3 operator-(const tressfx_vec3& other) const;
+    tressfx_vec3 operator+(const tressfx_vec3& other) const;
+    tressfx_vec3 operator/(float val) const;
+    tressfx_vec3 operator*(float val) const;
+    float operator*(const tressfx_vec3& other) const;
 
-    friend CVector3D operator*(float val, const CVector3D& other);
-    friend CVector3D operator-(const CVector3D& other);
-
+    friend tressfx_vec3 operator*(float val, const tressfx_vec3& other);
+    friend tressfx_vec3 operator-(const tressfx_vec3& other);
 };
 
-#endif // __VECTOR3D_H__
+} // namespace AMD
+
+#pragma warning(pop)

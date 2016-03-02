@@ -80,7 +80,9 @@ namespace AMD
         desc.pTressFXMesh = (void *)pTressFXMesh;
 
         if (ppHairBlob != NULL)
+        {
             *ppHairBlob = &desc.tressFXHair;
+        }
 
         tressFXAssetLoader.Clear();
 
@@ -93,10 +95,10 @@ namespace AMD
         desc.numTotalHairStrands = tressFXSimulation.m_pTressFXMesh->m_HairAsset.m_NumTotalHairStrands;
         desc.numTotalHairVertices = tressFXSimulation.m_pTressFXMesh->m_HairAsset.m_NumTotalHairVertices;
         tressFXSimulation.SetSimulationParams(desc.simulationParams);
-        CVector3D windDir;
-        windDir.m_X = desc.simulationParams.windDir.x;
-        windDir.m_Y = desc.simulationParams.windDir.y;
-        windDir.m_Z = desc.simulationParams.windDir.z;
+        tressfx_vec3 windDir;
+        windDir.x = desc.simulationParams.windDir.x;
+        windDir.y = desc.simulationParams.windDir.y;
+        windDir.z = desc.simulationParams.windDir.z;
         HRESULT hr = tressFXSimulation.Simulate(desc.pd3dDeviceContext, elapsedTime,
             desc.hairParams.density, windDir, desc.simulationParams.windMag, &desc.modelTransformForHead,
             desc.pSkinningTransformationsUAV, desc.targetFrameRate, desc.bSingleHeadTransform, desc.bWarp);

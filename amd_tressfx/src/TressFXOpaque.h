@@ -20,8 +20,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef __AMD_SDK_TRESSFX_OPAQUE_H__
-#define __AMD_SDK_TRESSFX_OPAQUE_H__
+#ifndef AMD_TRESSFX_OPAQUE_H
+#define AMD_TRESSFX_OPAQUE_H
 
 #include "TressFXAsset.h"
 #include "TressFXMesh.h"
