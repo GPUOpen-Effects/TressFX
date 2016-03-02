@@ -308,6 +308,7 @@ bool CapsuleCollision(float4 curPosition, float4 oldPosition, inout float3 newPo
 {
     const float radius = cc.p1.w;
     const float radius2 = cc.p2.w;
+	newPosition = curPosition.xyz;
 
     if ( !IsMovable(curPosition) )
         return false;
@@ -359,7 +360,7 @@ bool CapsuleCollision(float4 curPosition, float4 oldPosition, inout float3 newPo
         float3 segN = normalize(segment);
         float3 vecTangent = dot(vec, segN) * segN;
         float3 vecNormal = vec - vecTangent;
-        newPosition.xyz = oldPosition.xyz + friction * vecTangent + (vecNormal + radius * n - delta);
+        newPosition = oldPosition.xyz + friction * vecTangent + (vecNormal + radius * n - delta);
         return true;
     }
 
@@ -796,7 +797,6 @@ void LengthConstriantsWindAndCollision(uint GIndex : SV_GroupIndex,
             cc.p2.w = g_cc0_center2AndRadiusSquared.w;
 
             bool bColDetected = CapsuleCollision(sharedPos[indexForSharedMem], oldPos, newPos, cc, false);
-            //bColDetected = true;
 
             if ( bColDetected )
                 sharedPos[indexForSharedMem].xyz = newPos;
@@ -877,9 +877,9 @@ void UpdateFollowHairVertices(uint GIndex : SV_GroupIndex,
     for ( uint i = 0; i < g_NumFollowHairsPerGuideHair; i++ )
     {
         int globalFollowVertexIndex = globalVertexIndex + numVerticesInTheStrand * (i + 1);
-        float factor = g_TipSeparationFactor*(float)localVertexIndex / (float)numVerticesInTheStrand + 1.0f;
-        float3 followPos = sharedPos[indexForSharedMem].xyz + factor*g_FollowHairRootOffset[globalStrandIndex+i+1].xyz;
-
+		int globalFollowStrandIndex = globalStrandIndex + i + 1;
+        float factor = g_TipSeparationFactor*((float)localVertexIndex / (float)numVerticesInTheStrand) + 1.0f;
+		float3 followPos = sharedPos[indexForSharedMem].xyz + factor*g_FollowHairRootOffset[globalFollowStrandIndex].xyz;
         g_HairVertexPositions[globalFollowVertexIndex].xyz = followPos;
         g_HairVertexTangents[globalFollowVertexIndex] = sharedTangent[indexForSharedMem];
     }
