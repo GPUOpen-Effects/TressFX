@@ -54,7 +54,11 @@
 #ifdef USE_DIRECT3D11_3
 #define TOTAL_FEATURE_LEVELS                            9
 #else
+#ifdef USE_DIRECT3D11_1
 #define TOTAL_FEATURE_LEVELS                            7
+#else
+#define TOTAL_FEATURE_LEVELS                            6
+#endif
 #endif
 
 //--------------------------------------------------------------------------------------
