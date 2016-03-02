@@ -32,7 +32,7 @@ namespace AMD
         , m_IAIndexBufferOffset(0)
         , m_pContext(context)
     {
-        if (context == NULL) return;
+        if (context == NULL) { return; }
 
         memset(m_pIAVertexBuffers, 0, sizeof(m_pIAVertexBuffers));
         memset(m_pIAVertexBuffersStrides, 0, sizeof(m_pIAVertexBuffersStrides));
@@ -46,7 +46,7 @@ namespace AMD
 
     C_SaveRestore_IA::~C_SaveRestore_IA()
     {
-        if (m_pContext == NULL) return;
+        if (m_pContext == NULL) { return; }
 
         m_pContext->IASetInputLayout( m_pInputLayout );
         m_pContext->IASetIndexBuffer( m_pIAIndexBuffer, m_IAIndexBufferFormat, m_IAIndexBufferOffset );
@@ -69,7 +69,7 @@ namespace AMD
         , m_RSRectCount(D3D11_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE)
         , m_RSViewportCount(D3D11_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE)
     {
-        if (context == NULL) return;
+        if (context == NULL) { return; }
 
         memset(m_RSRect, 0, sizeof(m_RSRect));
         memset(m_RSViewport, 0, sizeof(m_RSViewport));
@@ -81,7 +81,7 @@ namespace AMD
 
     C_SaveRestore_RS::~C_SaveRestore_RS()
     {
-        if (m_pContext == NULL) return;
+        if (m_pContext == NULL) { return; }
 
         m_pContext->RSSetState(m_pRSState);
         m_pContext->RSSetScissorRects(m_RSRectCount, m_RSRect);
@@ -101,7 +101,7 @@ namespace AMD
         , m_OMStencilRef(0)
         , m_pOMDSV(0)
     {
-        if (context == NULL) return;
+        if (context == NULL) { return; }
 
         memset(m_OMBlendFactor, 0, sizeof(m_OMBlendFactor));
         memset(m_pOMRTV, 0, sizeof(m_pOMRTV));
@@ -113,7 +113,7 @@ namespace AMD
 
     C_SaveRestore_OM::~C_SaveRestore_OM()
     {
-        if (m_pContext == NULL) return;
+        if (m_pContext == NULL) { return; }
 
         m_pContext->OMSetBlendState(m_pOMBlendState, m_OMBlendFactor, m_OMSampleMask);
         m_pContext->OMSetDepthStencilState(m_pOMDepthStencilState, m_OMStencilRef);
@@ -132,7 +132,7 @@ namespace AMD
         : m_pContext(context)
         , m_pVSShader(0)
     {
-        if (context == NULL) return;
+        if (context == NULL) { return; }
 
         memset(m_pVSSamplers, 0, sizeof(m_pVSSamplers));
         memset(m_pVSConstantBuffer, 0, sizeof(m_pVSConstantBuffer));
@@ -146,7 +146,7 @@ namespace AMD
 
     C_SaveRestore_VS::~C_SaveRestore_VS()
     {
-        if (m_pContext == NULL) return;
+        if (m_pContext == NULL) { return; }
 
         m_pContext->VSSetShader(m_pVSShader, NULL, NULL);
         m_pContext->VSSetSamplers(0, D3D11_COMMONSHADER_SAMPLER_SLOT_COUNT, m_pVSSamplers);
@@ -171,7 +171,7 @@ namespace AMD
         : m_pContext(context)
         , m_pHSShader(0)
     {
-        if (context == NULL) return;
+        if (context == NULL) { return; }
 
         memset(m_pHSSamplers, 0, sizeof(m_pHSSamplers));
         memset(m_pHSConstantBuffer, 0, sizeof(m_pHSConstantBuffer));
@@ -185,7 +185,7 @@ namespace AMD
 
     C_SaveRestore_HS::~C_SaveRestore_HS()
     {
-        if (m_pContext == NULL) return;
+        if (m_pContext == NULL) { return; }
 
         m_pContext->HSSetShader(m_pHSShader, NULL, NULL);
         m_pContext->HSSetSamplers(0, D3D11_COMMONSHADER_SAMPLER_SLOT_COUNT, m_pHSSamplers);
@@ -210,7 +210,7 @@ namespace AMD
         : m_pContext(context)
         , m_pDSShader(0)
     {
-        if (context == NULL) return;
+        if (context == NULL) { return; }
 
         memset(m_pDSSamplers, 0, sizeof(m_pDSSamplers));
         memset(m_pDSConstantBuffer, 0, sizeof(m_pDSConstantBuffer));
@@ -224,7 +224,7 @@ namespace AMD
 
     C_SaveRestore_DS::~C_SaveRestore_DS()
     {
-        if (m_pContext == NULL) return;
+        if (m_pContext == NULL) { return; }
 
         m_pContext->DSSetShader(m_pDSShader, NULL, NULL);
         m_pContext->DSSetSamplers(0, D3D11_COMMONSHADER_SAMPLER_SLOT_COUNT, m_pDSSamplers);
@@ -249,7 +249,7 @@ namespace AMD
         : m_pContext(context)
         , m_pGSShader(0)
     {
-        if (context == NULL) return;
+        if (context == NULL) { return; }
 
         memset(m_pGSSamplers, 0, sizeof(m_pGSSamplers));
         memset(m_pGSConstantBuffer, 0, sizeof(m_pGSConstantBuffer));
@@ -263,7 +263,7 @@ namespace AMD
 
     C_SaveRestore_GS::~C_SaveRestore_GS()
     {
-        if (m_pContext == NULL) return;
+        if (m_pContext == NULL) { return; }
 
         m_pContext->GSSetShader(m_pGSShader, NULL, NULL);
         m_pContext->GSSetSamplers(0, D3D11_COMMONSHADER_SAMPLER_SLOT_COUNT, m_pGSSamplers);
@@ -288,7 +288,7 @@ namespace AMD
         : m_pContext(context)
         , m_pPSShader(0)
     {
-        if (context == NULL) return;
+        if (context == NULL) { return; }
 
         memset(m_pPSSamplers, 0, sizeof(m_pPSSamplers));
         memset(m_pPSConstantBuffer, 0, sizeof(m_pPSConstantBuffer));
@@ -302,7 +302,7 @@ namespace AMD
 
     C_SaveRestore_PS::~C_SaveRestore_PS()
     {
-        if (m_pContext == NULL) return;
+        if (m_pContext == NULL) { return; }
 
         m_pContext->PSSetShader(m_pPSShader, NULL, NULL);
         m_pContext->PSSetSamplers(0, D3D11_COMMONSHADER_SAMPLER_SLOT_COUNT, m_pPSSamplers);
@@ -327,7 +327,7 @@ namespace AMD
         : m_pContext(context)
         , m_pCSShader(0)
     {
-        if (context == NULL) return;
+        if (context == NULL) { return; }
 
         memset(m_pCSSamplers, 0, sizeof(m_pCSSamplers));
         memset(m_pCSConstantBuffer, 0, sizeof(m_pCSConstantBuffer));
@@ -342,7 +342,7 @@ namespace AMD
     }
     C_SaveRestore_CS::~C_SaveRestore_CS()
     {
-        if (m_pContext == NULL) return;
+        if (m_pContext == NULL) { return; }
 
         m_pContext->CSSetShader(m_pCSShader, NULL, NULL);
         m_pContext->CSSetSamplers(0, D3D11_COMMONSHADER_SAMPLER_SLOT_COUNT, m_pCSSamplers);

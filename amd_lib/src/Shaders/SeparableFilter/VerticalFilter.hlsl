@@ -45,13 +45,13 @@
 
         // Sample and store to LDS
         [unroll]
-        for( int i = 0; i < SAMPLES_PER_THREAD; ++i )
+        for ( int i = 0; i < SAMPLES_PER_THREAD; ++i )
         {
             WRITE_TO_LDS( Sample( i2Coord + int2( GTid.y, i ), float2( 0.0f, 0.5f ) ), iLineOffset, iSampleOffset + i )
         }
 
         // Optionally load some extra texels as required by the exact kernel size
-        if( GTid.x < EXTRA_SAMPLES )
+        if ( GTid.x < EXTRA_SAMPLES )
         {
             WRITE_TO_LDS( Sample( i2GroupCoord + int2( GTid.y, RUN_SIZE_PLUS_KERNEL - 1 - GTid.x ), float2( 0.0f, 0.5f ) ), iLineOffset, RUN_SIZE_PLUS_KERNEL - 1 - GTid.x )
         }
@@ -67,7 +67,7 @@
         i2Coord.y += KERNEL_RADIUS;
 
         // Ensure we don't compute pixels off screen
-        if( i2Coord.y < g_f4OutputSize.y  )
+        if ( i2Coord.y < g_f4OutputSize.y  )
         {
             int2 i2Center = i2Coord + int2( GTid.y, 0 );
             int2 i2Inc = int2( 0, 1 );
@@ -84,7 +84,7 @@
     //--------------------------------------------------------------------------------------
     PS_Output PSFilterY( PS_RenderQuadInput I ) : SV_TARGET
     {
-        PS_Output O = (PS_Output)0;
+        PS_Output Output = (PS_Output)0;
         RAWDataItem RDI[1];
         int iPixel, iIteration;
         KernelData KD[1];
@@ -94,36 +94,36 @@
         RDI[0] = Sample( int2( i2KernelCenter.x, i2KernelCenter.y ), float2( 0.0f, 0.0f ) );
 
         // Macro defines what happens at the kernel center
-        KERNEL_CENTER( KD, iPixel, 1, O, RDI )
+        KERNEL_CENTER( KD, iPixel, 1, Output, RDI )
 
         i2KernelCenter.y -= KERNEL_RADIUS;
 
         // First half of the kernel
         [unroll]
-        for( iIteration = 0; iIteration < KERNEL_RADIUS; iIteration += STEP_SIZE )
+        for ( iIteration = 0; iIteration < KERNEL_RADIUS; iIteration += STEP_SIZE )
         {
             // Load the sample(s) for this iteration
             RDI[0] = Sample( int2( i2KernelCenter.x, i2KernelCenter.y + iIteration ), float2( 0.0f, 0.5f ) );
 
             // Macro defines what happens for each kernel iteration
-            KERNEL_ITERATION( iIteration, KD, iPixel, 1, O, RDI )
+            KERNEL_ITERATION( iIteration, KD, iPixel, 1, Output, RDI )
         }
 
         // Second half of the kernel
         [unroll]
-        for( iIteration = KERNEL_RADIUS + 1; iIteration < KERNEL_DIAMETER; iIteration += STEP_SIZE )
+        for ( iIteration = KERNEL_RADIUS + 1; iIteration < KERNEL_DIAMETER; iIteration += STEP_SIZE )
         {
             // Load the sample(s) for this iteration
             RDI[0] = Sample( int2( i2KernelCenter.x, i2KernelCenter.y + iIteration ), float2( 0.0f, 0.5f ) );
 
             // Macro defines what happens for each kernel iteration
-            KERNEL_ITERATION( iIteration, KD, iPixel, 1, O, RDI )
+            KERNEL_ITERATION( iIteration, KD, iPixel, 1, Output, RDI )
         }
 
         // Macros define final weighting
-        KERNEL_FINAL_WEIGHT( KD, iPixel, 1, O )
+        KERNEL_FINAL_WEIGHT( KD, iPixel, 1, Output )
 
-        return O;
+        return Output;
     }
 
 #endif // USE_COMPUTE_SHADER

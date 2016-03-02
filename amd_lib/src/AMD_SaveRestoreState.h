@@ -20,8 +20,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef __AMD_SAVE_RESTORE_STATE_H__
-#define __AMD_SAVE_RESTORE_STATE_H__
+#ifndef AMD_LIB_SAVE_RESTORE_STATE_H
+#define AMD_LIB_SAVE_RESTORE_STATE_H
 
 #include <d3d11.h>
 

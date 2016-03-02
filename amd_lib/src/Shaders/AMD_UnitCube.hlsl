@@ -71,10 +71,10 @@ PS_UnitCubeInput vsClipSpaceCube( uint vertex_id : SV_VERTEXID )
      5, 8, 2
   };
 
-  PS_UnitCubeInput O;
-  O.ss_position = mul (vertex[index[vertex_id] - 1], g_UnitCubeTransform.m_tr );
+  PS_UnitCubeInput Output;
+  Output.ss_position = mul (vertex[index[vertex_id] - 1], g_UnitCubeTransform.m_tr );
 
-  return O;
+  return Output;
 }
 
 PS_UnitCubeInput vsUnitCube( uint vertex_id : SV_VERTEXID )
@@ -107,10 +107,10 @@ PS_UnitCubeInput vsUnitCube( uint vertex_id : SV_VERTEXID )
      5, 8, 2
   };
 
-  PS_UnitCubeInput O;
-  O.ss_position = mul (vertex[index[vertex_id] - 1], g_UnitCubeTransform.m_tr );
+  PS_UnitCubeInput Output;
+  Output.ss_position = mul (vertex[index[vertex_id] - 1], g_UnitCubeTransform.m_tr );
 
-  return O;
+  return Output;
 }
 
 float4 psUnitCube( PS_UnitCubeInput In ) : SV_Target0

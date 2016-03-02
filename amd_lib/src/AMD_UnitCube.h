@@ -20,34 +20,34 @@
 // THE SOFTWARE.
 //
 
-#ifndef __AMD_UNIT_CUBE_H__
-#define __AMD_UNIT_CUBE_H__
+#ifndef AMD_LIB_UNIT_CUBE_H
+#define AMD_LIB_UNIT_CUBE_H
 
 #include <d3d11.h>
 
 namespace AMD
 {
-  HRESULT CreateUnitCube(ID3D11VertexShader** ppVS, ID3D11Device* pDevice);
-  HRESULT CreateUnitCube(ID3D11PixelShader** ppPS, ID3D11Device* pDevice);
+    HRESULT CreateUnitCube(ID3D11VertexShader** ppVS, ID3D11Device* pDevice);
+    HRESULT CreateUnitCube(ID3D11PixelShader** ppPS, ID3D11Device* pDevice);
 
-  HRESULT CreateClipSpaceCube(ID3D11VertexShader** ppVS, ID3D11Device* pDevice);
+    HRESULT CreateClipSpaceCube(ID3D11VertexShader** ppVS, ID3D11Device* pDevice);
 
-  HRESULT RenderUnitCube(ID3D11DeviceContext* pDeviceContext,
-    D3D11_VIEWPORT             VP,
-    D3D11_RECT*                pSR,   unsigned int uNumSR,
-    ID3D11RasterizerState *    pRS,
-    ID3D11BlendState *         pBS,   const float bsFactor[],
-    ID3D11DepthStencilState*   pDSS,  unsigned int stencilRef,
-    ID3D11VertexShader*        pVS,
-    ID3D11HullShader*          pHS,
-    ID3D11DomainShader*        pDS,
-    ID3D11GeometryShader*      pGS,
-    ID3D11PixelShader*         pPS,
-    ID3D11Buffer**             ppCB,  unsigned int uStartCB,  unsigned int uNumCB,
-    ID3D11SamplerState**       ppSS,  unsigned int uStartSS,  unsigned int uNumSS,
-    ID3D11ShaderResourceView** ppSRV, unsigned int uStartSRV, unsigned int uNumSRV,
-    ID3D11RenderTargetView**   ppRTV, unsigned int uNumRTV,
-    ID3D11DepthStencilView*    pDSV);
+    HRESULT RenderUnitCube(ID3D11DeviceContext* pDeviceContext,
+        D3D11_VIEWPORT             VP,
+        D3D11_RECT*                pSR,   unsigned int uNumSR,
+        ID3D11RasterizerState *    pRS,
+        ID3D11BlendState *         pBS,   const float bsFactor[],
+        ID3D11DepthStencilState*   pDSS,  unsigned int stencilRef,
+        ID3D11VertexShader*        pVS,
+        ID3D11HullShader*          pHS,
+        ID3D11DomainShader*        pDS,
+        ID3D11GeometryShader*      pGS,
+        ID3D11PixelShader*         pPS,
+        ID3D11Buffer**             ppCB,  unsigned int uStartCB,  unsigned int uNumCB,
+        ID3D11SamplerState**       ppSS,  unsigned int uStartSS,  unsigned int uNumSS,
+        ID3D11ShaderResourceView** ppSRV, unsigned int uStartSRV, unsigned int uNumSRV,
+        ID3D11RenderTargetView**   ppRTV, unsigned int uNumRTV,
+        ID3D11DepthStencilView*    pDSV);
 }
 
 #endif

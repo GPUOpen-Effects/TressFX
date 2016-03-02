@@ -1,11 +1,11 @@
 dofile ("../../premake/amd_premake_util.lua")
 
-workspace "AMD_LIB"
+workspace "AMD_LIB_Minimal"
    configurations { "Debug", "Release", "Release_MT" }
    platforms { "Win32", "x64" }
    location "../build"
-   filename ("AMD_LIB" .. _AMD_VS_SUFFIX)
-   startproject "AMD_LIB"
+   filename ("AMD_LIB_Minimal" .. _AMD_VS_SUFFIX)
+   startproject "AMD_LIB_Minimal"
 
    filter "platforms:Win32"
       system "Windows"
@@ -15,14 +15,14 @@ workspace "AMD_LIB"
       system "Windows"
       architecture "x64"
 
-project "AMD_LIB"
+project "AMD_LIB_Minimal"
    kind "StaticLib"
    language "C++"
    location "../build"
-   filename ("AMD_LIB" .. _AMD_VS_SUFFIX)
+   filename ("AMD_LIB_Minimal" .. _AMD_VS_SUFFIX)
    uuid "0D2AEA47-7909-69E3-8221-F4B9EE7FCF44"
    targetdir "../lib"
-   objdir "../build/%{_AMD_LIBRARY_DIR_LAYOUT}"
+   objdir "../build/%{_AMD_LIBRARY_DIR_LAYOUT_MINIMAL}"
    warnings "Extra"
    floatingpoint "Fast"
    exceptionhandling "Off"
@@ -31,8 +31,9 @@ project "AMD_LIB"
    -- Specify WindowsTargetPlatformVersion here for VS2015
    windowstarget (_AMD_WIN_SDK_VERSION)
 
-   files { "../inc/**.h", "../src/**.h", "../src/**.cpp", "../src/**.inl", "../src/**.hlsl", "../../AGS_LIB/inc/*.h" }
-   includedirs { "../inc", "../../AGS_LIB/inc" }
+   files { "../inc/**.h", "../src/**.h", "../src/**.cpp", "../src/**.inl", "../src/**.hlsl" }
+   includedirs { "../inc" }
+   defines { "AMD_LIB_MINIMAL" }
 
    filter "configurations:Debug"
       defines { "WIN32", "_DEBUG", "_WINDOWS", "_LIB", "_WIN32_WINNT=0x0601" }
@@ -62,7 +63,7 @@ project "AMD_LIB"
       buildoptions { "/EHsc" }
 
    filter "platforms:Win32"
-      targetname "amd_lib_x86%{_AMD_VS_SUFFIX}"
+      targetname "amd_lib_minimal_x86%{_AMD_VS_SUFFIX}"
 
    filter "platforms:x64"
-      targetname "amd_lib_x64%{_AMD_VS_SUFFIX}"
+      targetname "amd_lib_minimal_x64%{_AMD_VS_SUFFIX}"

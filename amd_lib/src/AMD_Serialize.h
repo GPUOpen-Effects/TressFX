@@ -20,8 +20,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef __AMD_SERIALIZE_H__
-#define __AMD_SERIALIZE_H__
+#ifndef AMD_LIB_SERIALIZE_H
+#define AMD_LIB_SERIALIZE_H
 
 #include "AMD_Types.h"
 
@@ -31,29 +31,29 @@ typedef struct _iobuf FILE;
 
 namespace AMD
 {
-  void serialize_string(FILE * file, char * name);
+    void serialize_string(FILE * file, char * name);
 
-  void serialize_float(FILE * file, const char * name, float * v);
-  void serialize_float2(FILE * file, const char * name, float * v);
-  void serialize_float3(FILE * file, const char * name, float * v);
-  void serialize_float4(FILE * file, const char * name, float * v);
-  void serialize_uint(FILE * file, const char * name, uint32 * v);
-  void serialize_uint2(FILE * file, const char * name, uint32 * v);
-  void serialize_uint3(FILE * file, const char * name, uint32 * v);
-  void serialize_uint4(FILE * file, const char * name, uint32 * v);
-  void serialize_float4x4(FILE * file, const char * name, float * v);
+    void serialize_float(FILE * file, const char * name, float * v);
+    void serialize_float2(FILE * file, const char * name, float * v);
+    void serialize_float3(FILE * file, const char * name, float * v);
+    void serialize_float4(FILE * file, const char * name, float * v);
+    void serialize_uint(FILE * file, const char * name, uint32 * v);
+    void serialize_uint2(FILE * file, const char * name, uint32 * v);
+    void serialize_uint3(FILE * file, const char * name, uint32 * v);
+    void serialize_uint4(FILE * file, const char * name, uint32 * v);
+    void serialize_float4x4(FILE * file, const char * name, float * v);
 
-  void deserialize_float(FILE * file, char * name, float * v, bool use_float =  false);
-  void deserialize_float2(FILE * file, char * name, float * v, bool use_float =  false);
-  void deserialize_float3(FILE * file, char * name, float * v, bool use_float =  false);
-  void deserialize_float4(FILE * file, char * name, float * v, bool use_float =  false);
-  void deserialize_uint(FILE * file, char * name, uint32 * v);
-  void deserialize_uint2(FILE * file, char * name, uint32 * v);
-  void deserialize_uint3(FILE * file, char * name, uint32 * v);
-  void deserialize_uint4(FILE * file, char * name, uint32 * v);
-  void deserialize_float4x4(FILE * file, char * name, float * v, bool use_float =  false);
+    void deserialize_float(FILE * file, char * name, float * v, bool use_float =  false);
+    void deserialize_float2(FILE * file, char * name, float * v, bool use_float =  false);
+    void deserialize_float3(FILE * file, char * name, float * v, bool use_float =  false);
+    void deserialize_float4(FILE * file, char * name, float * v, bool use_float =  false);
+    void deserialize_uint(FILE * file, char * name, uint32 * v);
+    void deserialize_uint2(FILE * file, char * name, uint32 * v);
+    void deserialize_uint3(FILE * file, char * name, uint32 * v);
+    void deserialize_uint4(FILE * file, char * name, uint32 * v);
+    void deserialize_float4x4(FILE * file, char * name, float * v, bool use_float =  false);
 
-  void deserialize_string(FILE * file, char * name);
+    void deserialize_string(FILE * file, char * name);
 }
 
 
@@ -61,4 +61,4 @@ namespace AMD
 #define AMD_SERIALIZE_STRING_UINT_PTR(x)     #x, (uint  *) &x
 
 
-#endif //__AMD_SERIALIZE_H__
+#endif //AMD_LIB_SERIALIZE_H
