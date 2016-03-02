@@ -23,10 +23,10 @@
 //--------------------------------------------------------------------------------------
 // File: LineRender.h
 //
-// Helper to render 3d colored lines
+// Helper to render 3d colored lines.
 //--------------------------------------------------------------------------------------
-#ifndef __AMD_LINE_RENDER_H__
-#define __AMD_LINE_RENDER_H__
+#ifndef AMD_SDK_LINE_RENDER_H
+#define AMD_SDK_LINE_RENDER_H
 
 // forward declarations
 namespace DirectX
@@ -80,4 +80,3 @@ namespace AMD
 }
 
 #endif
-

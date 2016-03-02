@@ -132,13 +132,13 @@ void Magnify::Capture( POINT& Point )
     int nWidthDiff = 0;
     int nHeightDiff = 0;
 
-    if( DXUTIsWindowed() )
+    if (DXUTIsWindowed())
     {
-        nWidthDiff = (int)( ( ( Rect.right - Rect.left ) - m_nBackBufferWidth ) * ( 1.0f / 2.0f ) );
-        nHeightDiff = (int)( ( ( Rect.bottom - Rect.top ) - m_nBackBufferHeight ) * ( 4.0f / 5.0f ) );
+        nWidthDiff = (int)(((Rect.right - Rect.left) - m_nBackBufferWidth) * (1.0f / 2.0f));
+        nHeightDiff = (int)(((Rect.bottom - Rect.top) - m_nBackBufferHeight) * (4.0f / 5.0f));
     }
 
-    SetPosition( Point.x - ( Rect.left + nWidthDiff ), Point.y - ( Rect.top + nHeightDiff ) );
+    SetPosition( Point.x - (Rect.left + nWidthDiff), Point.y - (Rect.top + nHeightDiff) );
 
     D3D10_BOX SourceRegion;
     SourceRegion.left = m_nPositionX - m_nHalfPixelRegion;
@@ -154,7 +154,7 @@ void Magnify::Capture( POINT& Point )
 // User defines the resource for capturing from
 //--------------------------------------------------------------------------------------
 void Magnify::SetSourceResource( ID3D11Resource* pSourceResource, DXGI_FORMAT Format,
-                                int nWidth, int nHeight, int nSamples )
+    int nWidth, int nHeight, int nSamples )
 {
     assert( NULL != pSourceResource );
     assert( Format > DXGI_FORMAT_UNKNOWN );
@@ -170,7 +170,7 @@ void Magnify::SetSourceResource( ID3D11Resource* pSourceResource, DXGI_FORMAT Fo
 
     m_bDepthFormat = false;
 
-    switch( m_SourceResourceFormat )
+    switch (m_SourceResourceFormat)
     {
     case DXGI_FORMAT_D32_FLOAT:
         m_DepthFormat = DXGI_FORMAT_R32_TYPELESS;
@@ -250,16 +250,16 @@ void Magnify::SetSubSampleIndex( int nSubSampleIndex )
 //--------------------------------------------------------------------------------------
 void Magnify::RenderBackground()
 {
-    if( m_bDepthFormat )
+    if (m_bDepthFormat)
     {
-        if( m_nSourceResourceSamples == 1 )
+        if (m_nSourceResourceSamples == 1)
         {
             DXUTGetD3D11DeviceContext()->CopyResource( m_pCopySourceResource, m_pSourceResource );
         }
     }
     else
     {
-        if( m_nSourceResourceSamples > 1 )
+        if (m_nSourceResourceSamples > 1)
         {
             DXUTGetD3D11DeviceContext()->ResolveSubresource( m_pResolvedSourceResource, 0,
                 m_pSourceResource, 0, m_SourceResourceFormat );
@@ -271,9 +271,9 @@ void Magnify::RenderBackground()
         }
     }
 
-    if( m_bDepthFormat )
+    if (m_bDepthFormat)
     {
-        if( m_nSourceResourceSamples > 1 )
+        if (m_nSourceResourceSamples > 1)
         {
             // Get the current render and depth targets, so we can later revert to these.
             ID3D11RenderTargetView *pRenderTargetView;
@@ -308,7 +308,7 @@ void Magnify::RenderBackground()
     {
         m_Sprite.SetUVs( 0.0f, 0.0f, 1.0f, 1.0f );
 
-        if( m_nSourceResourceSamples > 1 )
+        if (m_nSourceResourceSamples > 1)
         {
             m_Sprite.RenderSprite( m_pResolvedSourceResourceSRV, 0, m_nBackBufferHeight,
                 m_nBackBufferWidth, m_nBackBufferHeight, false, false );
@@ -327,17 +327,17 @@ void Magnify::RenderBackground()
 //--------------------------------------------------------------------------------------
 void Magnify::RenderMagnifiedRegion()
 {
-    m_Sprite.SetUVs( ( m_nPositionX - m_nHalfPixelRegion ) / (float)m_nSourceResourceWidth,
-        ( m_nPositionY - m_nHalfPixelRegion ) / (float)m_nSourceResourceHeight,
-        ( m_nPositionX + m_nHalfPixelRegion ) / (float)m_nSourceResourceWidth,
-        ( m_nPositionY + m_nHalfPixelRegion ) / (float)m_nSourceResourceHeight );
+    m_Sprite.SetUVs( (m_nPositionX - m_nHalfPixelRegion) / (float)m_nSourceResourceWidth,
+        (m_nPositionY - m_nHalfPixelRegion) / (float)m_nSourceResourceHeight,
+        (m_nPositionX + m_nHalfPixelRegion) / (float)m_nSourceResourceWidth,
+        (m_nPositionY + m_nHalfPixelRegion) / (float)m_nSourceResourceHeight );
 
-    if( m_bDepthFormat )
+    if (m_bDepthFormat)
     {
         DirectX::XMVECTOR Color = DirectX::XMVectorSet( 1.0f, 1.0f, 1.0f, 1.0f );
         m_Sprite.SetBorderColor( Color );
 
-        if( m_nSourceResourceSamples > 1 )
+        if (m_nSourceResourceSamples > 1)
         {
             // Get the current render and depth targets, so we can later revert to these
             ID3D11RenderTargetView *pRenderTargetView;
@@ -371,7 +371,7 @@ void Magnify::RenderMagnifiedRegion()
         DirectX::XMVECTOR Color = DirectX::XMVectorSet( 1.0f, 0.0f, 0.0f, 0.0f );
         m_Sprite.SetBorderColor( Color );
 
-        if( m_nSourceResourceSamples > 1 )
+        if (m_nSourceResourceSamples > 1)
         {
             m_Sprite.RenderSprite( m_pResolvedSourceResourceSRV, (m_nPositionX - m_nHalfPixelRegion * m_nScale),
                 (m_nPositionY + m_nHalfPixelRegion * m_nScale), (m_nPixelRegion * m_nScale),
@@ -400,11 +400,11 @@ void Magnify::SetPosition( int nPositionX, int nPositionY )
     int nMinY = m_nPixelRegion;
     int nMaxY = m_nSourceResourceHeight - m_nPixelRegion;
 
-    m_nPositionX = ( m_nPositionX < nMinX ) ? ( nMinX ) : ( m_nPositionX );
-    m_nPositionX = ( m_nPositionX > nMaxX ) ? ( nMaxX ) : ( m_nPositionX );
+    m_nPositionX = (m_nPositionX < nMinX) ? (nMinX) : (m_nPositionX);
+    m_nPositionX = (m_nPositionX > nMaxX) ? (nMaxX) : (m_nPositionX);
 
-    m_nPositionY = ( m_nPositionY < nMinY ) ? ( nMinY ) : ( m_nPositionY );
-    m_nPositionY = ( m_nPositionY > nMaxY ) ? ( nMaxY ) : ( m_nPositionY );
+    m_nPositionY = (m_nPositionY < nMinY) ? (nMinY) : (m_nPositionY);
+    m_nPositionY = (m_nPositionY > nMaxY) ? (nMaxY) : (m_nPositionY);
 }
 
 
@@ -427,7 +427,7 @@ void Magnify::CreateInternalResources()
     Desc.Height = m_nBackBufferHeight;
     Desc.MipLevels = 1;
     Desc.ArraySize = 1;
-    Desc.Format = ( m_bDepthFormat ) ? ( m_DepthFormat ) : ( m_SourceResourceFormat );
+    Desc.Format = (m_bDepthFormat) ? (m_DepthFormat) : (m_SourceResourceFormat);
     Desc.SampleDesc.Count = 1;
     Desc.Usage = D3D11_USAGE_DEFAULT;
     Desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
@@ -440,11 +440,11 @@ void Magnify::CreateInternalResources()
     hr = DXUTGetD3D11Device()->CreateTexture2D( &Desc, NULL, &m_pCopySourceResource );
     assert( S_OK == hr );
 
-    if( m_bDepthFormat )
+    if (m_bDepthFormat)
     {
-        if( m_nSourceResourceSamples > 1 )
+        if (m_nSourceResourceSamples > 1)
         {
-            if( DXUTGetD3D11DeviceFeatureLevel() >= D3D_FEATURE_LEVEL_10_1 )
+            if (DXUTGetD3D11DeviceFeatureLevel() >= D3D_FEATURE_LEVEL_10_1)
             {
                 D3D11_SHADER_RESOURCE_VIEW_DESC SRDesc;
                 SRDesc.Format = m_DepthSRVFormat;
@@ -468,7 +468,7 @@ void Magnify::CreateInternalResources()
     }
     else
     {
-        if( m_nSourceResourceSamples > 1 )
+        if (m_nSourceResourceSamples > 1)
         {
             hr = DXUTGetD3D11Device()->CreateShaderResourceView( m_pResolvedSourceResource, NULL, &m_pResolvedSourceResourceSRV );
             assert( S_OK == hr );
@@ -480,8 +480,3 @@ void Magnify::CreateInternalResources()
         }
     }
 }
-
-
-//--------------------------------------------------------------------------------------
-// EOF
-//--------------------------------------------------------------------------------------

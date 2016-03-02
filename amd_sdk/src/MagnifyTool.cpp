@@ -69,7 +69,7 @@ MagnifyTool::~MagnifyTool()
 // User sets the resource to be captured from
 //--------------------------------------------------------------------------------------
 void MagnifyTool::SetSourceResources( ID3D11Resource* pSourceRTResource, DXGI_FORMAT RTFormat,
-                                     int nWidth, int nHeight, int nSamples )
+    int nWidth, int nHeight, int nSamples )
 {
     assert( NULL != pSourceRTResource );
 
@@ -79,7 +79,7 @@ void MagnifyTool::SetSourceResources( ID3D11Resource* pSourceRTResource, DXGI_FO
     m_nHeight = nHeight;
     m_nSamples = nSamples;
 
-    if( NULL != pSourceRTResource )
+    if (NULL != pSourceRTResource)
     {
         m_Magnify.SetSourceResource( m_pSourceRTResource, m_RTFormat, m_nWidth, m_nHeight, m_nSamples );
     }
@@ -99,7 +99,7 @@ void MagnifyTool::InitApp( CDXUTDialog* pUI, int& iStartHeight, bool bSupportSti
     int& iY = iStartHeight;
 
     m_pMagnifyUI->AddCheckBox( IDC_MAGNIFY_CHECKBOX_ENABLE, L"Magnify: RMouse", AMD::HUD::iElementOffset, iY, AMD::HUD::iElementWidth, AMD::HUD::iElementHeight, true );
-    if ( bSupportStickyMode )
+    if (bSupportStickyMode)
     {
         m_pMagnifyUI->AddCheckBox( IDC_MAGNIFY_CHECKBOX_STICKY, L"Sticky Mode", AMD::HUD::iElementOffset, iY += AMD::HUD::iElementDelta, AMD::HUD::iElementWidth, AMD::HUD::iElementHeight, true );
     }
@@ -135,8 +135,8 @@ HRESULT MagnifyTool::OnCreateDevice( ID3D11Device* pd3dDevice )
 // Hook function
 //--------------------------------------------------------------------------------------
 void MagnifyTool::OnResizedSwapChain( ID3D11Device* pd3dDevice, IDXGISwapChain *pSwapChain,
-                                     const DXGI_SURFACE_DESC* pBackBufferSurfaceDesc, void* pUserContext,
-                                     int nPositionX, int nPositionY )
+    const DXGI_SURFACE_DESC* pBackBufferSurfaceDesc, void* pUserContext,
+    int nPositionX, int nPositionY )
 {
     m_pMagnifyUI->SetLocation( nPositionX, nPositionY );
     m_pMagnifyUI->SetSize( AMD::HUD::iDialogWidth, pBackBufferSurfaceDesc->Height );
@@ -150,19 +150,19 @@ void MagnifyTool::OnResizedSwapChain( ID3D11Device* pd3dDevice, IDXGISwapChain *
 //--------------------------------------------------------------------------------------
 void MagnifyTool::Render()
 {
-    if( m_pMagnifyUI->GetCheckBox( IDC_MAGNIFY_CHECKBOX_ENABLE )->GetEnabled() &&
-        m_pMagnifyUI->GetCheckBox( IDC_MAGNIFY_CHECKBOX_ENABLE )->GetChecked() )
+    if (m_pMagnifyUI->GetCheckBox( IDC_MAGNIFY_CHECKBOX_ENABLE )->GetEnabled() &&
+        m_pMagnifyUI->GetCheckBox( IDC_MAGNIFY_CHECKBOX_ENABLE )->GetChecked())
     {
         bool bRenderMagnifier = false;
         POINT pt;
 
         m_Magnify.RenderBackground();
 
-        if( DXUTIsMouseButtonDown( VK_RBUTTON ) )
+        if (DXUTIsMouseButtonDown( VK_RBUTTON ))
         {
-            if ( m_pMagnifyUI->GetCheckBox( IDC_MAGNIFY_CHECKBOX_STICKY ) && m_pMagnifyUI->GetCheckBox( IDC_MAGNIFY_CHECKBOX_STICKY )->GetChecked() )
+            if (m_pMagnifyUI->GetCheckBox( IDC_MAGNIFY_CHECKBOX_STICKY ) && m_pMagnifyUI->GetCheckBox( IDC_MAGNIFY_CHECKBOX_STICKY )->GetChecked())
             {
-                if ( !m_bMouseDownLastFrame )
+                if (!m_bMouseDownLastFrame)
                 {
                     m_bStickyShowing ^= 1;
                 }
@@ -174,31 +174,31 @@ void MagnifyTool::Render()
 
             ::GetCursorPos( &pt );
 
-            if ( m_bStickyShowing )
+            if (m_bStickyShowing)
             {
                 m_StickyPoint = pt;
             }
 
-            if ( !m_bMouseDownLastFrame )
+            if (!m_bMouseDownLastFrame)
             {
                 m_bMouseDownLastFrame = true;
             }
         }
         else
         {
-            if ( m_bMouseDownLastFrame )
+            if (m_bMouseDownLastFrame)
             {
                 m_bMouseDownLastFrame = false;
             }
         }
 
-        if ( m_bStickyShowing )
+        if (m_bStickyShowing)
         {
             bRenderMagnifier = true;
             pt = m_StickyPoint;
         }
 
-        if ( bRenderMagnifier )
+        if (bRenderMagnifier)
         {
             m_Magnify.Capture( pt );
             m_Magnify.RenderMagnifiedRegion();
@@ -225,7 +225,7 @@ void MagnifyTool::OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pContro
     int nTemp;
     bool bChecked;
 
-    switch( nControlID )
+    switch (nControlID)
     {
     case IDC_MAGNIFY_CHECKBOX_ENABLE:
         bChecked = ((CDXUTCheckBox*)pControl)->GetChecked();
@@ -269,17 +269,13 @@ void MagnifyTool::EnableTool( bool bEnable )
 
 void MagnifyTool::EnableUI( bool bEnable )
 {
-    if ( m_pMagnifyUI->GetCheckBox( IDC_MAGNIFY_CHECKBOX_STICKY ) )
+    if (m_pMagnifyUI->GetCheckBox( IDC_MAGNIFY_CHECKBOX_STICKY ))
+    {
         m_pMagnifyUI->GetCheckBox( IDC_MAGNIFY_CHECKBOX_STICKY )->SetEnabled( bEnable );
+    }
     m_pMagnifyUI->GetStatic( IDC_MAGNIFY_STATIC_PIXEL_REGION )->SetEnabled( bEnable );
     m_pMagnifyUI->GetSlider( IDC_MAGNIFY_SLIDER_PIXEL_REGION )->SetEnabled( bEnable );
     m_pMagnifyUI->GetStatic( IDC_MAGNIFY_STATIC_SCALE )->SetEnabled( bEnable );
     m_pMagnifyUI->GetSlider( IDC_MAGNIFY_SLIDER_SCALE )->SetEnabled( bEnable );
     m_bStickyShowing = false;
 }
-
-
-//--------------------------------------------------------------------------------------
-// EOF
-//--------------------------------------------------------------------------------------
-

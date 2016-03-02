@@ -30,11 +30,10 @@
 //
 // Assumption, relies on following directory structure:
 //
-// SolutionDir\..\src\Shaders\
+// SolutionDir\..\src\Shaders
 //--------------------------------------------------------------------------------------
-
-
-#pragma once
+#ifndef AMD_SDK_SHADER_CACHE_H
+#define AMD_SDK_SHADER_CACHE_H
 
 #include <set>
 #include <list>
@@ -89,7 +88,7 @@ namespace AMD
         static const int m_uMACRO_MAX_LENGTH = 64;
 
         // Shader type enumeration
-        typedef enum _SHADER_TYPE
+        typedef enum SHADER_TYPE_t
         {
             SHADER_TYPE_VERTEX,
             SHADER_TYPE_HULL,
@@ -102,7 +101,7 @@ namespace AMD
         }SHADER_TYPE;
 
         // Create type enumeration
-        typedef enum _CREATE_TYPE
+        typedef enum CREATE_TYPE_t
         {
             CREATE_TYPE_FORCE_COMPILE,      // Clean the cache, and compile all
             CREATE_TYPE_COMPILE_CHANGES,    // Only compile shaders that have changed (development mode)
@@ -111,7 +110,7 @@ namespace AMD
         }CREATE_TYPE;
 
         // Shader auto-recompile type enumeration
-        typedef enum _SHADER_AUTO_RECOMPILE_TYPE
+        typedef enum SHADER_AUTO_RECOMPILE_TYPE_t
         {
             SHADER_AUTO_RECOMPILE_DISABLED, // Shaders are only checked at startup
             SHADER_AUTO_RECOMPILE_ENABLED,  // Auto-recompile changed shaders to improve iteration times
@@ -119,7 +118,7 @@ namespace AMD
         }SHADER_AUTO_RECOMPILE_TYPE;
 
         // Shader compiler error display type enumeration
-        typedef enum _ERROR_DISPLAY_TYPE
+        typedef enum ERROR_DISPLAY_TYPE_t
         {
             ERROR_DISPLAY_IN_DEBUG_OUTPUT,  // Just write shader compiler errors out to debug text
             ERROR_DISPLAY_ON_SCREEN,        // Render shader compiler errors to the screen
@@ -129,7 +128,7 @@ namespace AMD
         }ERROR_DISPLAY_TYPE;
 
         // ISA generation type enumeration
-        typedef enum _GENERATE_ISA_TYPE
+        typedef enum GENERATE_ISA_TYPE_t
         {
             GENERATE_ISA_DISABLED,          // Don't generate ISA (this option is required when releasing samples)
             GENERATE_ISA_ENABLED,           // Generate ISA and gather info on GPR pressure (requires AMD internal ScDev)
@@ -137,15 +136,16 @@ namespace AMD
         }GENERATE_ISA_TYPE;
 
         // Shader compiler exe location type enumeration
-        typedef enum _SHADER_COMPILER_EXE_TYPE
+        typedef enum SHADER_COMPILER_EXE_TYPE_t
         {
             SHADER_COMPILER_EXE_INSTALLED,  // Look for shader compiler EXEs (fxc and ScDev) in their installed locations
-            SHADER_COMPILER_EXE_LOCAL,      // Look for shader compiler EXEs (fxc and ScDev) in the AMD_SDK\src\Shaders directory (don't use this when releasing samples, as distributing fxc in this way violates the license)
+            SHADER_COMPILER_EXE_LOCAL,      // Look for shader compiler EXEs (fxc and ScDev) in the AMD_SDK\src\Shaders directory
+                                            // (don't use LOCAL when releasing samples, as distributing fxc in this way violates the license)
             SHADER_COMPILER_EXE_MAX
         }SHADER_COMPILER_EXE_TYPE;
 
         // Max cores type enumeration
-        typedef enum _MAXCORES_TYPE
+        typedef enum MAXCORES_TYPE_t
         {
             MAXCORES_NO_LIMIT           = -4,
             MAXCORES_2X_CPU_CORES       = -3,
@@ -230,8 +230,10 @@ namespace AMD
         };
 
         // Construction / destruction
-        ShaderCache( const SHADER_AUTO_RECOMPILE_TYPE i_keAutoRecompileTouchedShadersType = SHADER_AUTO_RECOMPILE_DISABLED, const ERROR_DISPLAY_TYPE i_keErrorDisplayType = ERROR_DISPLAY_IN_DEBUG_OUTPUT_AND_BREAK,
-            const GENERATE_ISA_TYPE i_keGenerateShaderISAType = GENERATE_ISA_DISABLED, const SHADER_COMPILER_EXE_TYPE i_keShaderCompilerExeType = SHADER_COMPILER_EXE_INSTALLED );
+        ShaderCache( const SHADER_AUTO_RECOMPILE_TYPE i_keAutoRecompileTouchedShadersType = SHADER_AUTO_RECOMPILE_DISABLED,
+            const ERROR_DISPLAY_TYPE i_keErrorDisplayType = ERROR_DISPLAY_IN_DEBUG_OUTPUT_AND_BREAK,
+            const GENERATE_ISA_TYPE i_keGenerateShaderISAType = GENERATE_ISA_DISABLED,
+            const SHADER_COMPILER_EXE_TYPE i_keShaderCompilerExeType = SHADER_COMPILER_EXE_INSTALLED );
         ~ShaderCache();
 
         // Allows the user to add a shader to the cache
@@ -439,7 +441,4 @@ namespace AMD
 
 } // namespace AMD
 
-
-//--------------------------------------------------------------------------------------
-// EOF
-//--------------------------------------------------------------------------------------
+#endif

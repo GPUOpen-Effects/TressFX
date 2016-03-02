@@ -218,7 +218,7 @@ HRESULT Sprite::OnCreateDevice( ID3D11Device* pd3dDevice )
 
     // Create the vertex buffer
     D3D11_BUFFER_DESC BD;
-    ZeroMemory( &BD, sizeof(BD) );
+    ZeroMemory( &BD, sizeof( BD ) );
     BD.Usage = D3D11_USAGE_DYNAMIC;
     BD.ByteWidth = sizeof( SpriteVertex ) * 6;
     BD.BindFlags = D3D11_BIND_VERTEX_BUFFER;
@@ -253,7 +253,7 @@ HRESULT Sprite::OnCreateDevice( ID3D11Device* pd3dDevice )
 
     // Setup constant buffer
     D3D11_BUFFER_DESC Desc;
-    ZeroMemory( &Desc, sizeof(Desc) );
+    ZeroMemory( &Desc, sizeof( Desc ) );
     Desc.Usage = D3D11_USAGE_DYNAMIC;
     Desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
     Desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
@@ -454,7 +454,7 @@ void Sprite::SetUVs( float fU1, float fV1, float fU2, float fV2 )
 {
     D3D11_MAPPED_SUBRESOURCE MappedResource;
     DXUTGetD3D11DeviceContext()->Map( m_pVertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &MappedResource );
-    SpriteVertex* pQuadVertices = ( SpriteVertex* )MappedResource.pData;
+    SpriteVertex* pQuadVertices = (SpriteVertex*)MappedResource.pData;
 
     pQuadVertices[0].v3Pos = DirectX::XMFLOAT3( 0.0f, -1.0f, 0.5f );
     pQuadVertices[0].v2TexCoord = DirectX::XMFLOAT2( fU1, fV1 );
@@ -477,7 +477,7 @@ void Sprite::SetUVs( float fU1, float fV1, float fU2, float fV2 )
 // Renders the sprite
 //--------------------------------------------------------------------------------------
 HRESULT Sprite::RenderSprite( ID3D11ShaderResourceView* pTextureView, int nStartPosX,
-                             int nStartPosY, int nWidth, int nHeight, bool bAlpha, bool bBordered )
+    int nStartPosY, int nWidth, int nHeight, bool bAlpha, bool bBordered )
 {
     ID3D11ShaderResourceView* pNULLSRV = NULL;
 
@@ -486,7 +486,7 @@ HRESULT Sprite::RenderSprite( ID3D11ShaderResourceView* pTextureView, int nStart
     s_CBSprite.fPlotParams[2] = (float)nWidth;
     s_CBSprite.fPlotParams[3] = (float)nHeight;
 
-    if ( pTextureView )
+    if (pTextureView)
     {
         DXUTGetD3D11DeviceContext()->PSSetShaderResources( 0, 1, &pTextureView );
         DXUTGetD3D11DeviceContext()->PSSetSamplers( 0, 1, m_PointSampleMode ? &m_pSamplePoint : &m_pSampleLinear );
@@ -497,8 +497,8 @@ HRESULT Sprite::RenderSprite( ID3D11ShaderResourceView* pTextureView, int nStart
         DXUTGetD3D11DeviceContext()->PSSetShader( m_pSpriteUntexturedPS, NULL, 0 );
     }
 
-    float black[ 4 ] = { 0, 0, 0, 0 };
-    if( bAlpha )
+    float black[4] = { 0, 0, 0, 0 };
+    if (bAlpha)
     {
         DXUTGetD3D11DeviceContext()->OMSetBlendState( m_pSrcAlphaBlending, black, 0xFFFFFFFF );
     }
@@ -513,7 +513,7 @@ HRESULT Sprite::RenderSprite( ID3D11ShaderResourceView* pTextureView, int nStart
     DXUTGetD3D11DeviceContext()->PSSetShaderResources( 0, 1, &pNULLSRV );
 
     // Optionally render a border
-    if( bBordered )
+    if (bBordered)
     {
         DXUTGetD3D11DeviceContext()->PSSetShader( m_pSpriteBorderPS, NULL, 0 );
 
@@ -528,8 +528,8 @@ HRESULT Sprite::RenderSprite( ID3D11ShaderResourceView* pTextureView, int nStart
 // Renders the MS sprite
 //--------------------------------------------------------------------------------------
 HRESULT Sprite::RenderSpriteMS( ID3D11ShaderResourceView* pTextureView, int nStartPosX,
-                               int nStartPosY, int nWidth, int nHeight, int nTextureWidth, int nTextureHeight,
-                               bool bAlpha, bool bBordered, int nSampleIndex )
+    int nStartPosY, int nWidth, int nHeight, int nTextureWidth, int nTextureHeight,
+    bool bAlpha, bool bBordered, int nSampleIndex )
 {
     ID3D11SamplerState* ppSamplerStates[2] = { m_pSamplePoint, m_pSampleLinear };
     ID3D11ShaderResourceView* pNULLSRV = NULL;
@@ -548,8 +548,8 @@ HRESULT Sprite::RenderSpriteMS( ID3D11ShaderResourceView* pTextureView, int nSta
     DXUTGetD3D11DeviceContext()->PSSetSamplers( 0, 2, ppSamplerStates );
     DXUTGetD3D11DeviceContext()->PSSetShader( m_pSpriteMSPS, NULL, 0 );
 
-    float black[ 4 ] = { 0, 0, 0, 0 };
-    if( bAlpha )
+    float black[4] = { 0, 0, 0, 0 };
+    if (bAlpha)
     {
         DXUTGetD3D11DeviceContext()->OMSetBlendState( m_pSrcAlphaBlending, black, 0xFFFFFFFF );
     }
@@ -564,7 +564,7 @@ HRESULT Sprite::RenderSpriteMS( ID3D11ShaderResourceView* pTextureView, int nSta
     DXUTGetD3D11DeviceContext()->PSSetShaderResources( 0, 1, &pNULLSRV );
 
     // Optionally render a border
-    if( bBordered )
+    if (bBordered)
     {
         DXUTGetD3D11DeviceContext()->PSSetShader( m_pSpriteBorderPS, NULL, 0 );
 
@@ -579,8 +579,8 @@ HRESULT Sprite::RenderSpriteMS( ID3D11ShaderResourceView* pTextureView, int nSta
 // Renders sprite as depth
 //--------------------------------------------------------------------------------------
 HRESULT Sprite::RenderSpriteAsDepth( ID3D11ShaderResourceView* pTextureView, int nStartPosX,
-                                    int nStartPosY, int nWidth, int nHeight, bool bBordered, float fDepthRangeMin,
-                                    float fDepthRangeMax )
+    int nStartPosY, int nWidth, int nHeight, bool bBordered, float fDepthRangeMin,
+    float fDepthRangeMax )
 {
     ID3D11SamplerState* ppSamplerStates[2] = { m_pSamplePoint, m_pSampleLinear };
     ID3D11ShaderResourceView* pNULLSRV = NULL;
@@ -598,7 +598,7 @@ HRESULT Sprite::RenderSpriteAsDepth( ID3D11ShaderResourceView* pTextureView, int
     DXUTGetD3D11DeviceContext()->PSSetSamplers( 0, 2, ppSamplerStates );
     DXUTGetD3D11DeviceContext()->PSSetShader( m_pSpriteAsDepthPS, NULL, 0 );
 
-    float black[ 4 ] = { 0, 0, 0, 0 };
+    float black[4] = { 0, 0, 0, 0 };
     DXUTGetD3D11DeviceContext()->OMSetBlendState( m_pNoBlending, black, 0xFFFFFFFF );
 
     // Do the render
@@ -607,7 +607,7 @@ HRESULT Sprite::RenderSpriteAsDepth( ID3D11ShaderResourceView* pTextureView, int
     DXUTGetD3D11DeviceContext()->PSSetShaderResources( 0, 1, &pNULLSRV );
 
     // Optionally render a border
-    if( bBordered )
+    if (bBordered)
     {
         DXUTGetD3D11DeviceContext()->PSSetShader( m_pSpriteBorderPS, NULL, 0 );
         RenderBorder();
@@ -621,8 +621,8 @@ HRESULT Sprite::RenderSpriteAsDepth( ID3D11ShaderResourceView* pTextureView, int
 // Renders the sprite as MS depth
 //--------------------------------------------------------------------------------------
 HRESULT Sprite::RenderSpriteAsDepthMS( ID3D11ShaderResourceView* pTextureView, int nStartPosX,
-                                      int nStartPosY, int nWidth, int nHeight, int nTextureWidth, int nTextureHeight,
-                                      bool bBordered, float fDepthRangeMin, float fDepthRangeMax, int nSampleIndex )
+    int nStartPosY, int nWidth, int nHeight, int nTextureWidth, int nTextureHeight,
+    bool bBordered, float fDepthRangeMin, float fDepthRangeMax, int nSampleIndex )
 {
     ID3D11SamplerState* ppSamplerStates[2] = { m_pSamplePoint, m_pSampleLinear };
     ID3D11ShaderResourceView* pNULLSRV = NULL;
@@ -643,7 +643,7 @@ HRESULT Sprite::RenderSpriteAsDepthMS( ID3D11ShaderResourceView* pTextureView, i
     DXUTGetD3D11DeviceContext()->PSSetSamplers( 0, 2, ppSamplerStates );
     DXUTGetD3D11DeviceContext()->PSSetShader( m_pSpriteAsDepthMSPS, NULL, 0 );
 
-    float black[ 4 ] = { 0, 0, 0, 0 };
+    float black[4] = { 0, 0, 0, 0 };
     DXUTGetD3D11DeviceContext()->OMSetBlendState( m_pNoBlending, black, 0xFFFFFFFF );
 
     // Do the render
@@ -653,7 +653,7 @@ HRESULT Sprite::RenderSpriteAsDepthMS( ID3D11ShaderResourceView* pTextureView, i
     DXUTGetD3D11DeviceContext()->PSSetShader( m_pSpriteBorderPS, NULL, 0 );
 
     // Optionally render a border
-    if( bBordered )
+    if (bBordered)
     {
         RenderBorder();
     }
@@ -686,31 +686,37 @@ HRESULT Sprite::RenderSpriteVolume( ID3D11ShaderResourceView* pTextureView, int 
     }
     else*/
     {
-        float black[ 4 ] = { 0, 0, 0, 0 };
+        float black[4] = { 0, 0, 0, 0 };
         DXUTGetD3D11DeviceContext()->OMSetBlendState( m_pNoBlending, black, 0xFFFFFFFF );
     }
 
     // Do the render
-    for ( int j = 0; j < (bBordered ? 2 : 1); j++ )
+    for (int j = 0; j < (bBordered ? 2 : 1); j++)
     {
-        if ( j == 1 )
+        if (j == 1)
+        {
             DXUTGetD3D11DeviceContext()->PSSetShader( m_pSpriteBorderPS, NULL, 0 );
+        }
 
         float fYPos = (float)nStartPosY;
         float fXPos = 0.0f;
-        for ( UINT i = 0; i < desc.Depth; i++ )
+        for (UINT i = 0; i < desc.Depth; i++)
         {
             s_CBSprite.fPlotParams[0] = (float)nStartPosX + fXPos;
             s_CBSprite.fPlotParams[1] = fYPos;
             s_CBSprite.fTextureSize[2] = (float)i;
 
-            if ( j == 0 )
+            if (j == 0)
+            {
                 Render();
+            }
             else
+            {
                 RenderBorder();
+            }
 
             fXPos += (float)nSliceSize;
-            if ( fXPos > (float)( nMaxWidth - nSliceSize ) )
+            if (fXPos > (float)(nMaxWidth - nSliceSize))
             {
                 fXPos = 0.0f;
                 fYPos += (float)nSliceSize;
@@ -806,8 +812,3 @@ void Sprite::Render()
     DXUTGetD3D11DeviceContext()->RSSetState( m_pEnableCulling );
     DXUTGetD3D11DeviceContext()->OMSetDepthStencilState( m_pEnableDepthTestWrite, 0xff );
 }
-
-
-//--------------------------------------------------------------------------------------
-// EOF
-//--------------------------------------------------------------------------------------
