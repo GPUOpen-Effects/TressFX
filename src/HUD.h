@@ -25,8 +25,9 @@
 //
 // Class definition for the AMD standard HUD interface.
 //--------------------------------------------------------------------------------------
+#ifndef AMD_SDK_HUD_H
+#define AMD_SDK_HUD_H
 
-#pragma once
 
 namespace AMD
 {
@@ -95,10 +96,6 @@ private:
     CDXUTStatic*    m_pLabel;
 };
 
-
-
 } // namespace AMD
 
-//--------------------------------------------------------------------------------------
-// EOF
-//--------------------------------------------------------------------------------------
+#endif

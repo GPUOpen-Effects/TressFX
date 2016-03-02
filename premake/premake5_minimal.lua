@@ -18,7 +18,7 @@ project "AMD_SDK_Minimal"
    filename ("AMD_SDK_Minimal" .. _AMD_VS_SUFFIX)
    uuid "EBB939DC-98E4-49DF-B1F1-D2E80A11F60A"
    targetdir "../lib"
-   objdir "../build/%{_AMD_SAMPLE_DIR_LAYOUT}"
+   objdir "../build/%{_AMD_SAMPLE_DIR_LAYOUT_MINIMAL}"
    warnings "Extra"
    floatingpoint "Fast"
 

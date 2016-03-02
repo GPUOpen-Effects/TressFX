@@ -23,15 +23,15 @@
 //--------------------------------------------------------------------------------------
 // File: HelperFunctions.h
 //
-// Various helper functions
+// Various helper functions.
 //--------------------------------------------------------------------------------------
-#ifndef __AMD_HELPER_FUNCTIONS_H__
-#define __AMD_HELPER_FUNCTIONS_H__
+#ifndef AMD_SDK_HELPER_FUNCTIONS_H
+#define AMD_SDK_HELPER_FUNCTIONS_H
 
 namespace AMD
 {
     // Cmd line params structure
-    typedef struct _CmdLineParams
+    typedef struct CmdLineParams_t
     {
         D3D_DRIVER_TYPE DriverType;
         unsigned int uWidth;
@@ -143,6 +143,3 @@ unsigned short ConvertF32ToF16(float fValueToConvert);
 
 
 #endif
-//--------------------------------------------------------------------------------------
-// EOF
-//--------------------------------------------------------------------------------------

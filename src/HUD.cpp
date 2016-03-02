@@ -106,9 +106,9 @@ void HUD::OnRender( float fElapsedTime )
 
 
 Slider::Slider( CDXUTDialog& dialog, int id, int& y, const wchar_t* label, int min, int max, int& value ) :
-    m_Value( value ),
-    m_szLabel( label ),
-    m_ValueFloat( (float &)value )
+m_Value( value ),
+m_szLabel( label ),
+m_ValueFloat( (float &)value )
 {
     dialog.AddStatic( id + 1000000, L"", AMD::HUD::iElementOffset, y += AMD::HUD::iElementDelta, AMD::HUD::iElementWidth, AMD::HUD::iElementHeight, false, &m_pLabel );
     dialog.AddSlider( id, AMD::HUD::iElementOffset, y += AMD::HUD::iElementDelta, AMD::HUD::iElementWidth, AMD::HUD::iElementHeight, min, max, m_Value, false, &m_pSlider );
@@ -124,11 +124,11 @@ Slider::Slider( CDXUTDialog& dialog, int id, int& y, const wchar_t* label, int m
 
 
 Slider::Slider( CDXUTDialog& dialog, int id, int& y, const wchar_t* label, float min, float max, float step, float& value ) :
-    m_ValueFloat( value ),
-    m_MinFloat( min ),
-    m_MaxFloat( max ),
-    m_szLabel( label ),
-    m_Value( (int &)value )
+m_ValueFloat( value ),
+m_MinFloat( min ),
+m_MaxFloat( max ),
+m_szLabel( label ),
+m_Value( (int &)value )
 {
     m_Min = 0;
     m_Max = (int)((m_MaxFloat - m_MinFloat) / step + 0.499f);
@@ -147,15 +147,23 @@ Slider::Slider( CDXUTDialog& dialog, int id, int& y, const wchar_t* label, float
 void Slider::OnGuiEvent()
 {
     if (m_UseFloat)
+    {
         m_ValueFloat = (m_MaxFloat - m_MinFloat) * ((float)m_pSlider->GetValue() / m_Max) + m_MinFloat;
+    }
     else
+    {
         m_Value = m_pSlider->GetValue();
+    }
 
-    wchar_t buff[ 1024 ];
+    wchar_t buff[1024];
     if (m_UseFloat)
+    {
         swprintf_s( buff, 1024, L"%s: %f", m_szLabel, m_ValueFloat );
+    }
     else
+    {
         swprintf_s( buff, 1024, L"%s: %d", m_szLabel, m_Value );
+    }
 
     m_pLabel->SetText( buff );
 }
@@ -177,22 +185,17 @@ void Slider::SetVisible( bool visible )
 
 void Slider::SetValue( int value )
 {
-    if (m_UseFloat == true) return;
+    if (m_UseFloat == true) { return; }
     m_pSlider->SetValue( value );
     OnGuiEvent();
 }
 
 void Slider::SetValue( float value )
 {
-    if (m_UseFloat != true) return;
+    if (m_UseFloat != true) { return; }
 
     int slider_value = (int)((value - m_MinFloat) / (m_MaxFloat - m_MinFloat) * m_Max + 0.499f);
 
     m_pSlider->SetValue( (int)slider_value );
     OnGuiEvent();
 }
-
-
-//--------------------------------------------------------------------------------------
-// EOF
-//--------------------------------------------------------------------------------------

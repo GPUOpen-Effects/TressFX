@@ -30,7 +30,7 @@
 //
 // Assumption, relies on following directory structure:
 //
-// SolutionDir\..\src\Shaders\
+// SolutionDir\..\src\Shaders
 //--------------------------------------------------------------------------------------
 
 
@@ -51,12 +51,12 @@ using namespace AMD;
 // The done event handle
 static HANDLE   s_hDoneEvent = 0;
 
-static const wchar_t *FXC_PATH_STRING_LOCAL                 = L"\\src\\Shaders\\fxc.exe";
-static const wchar_t *DEV_PATH_STRING_LOCAL                 = L"\\src\\Shaders\\Dev.exe";
-static const wchar_t *FXC_PATH_STRING_INSTALLED_WIN_10_SDK  = L"\\Windows Kits\\10\\bin\\x64\\fxc.exe";
+static const wchar_t *FXC_PATH_STRING_LOCAL = L"\\src\\Shaders\\fxc.exe";
+static const wchar_t *DEV_PATH_STRING_LOCAL = L"\\src\\Shaders\\Dev.exe";
+static const wchar_t *FXC_PATH_STRING_INSTALLED_WIN_10_SDK = L"\\Windows Kits\\10\\bin\\x64\\fxc.exe";
 static const wchar_t *FXC_PATH_STRING_INSTALLED_WIN_8_1_SDK = L"\\Windows Kits\\8.1\\bin\\x64\\fxc.exe";
 static const wchar_t *FXC_PATH_STRING_INSTALLED_WIN_8_0_SDK = L"\\Windows Kits\\8.0\\bin\\x64\\fxc.exe";
-static const wchar_t *DEV_PATH_STRING_INSTALLED             = L"\\Dev.exe";
+static const wchar_t *DEV_PATH_STRING_INSTALLED = L"\\Dev.exe";
 
 //--------------------------------------------------------------------------------------
 // Constructor
@@ -110,17 +110,20 @@ ShaderCache::Shader::Shader()
     // C:\xpSnm8ixu8zR3lqGRtIbXMNOVE15oRgP7SwhsqRgkG7atxEOZbgsJmWXDLA7pCSUuQsqko9YN03e7aUw26Aoy9UpS3mSH1uekbTquhozgbB5KQwFxKzaBkSLpVmIWX8gQpoDd9mCTFLtbO0BCGdF7lF48KpxPFTjmNVgJK4sMfi5mavXhc
 
     FILE* pFile = NULL;
-    wchar_t wsShaderPathName[m_uPATHNAME_MAX_LENGTH + 1] = { L"\\\\?\\C:\\xpSnm8ixu8zR3lqGRtIbXMNOVE15oRgP7SwhsqRgkG7atxEOZbgs"
+    wchar_t wsShaderPathName[m_uPATHNAME_MAX_LENGTH + 1] =
+    {
+        L"\\\\?\\C:\\xpSnm8ixu8zR3lqGRtIbXMNOVE15oRgP7SwhsqRgkG7atxEOZbgs"
         L"JmWXDLA7pCSUuQsqko9YN03e7aUw26Aoy9UpS3mSH1uekbTquhozgbB5KQwFxKz"
         L"aBkSLpVmIWX8gQpoDd9mCTFLtbO0BCGdF7lF48KpxPFTjmNVgJK4sMfi5mavXhc"
         L"\\rqgJRzfIBHlFGEcQrb3JUPcFGEt2S0ZnhetHvO2WNerlSOvqDVbBIey9bO7k0"
         L"tytUih5E8ijWnbPHxF65X0jCuwikbtjkOXgoMBvoNGDlpfcrS0PVS7Ww5SJ3Ivg"
         L"KdMj5VyN7qmfWkddiLoTvOybtkSchYW99uyQEgIkiPjM0mFmlCGIsTPFRDC.txt"
-        L"\0" };
+        L"\0"
+    };
 
     _wfopen_s( &pFile, wsShaderPathName, L"wb" );
 
-    if( pFile )
+    if (pFile)
     {
         fwrite( "Hello, World!\0", 14, 1, pFile );
         fclose( pFile );
@@ -148,29 +151,29 @@ ShaderCache::Shader::Shader()
 //--------------------------------------------------------------------------------------
 ShaderCache::Shader::~Shader()
 {
-    if( NULL != m_pMacros )
+    if (NULL != m_pMacros)
     {
-        delete[] m_pMacros;
+        delete [] m_pMacros;
         m_pMacros = NULL;
     }
 
-    if( NULL != m_pHash )
+    if (NULL != m_pHash)
     {
         free( m_pHash );
         m_pHash = NULL;
     }
 
-    if( NULL != m_pFilenameHash )
+    if (NULL != m_pFilenameHash)
     {
         free( m_pFilenameHash );
         m_pFilenameHash = NULL;
     }
 
-    for( int iElement = 0; iElement < (int)m_uNumDescElements; iElement++ )
+    for (int iElement = 0; iElement < (int)m_uNumDescElements; iElement++)
     {
-        delete[] m_pInputLayoutDesc[iElement].SemanticName;
+        delete [] m_pInputLayoutDesc[iElement].SemanticName;
     }
-    delete[] m_pInputLayoutDesc;
+    delete [] m_pInputLayoutDesc;
     m_pInputLayoutDesc = NULL;
 }
 
@@ -178,7 +181,7 @@ ShaderCache::Shader::~Shader()
 // Constructor
 //--------------------------------------------------------------------------------------
 ShaderCache::ShaderCache( const SHADER_AUTO_RECOMPILE_TYPE i_keAutoRecompileTouchedShadersType, const ERROR_DISPLAY_TYPE i_keErrorDisplayType,
-                         const GENERATE_ISA_TYPE i_keGenerateShaderISAType, const SHADER_COMPILER_EXE_TYPE i_keShaderCompilerExeType )
+    const GENERATE_ISA_TYPE i_keGenerateShaderISAType, const SHADER_COMPILER_EXE_TYPE i_keShaderCompilerExeType )
 {
     m_ShaderSourceList.clear();
     m_ShaderList.clear();
@@ -191,8 +194,8 @@ ShaderCache::ShaderCache( const SHADER_AUTO_RECOMPILE_TYPE i_keAutoRecompileTouc
 
 #if AMD_SDK_INTERNAL_BUILD
     m_ISATargetList.clear();
-    m_ISATargetList.reserve(NUM_ISA_TARGETS);
-    for( int i = 0; i < NUM_ISA_TARGETS; i++ )
+    m_ISATargetList.reserve( NUM_ISA_TARGETS );
+    for (int i = 0; i < NUM_ISA_TARGETS; i++)
     {
         m_ISATargetList.push_back( new std::vector<Shader*>() );
     }
@@ -211,10 +214,10 @@ ShaderCache::ShaderCache( const SHADER_AUTO_RECOMPILE_TYPE i_keAutoRecompileTouc
     // the safer PathCchCombine/PathCchCombineEx functions are not available in Win7,
     // so just use PathCombine
     PathCombine( m_wsWorkingDir, wsWorkingDir, L"..\\bin" );
-    swprintf_s( m_wsUnicodeWorkingDir, L"%s%s",  L"\\\\?\\", m_wsWorkingDir );
+    swprintf_s( m_wsUnicodeWorkingDir, L"%s%s", L"\\\\?\\", m_wsWorkingDir );
 
     PathCombine( m_wsShaderSourceDir, m_wsWorkingDir, L"..\\src\\Shaders" );
-    swprintf_s( m_wsUnicodeShaderSourceDir, L"%s%s",  L"\\\\?\\", m_wsShaderSourceDir );
+    swprintf_s( m_wsUnicodeShaderSourceDir, L"%s%s", L"\\\\?\\", m_wsShaderSourceDir );
 
     PathCombine( m_wsAmdSdkDir, m_wsWorkingDir, L"..\\..\\AMD_SDK" );
 
@@ -223,15 +226,15 @@ ShaderCache::ShaderCache( const SHADER_AUTO_RECOMPILE_TYPE i_keAutoRecompileTouc
     wchar_t wsShadersDir[m_uPATHNAME_MAX_LENGTH];
     swprintf_s( wsShadersDir, L"%s%s", m_wsWorkingDir, L"\\Shaders" );
     bRet = CreateDirectoryW( wsShadersDir, NULL );
-    if( bRet == ERROR_PATH_NOT_FOUND )
+    if (bRet == ERROR_PATH_NOT_FOUND)
     {
         assert( false );
     }
 
 #if AMD_SDK_INTERNAL_BUILD
-    swprintf_s( m_wsSCDEVWorkingDir, L"%s%s",  wsShadersDir, L"\\ScDev" );
+    swprintf_s( m_wsSCDEVWorkingDir, L"%s%s", wsShadersDir, L"\\ScDev" );
     bRet = CreateDirectoryW( m_wsSCDEVWorkingDir, NULL );
-    if( bRet == ERROR_PATH_NOT_FOUND )
+    if (bRet == ERROR_PATH_NOT_FOUND)
     {
         assert( false );
     }
@@ -240,7 +243,7 @@ ShaderCache::ShaderCache( const SHADER_AUTO_RECOMPILE_TYPE i_keAutoRecompileTouc
     wchar_t wsCacheDir[m_uPATHNAME_MAX_LENGTH];
     swprintf_s( wsCacheDir, L"%s%s", wsShadersDir, L"\\Cache" );
     bRet = CreateDirectoryW( wsCacheDir, NULL );
-    if( bRet == ERROR_PATH_NOT_FOUND )
+    if (bRet == ERROR_PATH_NOT_FOUND)
     {
         assert( false );
     }
@@ -248,7 +251,7 @@ ShaderCache::ShaderCache( const SHADER_AUTO_RECOMPILE_TYPE i_keAutoRecompileTouc
     wchar_t wsObjectDir[m_uPATHNAME_MAX_LENGTH];
     swprintf_s( wsObjectDir, L"%s%s", wsCacheDir, L"\\Object" );
     bRet = CreateDirectoryW( wsObjectDir, NULL );
-    if( bRet == ERROR_PATH_NOT_FOUND )
+    if (bRet == ERROR_PATH_NOT_FOUND)
     {
         assert( false );
     }
@@ -256,7 +259,7 @@ ShaderCache::ShaderCache( const SHADER_AUTO_RECOMPILE_TYPE i_keAutoRecompileTouc
     wchar_t wsObjectDebugDir[m_uPATHNAME_MAX_LENGTH];
     swprintf_s( wsObjectDebugDir, L"%s%s", wsCacheDir, L"\\Object\\Debug" );
     bRet = CreateDirectoryW( wsObjectDebugDir, NULL );
-    if( bRet == ERROR_PATH_NOT_FOUND )
+    if (bRet == ERROR_PATH_NOT_FOUND)
     {
         assert( false );
     }
@@ -264,7 +267,7 @@ ShaderCache::ShaderCache( const SHADER_AUTO_RECOMPILE_TYPE i_keAutoRecompileTouc
     wchar_t wsObjectReleaseDir[m_uPATHNAME_MAX_LENGTH];
     swprintf_s( wsObjectReleaseDir, L"%s%s", wsCacheDir, L"\\Object\\Release" );
     bRet = CreateDirectoryW( wsObjectReleaseDir, NULL );
-    if( bRet == ERROR_PATH_NOT_FOUND )
+    if (bRet == ERROR_PATH_NOT_FOUND)
     {
         assert( false );
     }
@@ -272,7 +275,7 @@ ShaderCache::ShaderCache( const SHADER_AUTO_RECOMPILE_TYPE i_keAutoRecompileTouc
     wchar_t wsErrorDir[m_uPATHNAME_MAX_LENGTH];
     swprintf_s( wsErrorDir, L"%s%s", wsCacheDir, L"\\Error" );
     bRet = CreateDirectoryW( wsErrorDir, NULL );
-    if( bRet == ERROR_PATH_NOT_FOUND )
+    if (bRet == ERROR_PATH_NOT_FOUND)
     {
         assert( false );
     }
@@ -280,7 +283,7 @@ ShaderCache::ShaderCache( const SHADER_AUTO_RECOMPILE_TYPE i_keAutoRecompileTouc
     wchar_t wsAssemblyDir[m_uPATHNAME_MAX_LENGTH];
     swprintf_s( wsAssemblyDir, L"%s%s", wsCacheDir, L"\\Assembly" );
     bRet = CreateDirectoryW( wsAssemblyDir, NULL );
-    if( bRet == ERROR_PATH_NOT_FOUND )
+    if (bRet == ERROR_PATH_NOT_FOUND)
     {
         assert( false );
     }
@@ -288,7 +291,7 @@ ShaderCache::ShaderCache( const SHADER_AUTO_RECOMPILE_TYPE i_keAutoRecompileTouc
     wchar_t wsISADir[m_uPATHNAME_MAX_LENGTH];
     swprintf_s( wsISADir, L"%s%s", wsCacheDir, L"\\ISA" );
     bRet = CreateDirectoryW( wsISADir, NULL );
-    if( bRet == ERROR_PATH_NOT_FOUND )
+    if (bRet == ERROR_PATH_NOT_FOUND)
     {
         assert( false );
     }
@@ -296,7 +299,7 @@ ShaderCache::ShaderCache( const SHADER_AUTO_RECOMPILE_TYPE i_keAutoRecompileTouc
     wchar_t wsPreprocessDir[m_uPATHNAME_MAX_LENGTH];
     swprintf_s( wsPreprocessDir, L"%s%s", wsCacheDir, L"\\Preprocess" );
     bRet = CreateDirectoryW( wsPreprocessDir, NULL );
-    if( bRet == ERROR_PATH_NOT_FOUND )
+    if (bRet == ERROR_PATH_NOT_FOUND)
     {
         assert( false );
     }
@@ -304,7 +307,7 @@ ShaderCache::ShaderCache( const SHADER_AUTO_RECOMPILE_TYPE i_keAutoRecompileTouc
     wchar_t wsHashDir[m_uPATHNAME_MAX_LENGTH];
     swprintf_s( wsHashDir, L"%s%s", wsCacheDir, L"\\Hash" );
     bRet = CreateDirectoryW( wsHashDir, NULL );
-    if( bRet == ERROR_PATH_NOT_FOUND )
+    if (bRet == ERROR_PATH_NOT_FOUND)
     {
         assert( false );
     }
@@ -312,7 +315,7 @@ ShaderCache::ShaderCache( const SHADER_AUTO_RECOMPILE_TYPE i_keAutoRecompileTouc
     wchar_t wsHashDebugDir[m_uPATHNAME_MAX_LENGTH];
     swprintf_s( wsHashDebugDir, L"%s%s", wsCacheDir, L"\\Hash\\Debug" );
     bRet = CreateDirectoryW( wsHashDebugDir, NULL );
-    if( bRet == ERROR_PATH_NOT_FOUND )
+    if (bRet == ERROR_PATH_NOT_FOUND)
     {
         assert( false );
     }
@@ -320,7 +323,7 @@ ShaderCache::ShaderCache( const SHADER_AUTO_RECOMPILE_TYPE i_keAutoRecompileTouc
     wchar_t wsHashReleaseDir[m_uPATHNAME_MAX_LENGTH];
     swprintf_s( wsHashReleaseDir, L"%s%s", wsCacheDir, L"\\Hash\\Release" );
     bRet = CreateDirectoryW( wsHashReleaseDir, NULL );
-    if( bRet == ERROR_PATH_NOT_FOUND )
+    if (bRet == ERROR_PATH_NOT_FOUND)
     {
         assert( false );
     }
@@ -368,7 +371,7 @@ ShaderCache::ShaderCache( const SHADER_AUTO_RECOMPILE_TYPE i_keAutoRecompileTouc
     m_bShowShaderErrors = (i_keErrorDisplayType == ERROR_DISPLAY_ON_SCREEN);
 #if AMD_SDK_INTERNAL_BUILD
 #if AMD_SDK_PREBUILT_RELEASE_EXE
-#error The pre-built release exe is for the public (i.e. it's external)
+#error The pre-built release exe exists specifically to release (i.e. it's external)
 #endif
     m_bGenerateShaderISA = (i_keGenerateShaderISAType == GENERATE_ISA_ENABLED);
 #else
@@ -381,7 +384,7 @@ ShaderCache::ShaderCache( const SHADER_AUTO_RECOMPILE_TYPE i_keAutoRecompileTouc
     swprintf_s( m_wsLastShaderError, L"*** 0 Shader Errors ***\n" );
 
 #if AMD_SDK_INTERNAL_BUILD
-    if( i_keShaderCompilerExeType == SHADER_COMPILER_EXE_LOCAL )
+    if (i_keShaderCompilerExeType == SHADER_COMPILER_EXE_LOCAL)
     {
         swprintf_s( m_wsFxcExePath, L"%s%s", m_wsAmdSdkDir, FXC_PATH_STRING_LOCAL );
         swprintf_s( m_wsDevExePath, L"%s%s", m_wsAmdSdkDir, DEV_PATH_STRING_LOCAL );
@@ -397,25 +400,25 @@ ShaderCache::ShaderCache( const SHADER_AUTO_RECOMPILE_TYPE i_keAutoRecompileTouc
             CSIDL_PROGRAM_FILESX86,
             FALSE );
         swprintf_s( m_wsFxcExePath, L"%s%s", wsProgramFilesDir, FXC_PATH_STRING_INSTALLED_WIN_10_SDK );
-        if( !CheckFXC() )
+        if (!CheckFXC())
         {
             swprintf_s( m_wsFxcExePath, L"%s%s", wsProgramFilesDir, FXC_PATH_STRING_INSTALLED_WIN_8_1_SDK );
             if (!CheckFXC())
             {
-                swprintf_s(m_wsFxcExePath, L"%s%s", wsProgramFilesDir, FXC_PATH_STRING_INSTALLED_WIN_8_0_SDK);
+                swprintf_s( m_wsFxcExePath, L"%s%s", wsProgramFilesDir, FXC_PATH_STRING_INSTALLED_WIN_8_0_SDK );
             }
         }
 
         // get the scdev environment variable
         size_t requiredSizeForScDevEnvVar;
-        wchar_t wsScDevDir[MAX_PATH] = {L'\0'};
-        _wgetenv_s(&requiredSizeForScDevEnvVar, wsScDevDir, MAX_PATH, L"AMD_SCDEV_DIR");
+        wchar_t wsScDevDir[MAX_PATH] = { L'\0' };
+        _wgetenv_s( &requiredSizeForScDevEnvVar, wsScDevDir, MAX_PATH, L"AMD_SCDEV_DIR" );
         swprintf_s( m_wsDevExePath, L"%s%s", wsScDevDir, DEV_PATH_STRING_INSTALLED );
     }
 
-    if( m_bGenerateShaderISA )
+    if (m_bGenerateShaderISA)
     {
-        if( !CheckSCDEV() )
+        if (!CheckSCDEV())
         {
             m_bGenerateShaderISA = false;
 
@@ -427,7 +430,7 @@ ShaderCache::ShaderCache( const SHADER_AUTO_RECOMPILE_TYPE i_keAutoRecompileTouc
         }
     }
 
-    if( !CheckFXC() )
+    if (!CheckFXC())
     {
 #if !AMD_SDK_PREBUILT_RELEASE_EXE
         // For SHADER_COMPILER_EXE_INSTALLED, fxc.exe is assumed to be in the default Win8 SDK install location
@@ -438,7 +441,7 @@ ShaderCache::ShaderCache( const SHADER_AUTO_RECOMPILE_TYPE i_keAutoRecompileTouc
 
     m_bShowShaderISA = m_bGenerateShaderISA;
 
-    if( m_bRecompileTouchedShaders )
+    if (m_bRecompileTouchedShaders)
     {
 #if defined(DEBUG) || defined(_DEBUG)
         const bool watchOK = WatchDirectoryForChanges();
@@ -459,20 +462,20 @@ ShaderCache::~ShaderCache()
     WaitForSingleObject( s_hDoneEvent, INFINITE );
     CloseHandle( s_hDoneEvent );
 
-    for( std::list<Shader*>::iterator it = m_ShaderSourceList.begin(); it != m_ShaderSourceList.end(); it++)
+    for (std::list<Shader*>::iterator it = m_ShaderSourceList.begin(); it != m_ShaderSourceList.end(); it++)
     {
         Shader* pShader = *it;
         delete pShader;
     }
 
-    for( std::list<Shader*>::iterator it = m_ShaderList.begin(); it != m_ShaderList.end(); it++)
+    for (std::list<Shader*>::iterator it = m_ShaderList.begin(); it != m_ShaderList.end(); it++)
     {
         Shader* pShader = *it;
         delete pShader;
     }
 
 #if AMD_SDK_INTERNAL_BUILD
-    for( std::vector< std::vector<Shader*> * >::iterator it = m_ISATargetList.begin(); it != m_ISATargetList.end(); it++)
+    for (std::vector< std::vector<Shader*> * >::iterator it = m_ISATargetList.begin(); it != m_ISATargetList.end(); it++)
     {
         std::vector<Shader*> * pVector = *it;
         pVector->clear();
@@ -493,19 +496,19 @@ ShaderCache::~ShaderCache()
     m_ISATargetList.clear();
 #endif
 
-    if( NULL != m_pProgressInfo )
+    if (NULL != m_pProgressInfo)
     {
-        delete[] m_pProgressInfo;
+        delete [] m_pProgressInfo;
         m_pProgressInfo = NULL;
     }
 
-    if( m_waitPoolHandle )
+    if (m_waitPoolHandle)
     {
         UnregisterWaitEx( m_waitPoolHandle, INVALID_HANDLE_VALUE );
         m_waitPoolHandle = NULL;
     }
 
-    if( m_watchHandle )
+    if (m_watchHandle)
     {
         FindCloseChangeNotification( m_watchHandle );
         m_watchHandle = NULL;
@@ -544,12 +547,12 @@ bool ShaderCache::CloneShaders( void )
     bool bRVal = true;
 
 #if AMD_SDK_INTERNAL_BUILD
-    for( std::list<Shader*>::iterator it = m_ShaderSourceList.begin(); it != m_ShaderSourceList.end(); it++ )
+    for (std::list<Shader*>::iterator it = m_ShaderSourceList.begin(); it != m_ShaderSourceList.end(); it++)
     {
         Shader* pShaderSource = *it;
 
         // check if you already have a shader for for this ISA Target
-        if( std::find(m_ISATargetList[m_eTargetISA]->begin(),m_ISATargetList[m_eTargetISA]->end(), pShaderSource) == m_ISATargetList[m_eTargetISA]->end() )
+        if (std::find( m_ISATargetList[m_eTargetISA]->begin(), m_ISATargetList[m_eTargetISA]->end(), pShaderSource ) == m_ISATargetList[m_eTargetISA]->end())
         {
             // if not, make one
             bRVal &= AddShader( NULL,
@@ -614,37 +617,37 @@ void ShaderCache::InsertInputFilenameIntoCommandLine( wchar_t *pwsCommandLine, c
 //--------------------------------------------------------------------------------------
 // User adds a shader to the cache
 //--------------------------------------------------------------------------------------
-bool ShaderCache::AddShader(    ID3D11DeviceChild** ppShader,
-                            SHADER_TYPE ShaderType,
-                            const wchar_t* pwsTarget,
-                            const wchar_t* pwsEntryPoint,
-                            const wchar_t* pwsSourceFile,
-                            unsigned int uNumMacros,
-                            Macro* pMacros,
-                            ID3D11InputLayout** ppInputLayout,
-                            const D3D11_INPUT_ELEMENT_DESC* pInputLayoutDesc,
-                            unsigned int uNumDescElements,
-                            const wchar_t* pwsCanonicalName,
-                            const int i_iMaxVGPR,
-                            const int i_iMaxSGPR,
-                            const bool i_kbIsApplicationShader
-                            )
+bool ShaderCache::AddShader( ID3D11DeviceChild** ppShader,
+    SHADER_TYPE ShaderType,
+    const wchar_t* pwsTarget,
+    const wchar_t* pwsEntryPoint,
+    const wchar_t* pwsSourceFile,
+    unsigned int uNumMacros,
+    Macro* pMacros,
+    ID3D11InputLayout** ppInputLayout,
+    const D3D11_INPUT_ELEMENT_DESC* pInputLayoutDesc,
+    unsigned int uNumDescElements,
+    const wchar_t* pwsCanonicalName,
+    const int i_iMaxVGPR,
+    const int i_iMaxSGPR,
+    const bool i_kbIsApplicationShader
+    )
 {
 #if AMD_SDK_INTERNAL_BUILD
     assert( (NULL != ppShader) || (!i_kbIsApplicationShader) );
 #else
     assert( NULL != ppShader && i_kbIsApplicationShader);
 #endif
-    assert( ( ShaderType >= SHADER_TYPE_VERTEX ) && ( ShaderType <= SHADER_TYPE_COMPUTE ) );
-    assert( ( NULL != pwsTarget ) && ( wcslen( pwsTarget ) <= m_uTARGET_MAX_LENGTH ) );
-    assert( ( NULL != pwsEntryPoint) && ( wcslen( pwsEntryPoint ) <= m_uENTRY_POINT_MAX_LENGTH ) );
-    assert( ( NULL != pwsSourceFile ) && ( wcslen( pwsSourceFile ) <= m_uFILENAME_MAX_LENGTH ) );
-    if( uNumMacros > 0 )
+    assert( (ShaderType >= SHADER_TYPE_VERTEX) && (ShaderType <= SHADER_TYPE_COMPUTE) );
+    assert( (NULL != pwsTarget) && (wcslen( pwsTarget ) <= m_uTARGET_MAX_LENGTH) );
+    assert( (NULL != pwsEntryPoint) && (wcslen( pwsEntryPoint ) <= m_uENTRY_POINT_MAX_LENGTH) );
+    assert( (NULL != pwsSourceFile) && (wcslen( pwsSourceFile ) <= m_uFILENAME_MAX_LENGTH) );
+    if (uNumMacros > 0)
     {
         assert( NULL != pMacros );
     }
 
-    if( i_kbIsApplicationShader )
+    if (i_kbIsApplicationShader)
     {
         Shader* pShaderSource = new Shader();
         pShaderSource->m_eShaderType = ShaderType;
@@ -654,7 +657,7 @@ bool ShaderCache::AddShader(    ID3D11DeviceChild** ppShader,
         pShaderSource->m_uNumMacros = uNumMacros;
         pShaderSource->m_uNumDescElements = uNumDescElements;
         pShaderSource->m_ppInputLayout = ppInputLayout;
-        if( NULL != pwsCanonicalName )
+        if (NULL != pwsCanonicalName)
         {
             wcscpy_s( pShaderSource->m_wsCanonicalName, m_uFILENAME_MAX_LENGTH, pwsCanonicalName );
         }
@@ -663,15 +666,15 @@ bool ShaderCache::AddShader(    ID3D11DeviceChild** ppShader,
         pShaderSource->m_ISA_SGPRs = i_iMaxSGPR;
 #endif
 
-        if( pShaderSource->m_uNumMacros > 0 )
+        if (pShaderSource->m_uNumMacros > 0)
         {
             pShaderSource->m_pMacros = new Macro[pShaderSource->m_uNumMacros];
             memcpy( pShaderSource->m_pMacros, pMacros, sizeof( Macro ) * pShaderSource->m_uNumMacros );
         }
 
-        if( pShaderSource->m_eShaderType == SHADER_TYPE_VERTEX )
+        if (pShaderSource->m_eShaderType == SHADER_TYPE_VERTEX)
         {
-            if( pShaderSource->m_uNumDescElements > 0 )
+            if (pShaderSource->m_uNumDescElements > 0)
             {
                 assert( NULL != ppInputLayout );
                 assert( NULL != pInputLayoutDesc );
@@ -680,7 +683,7 @@ bool ShaderCache::AddShader(    ID3D11DeviceChild** ppShader,
 
                 memcpy( pShaderSource->m_pInputLayoutDesc, pInputLayoutDesc, sizeof( D3D11_INPUT_ELEMENT_DESC ) * pShaderSource->m_uNumDescElements );
 
-                for( int iElement = 0; iElement < (int)pShaderSource->m_uNumDescElements; iElement++ )
+                for (int iElement = 0; iElement < (int)pShaderSource->m_uNumDescElements; iElement++)
                 {
                     pShaderSource->m_pInputLayoutDesc[iElement].SemanticName = new char[m_uFILENAME_MAX_LENGTH];
                     strcpy_s( (char*)pShaderSource->m_pInputLayoutDesc[iElement].SemanticName, m_uFILENAME_MAX_LENGTH, (char*)pInputLayoutDesc[iElement].SemanticName );
@@ -695,7 +698,7 @@ bool ShaderCache::AddShader(    ID3D11DeviceChild** ppShader,
     }
 
     Shader* pShader = new Shader();
-    if( i_kbIsApplicationShader )
+    if (i_kbIsApplicationShader)
     { // Only copy this if this is an app shader; if we are cloning a shader, we won't render with it, so keep m_ppShader NULL.
         pShader->m_ppShader = ppShader;
     }
@@ -705,11 +708,11 @@ bool ShaderCache::AddShader(    ID3D11DeviceChild** ppShader,
     pShader->m_eISATarget = m_eTargetISA;
 #endif
 
-    if( pShader->m_eShaderType == SHADER_TYPE_VERTEX )
+    if (pShader->m_eShaderType == SHADER_TYPE_VERTEX)
     {
         pShader->m_uNumDescElements = uNumDescElements;
 
-        if( pShader->m_uNumDescElements > 0 )
+        if (pShader->m_uNumDescElements > 0)
         {
             assert( NULL != ppInputLayout );
             assert( NULL != pInputLayoutDesc );
@@ -720,7 +723,7 @@ bool ShaderCache::AddShader(    ID3D11DeviceChild** ppShader,
 
             memcpy( pShader->m_pInputLayoutDesc, pInputLayoutDesc, sizeof( D3D11_INPUT_ELEMENT_DESC ) * pShader->m_uNumDescElements );
 
-            for( int iElement = 0; iElement < (int)pShader->m_uNumDescElements; iElement++ )
+            for (int iElement = 0; iElement < (int)pShader->m_uNumDescElements; iElement++)
             {
                 pShader->m_pInputLayoutDesc[iElement].SemanticName = new char[m_uFILENAME_MAX_LENGTH];
                 strcpy_s( (char*)pShader->m_pInputLayoutDesc[iElement].SemanticName, m_uFILENAME_MAX_LENGTH, (char*)pInputLayoutDesc[iElement].SemanticName );
@@ -731,20 +734,20 @@ bool ShaderCache::AddShader(    ID3D11DeviceChild** ppShader,
     wcscpy_s( pShader->m_wsTarget, m_uTARGET_MAX_LENGTH, pwsTarget );
     wcscpy_s( pShader->m_wsEntryPoint, m_uENTRY_POINT_MAX_LENGTH, pwsEntryPoint );
     wcscpy_s( pShader->m_wsSourceFile, m_uFILENAME_MAX_LENGTH, pwsSourceFile );
-    if( NULL != pwsCanonicalName )
+    if (NULL != pwsCanonicalName)
     {
         wcscpy_s( pShader->m_wsCanonicalName, m_uFILENAME_MAX_LENGTH, pwsCanonicalName );
     }
 
     pShader->m_uNumMacros = uNumMacros;
-    if( pShader->m_uNumMacros > 0 )
+    if (pShader->m_uNumMacros > 0)
     {
         pShader->m_pMacros = new Macro[pShader->m_uNumMacros];
         memcpy( pShader->m_pMacros, pMacros, sizeof( Macro ) * pShader->m_uNumMacros );
     }
 
     // Object, error, assembly, preprocess, and hash file names
-    wchar_t wsFileNameBody[m_uFILENAME_MAX_LENGTH] = {0};
+    wchar_t wsFileNameBody[m_uFILENAME_MAX_LENGTH] = { 0 };
 #ifdef _DEBUG
     wcscat_s( pShader->m_wsObjectFile, m_uFILENAME_MAX_LENGTH, L"Shaders\\Cache\\Object\\Debug\\" );
     wcscat_s( pShader->m_wsHashFile, m_uFILENAME_MAX_LENGTH, L"Shaders\\Cache\\Hash\\Debug\\" );
@@ -757,14 +760,14 @@ bool ShaderCache::AddShader(    ID3D11DeviceChild** ppShader,
     wcscat_s( pShader->m_wsISAFile, m_uFILENAME_MAX_LENGTH, L"Shaders\\Cache\\ISA\\" );
     wcscat_s( pShader->m_wsPreprocessFile, m_uFILENAME_MAX_LENGTH, L"Shaders\\Cache\\Preprocess\\" );
 
-    if( NULL != pwsCanonicalName )
+    if (NULL != pwsCanonicalName)
     {
         wcscat_s( wsFileNameBody, m_uFILENAME_MAX_LENGTH, pShader->m_wsCanonicalName );
     }
     else
     {
         wcscpy_s( wsFileNameBody, m_uFILENAME_MAX_LENGTH, pwsEntryPoint );
-        for( int iMacro = 0; iMacro < (int)pShader->m_uNumMacros; ++iMacro )
+        for (int iMacro = 0; iMacro < (int)pShader->m_uNumMacros; ++iMacro)
         {
             wchar_t wsValue[64];
             wcscat_s( wsFileNameBody, m_uFILENAME_MAX_LENGTH, L"_" );
@@ -799,18 +802,18 @@ bool ShaderCache::AddShader(    ID3D11DeviceChild** ppShader,
     // ISA File now also uses hashed filename
     wcscat_s( pShader->m_wsISAFile, m_uFILENAME_MAX_LENGTH, pShader->m_wsHashedFileName );
     wcscat_s( pShader->m_wsISAFile, m_uFILENAME_MAX_LENGTH, L".asm." );
-    wcscat_s( pShader->m_wsISAFile, m_uFILENAME_MAX_LENGTH, AmdTargetInfo[ pShader->m_eISATarget ].m_Name );
+    wcscat_s( pShader->m_wsISAFile, m_uFILENAME_MAX_LENGTH, AmdTargetInfo[pShader->m_eISATarget].m_Name );
     wcscat_s( pShader->m_wsISAFile, m_uFILENAME_MAX_LENGTH, L".dump.isa" );
 
     wcscat_s( pShader->m_wsObjectFile_with_ISA, m_uFILENAME_MAX_LENGTH, pShader->m_wsObjectFile );
     wcscat_s( pShader->m_wsPreprocessFile_with_ISA, m_uFILENAME_MAX_LENGTH, pShader->m_wsPreprocessFile );
 
-    if( m_bGenerateShaderISA )
+    if (m_bGenerateShaderISA)
     {
         wcscat_s( pShader->m_wsObjectFile_with_ISA, m_uFILENAME_MAX_LENGTH, L"." );
-        wcscat_s( pShader->m_wsObjectFile_with_ISA, m_uFILENAME_MAX_LENGTH, AmdTargetInfo[ pShader->m_eISATarget ].m_Name );
+        wcscat_s( pShader->m_wsObjectFile_with_ISA, m_uFILENAME_MAX_LENGTH, AmdTargetInfo[pShader->m_eISATarget].m_Name );
         wcscat_s( pShader->m_wsPreprocessFile_with_ISA, m_uFILENAME_MAX_LENGTH, L"." );
-        wcscat_s( pShader->m_wsPreprocessFile_with_ISA, m_uFILENAME_MAX_LENGTH, AmdTargetInfo[ pShader->m_eISATarget ].m_Name );
+        wcscat_s( pShader->m_wsPreprocessFile_with_ISA, m_uFILENAME_MAX_LENGTH, AmdTargetInfo[pShader->m_eISATarget].m_Name );
     }
 #endif
 
@@ -823,7 +826,7 @@ bool ShaderCache::AddShader(    ID3D11DeviceChild** ppShader,
     // /Gfp - Prefer flow control constructs
     wcscpy_s( wsCompilationFlags, m_uFILENAME_MAX_LENGTH, L" /Zi /Od /Gfp" );
 #else
-    if( m_bForceDebugShaders )
+    if (m_bForceDebugShaders)
     {
         // Best flags for shader debugging
         // /Zi - Enable debugging information
@@ -847,7 +850,7 @@ bool ShaderCache::AddShader(    ID3D11DeviceChild** ppShader,
     wcscat_s( pShader->m_wsCommandLine, m_uCOMMAND_LINE_MAX_LENGTH, pwsEntryPoint );
     wcscat_s( pShader->m_wsCommandLine, m_uCOMMAND_LINE_MAX_LENGTH, L" /Fo " );
     InsertOutputFilenameIntoCommandLine( pShader->m_wsCommandLine, pShader->m_wsObjectFile );
-    for( int iMacro = 0; iMacro < (int)pShader->m_uNumMacros; ++iMacro )
+    for (int iMacro = 0; iMacro < (int)pShader->m_uNumMacros; ++iMacro)
     {
         wchar_t wsValue[64];
         wcscat_s( pShader->m_wsCommandLine, m_uCOMMAND_LINE_MAX_LENGTH, L" /D " );
@@ -871,17 +874,17 @@ bool ShaderCache::AddShader(    ID3D11DeviceChild** ppShader,
     wcscat_s( pShader->m_wsISACommandLine, m_uCOMMAND_LINE_MAX_LENGTH, L" -ns " );
 
     wcscat_s( pShader->m_wsISACommandLine, m_uCOMMAND_LINE_MAX_LENGTH, L" -" );
-    wcscat_s( pShader->m_wsISACommandLine, m_uCOMMAND_LINE_MAX_LENGTH, AmdTargetInfo[ m_eTargetISA ].m_Name );
+    wcscat_s( pShader->m_wsISACommandLine, m_uCOMMAND_LINE_MAX_LENGTH, AmdTargetInfo[m_eTargetISA].m_Name );
     wcscat_s( pShader->m_wsISACommandLine, m_uCOMMAND_LINE_MAX_LENGTH, L" " );
 
-    if( i_iMaxVGPR > 0 )
+    if (i_iMaxVGPR > 0)
     {
         wchar_t wsValue[64];
         _itow_s( i_iMaxVGPR, wsValue, 10 );
         wcscat_s( pShader->m_wsISACommandLine, m_uCOMMAND_LINE_MAX_LENGTH, L" -vgprs " );
         wcscat_s( pShader->m_wsISACommandLine, m_uCOMMAND_LINE_MAX_LENGTH, wsValue );
     }
-    if( i_iMaxSGPR > 0 )
+    if (i_iMaxSGPR > 0)
     {
         wchar_t wsValue[64];
         _itow_s( i_iMaxSGPR, wsValue, 10 );
@@ -901,7 +904,7 @@ bool ShaderCache::AddShader(    ID3D11DeviceChild** ppShader,
     InsertInputFilenameIntoCommandLine( pShader->m_wsPreprocessCommandLine, pShader->m_wsSourceFile );
     wcscat_s( pShader->m_wsPreprocessCommandLine, m_uCOMMAND_LINE_MAX_LENGTH, L" /P " );
     InsertOutputFilenameIntoCommandLine( pShader->m_wsPreprocessCommandLine, pShader->m_wsPreprocessFile );
-    for( int iMacro = 0; iMacro < (int)pShader->m_uNumMacros; ++iMacro )
+    for (int iMacro = 0; iMacro < (int)pShader->m_uNumMacros; ++iMacro)
     {
         wchar_t wsValue[64];
         wcscat_s( pShader->m_wsPreprocessCommandLine, m_uCOMMAND_LINE_MAX_LENGTH, L" /D " );
@@ -920,7 +923,7 @@ bool ShaderCache::AddShader(    ID3D11DeviceChild** ppShader,
 //--------------------------------------------------------------------------------------
 // The shader thread proc, has to be public, but must not be called by user
 //--------------------------------------------------------------------------------------
-DWORD WINAPI _GenerateShadersThreadProc( void* pParameter )
+DWORD WINAPI GenerateShaders_ThreadProc_( void* pParameter )
 {
     ShaderCache* pShaderCache = (ShaderCache*)pParameter;
 
@@ -942,7 +945,7 @@ HRESULT ShaderCache::GenerateShaders( CREATE_TYPE CreateType, const bool i_kbRec
 {
     DWORD dwRet = WaitForSingleObject( s_hDoneEvent, 0 );
 
-    if( dwRet == WAIT_OBJECT_0 )
+    if (dwRet == WAIT_OBJECT_0)
     {
 #if !AMD_SDK_PREBUILT_RELEASE_EXE
         m_CreateType = CreateType;
@@ -955,18 +958,18 @@ HRESULT ShaderCache::GenerateShaders( CREATE_TYPE CreateType, const bool i_kbRec
         m_bShadersCreated = false;
         m_bPrintedProgress = false;
 
-        if( i_kbRecreateShaders )
+        if (i_kbRecreateShaders)
         {
             m_CreateList.clear();
         }
 
-        for( std::list<Shader*>::iterator it = m_ShaderList.begin(); it != m_ShaderList.end(); it++ )
+        for (std::list<Shader*>::iterator it = m_ShaderList.begin(); it != m_ShaderList.end(); it++)
         {
             Shader* pShader = *it;
 
-            if( ( m_CreateType == CREATE_TYPE_COMPILE_CHANGES ) ||
-                ( m_CreateType == CREATE_TYPE_FORCE_COMPILE ) ||
-                ( !CheckObjectFile( pShader ) ) )
+            if ((m_CreateType == CREATE_TYPE_COMPILE_CHANGES) ||
+                (m_CreateType == CREATE_TYPE_FORCE_COMPILE) ||
+                (!CheckObjectFile( pShader )))
             {
                 m_PreprocessList.push_back( pShader );
             }
@@ -976,13 +979,13 @@ HRESULT ShaderCache::GenerateShaders( CREATE_TYPE CreateType, const bool i_kbRec
             }
         }
 
-        if( m_PreprocessList.size() )
+        if (m_PreprocessList.size())
         {
             m_pProgressInfo = new ProgressInfo[m_PreprocessList.size() * 2];
             m_uProgressCounter = 0;
 
             ResetEvent( s_hDoneEvent );
-            QueueUserWorkItem( _GenerateShadersThreadProc, this, WT_EXECUTELONGFUNCTION );
+            QueueUserWorkItem( GenerateShaders_ThreadProc_, this, WT_EXECUTELONGFUNCTION );
         }
         else
         {
@@ -990,7 +993,7 @@ HRESULT ShaderCache::GenerateShaders( CREATE_TYPE CreateType, const bool i_kbRec
         }
     }
 
-    if( (m_CreateType == CREATE_TYPE_USE_CACHED) || ShadersReady() )
+    if ((m_CreateType == CREATE_TYPE_USE_CACHED) || ShadersReady())
     {
         GenerateShaderGPRUsageFromISAForAllShaders();
     }
@@ -1008,7 +1011,7 @@ void ShaderCache::GenerateShadersThreadProc()
     DeleteAssemblyFiles();
     DeletePreprocessFiles();
 
-    if( m_CreateType == CREATE_TYPE_FORCE_COMPILE )
+    if (m_CreateType == CREATE_TYPE_FORCE_COMPILE)
     {
         DeleteHashFiles();
         DeleteObjectFiles();
@@ -1034,9 +1037,9 @@ void ShaderCache::RenderProgress( CDXUTTextHelper* g_pTxtHelper, int iFontHeight
     g_pTxtHelper->SetForegroundColor( FontColor );
     g_pTxtHelper->SetInsertionPos( 5, 5 );
 
-    int iNumLines = (int)( ( DXUTGetDXGIBackBufferSurfaceDesc()->Height - ( iFontHeight ) ) * 0.99f / iFontHeight );
+    int iNumLines = (int)((DXUTGetDXGIBackBufferSurfaceDesc()->Height - (iFontHeight)) * 0.99f / iFontHeight);
 
-    if( !m_bPrintedProgress && !m_PreprocessList.size() )
+    if (!m_bPrintedProgress && !m_PreprocessList.size())
     {
         swprintf_s( wsOverallProgress, L"*** Shader Cache: Creating Shaders... ***" );
         g_pTxtHelper->DrawTextLine( wsOverallProgress );
@@ -1049,16 +1052,16 @@ void ShaderCache::RenderProgress( CDXUTTextHelper* g_pTxtHelper, int iFontHeight
         g_pTxtHelper->DrawTextLine( wsOverallProgress );
     }
 
-    if( NULL != m_pProgressInfo )
+    if (NULL != m_pProgressInfo)
     {
         g_pTxtHelper->SetInsertionPos( 5, 5 + iFontHeight );
 
         int iCounter = m_uProgressCounter;
-        int iStrings = ( iCounter < iNumLines ) ? ( iCounter ) : ( iNumLines );
+        int iStrings = (iCounter < iNumLines) ? (iCounter) : (iNumLines);
 
-        for( int i = iCounter - iStrings; i < iCounter; i++ )
+        for (int i = iCounter - iStrings; i < iCounter; i++)
         {
-            if( m_pProgressInfo[i].m_pShader->m_iCompileWaitCount >= 0 )
+            if (m_pProgressInfo[i].m_pShader->m_iCompileWaitCount >= 0)
             {
                 swprintf_s( wsCurrentLine, L"%s ... [%s][%i]", m_pProgressInfo[i].m_wsFilename, m_pProgressInfo[i].m_pShader->m_wsCompileStatus, m_pProgressInfo[i].m_pShader->m_iCompileWaitCount );
             }
@@ -1072,7 +1075,7 @@ void ShaderCache::RenderProgress( CDXUTTextHelper* g_pTxtHelper, int iFontHeight
 
     g_pTxtHelper->End();
 
-    if( ShowShaderErrors() && HasErrorsToDisplay() )
+    if (ShowShaderErrors() && HasErrorsToDisplay())
     {
         RenderShaderErrors( g_pTxtHelper, iFontHeight, FontColor );
     }
@@ -1084,23 +1087,23 @@ void ShaderCache::RenderProgress( CDXUTTextHelper* g_pTxtHelper, int iFontHeight
 //--------------------------------------------------------------------------------------
 bool ShaderCache::ShadersReady()
 {
-    if( TryEnterCriticalSection( &m_CompileShaders_CriticalSection ) )
+    if (TryEnterCriticalSection( &m_CompileShaders_CriticalSection ))
     {
 
         DWORD dwRet = WaitForSingleObject( s_hDoneEvent, 0 );
 
-        if( dwRet == WAIT_OBJECT_0 )
+        if (dwRet == WAIT_OBJECT_0)
         {
-            if( m_bPrintedProgress )
+            if (m_bPrintedProgress)
             {
-                if( !m_bShadersCreated )
+                if (!m_bShadersCreated)
                 {
                     CreateShaders();
                     m_bShadersCreated = true;
 
-                    if( NULL != m_pProgressInfo )
+                    if (NULL != m_pProgressInfo)
                     {
-                        delete[] m_pProgressInfo;
+                        delete [] m_pProgressInfo;
                         m_pProgressInfo = NULL;
                         m_uProgressCounter = 0;
                     }
@@ -1156,10 +1159,10 @@ void ShaderCache::SetRecompileTouchedShadersFlag( const bool i_bRecompileWhenTou
 {
     m_bRecompileTouchedShaders = i_bRecompileWhenTouched;
 
-    if( m_bRecompileTouchedShaders )
+    if (m_bRecompileTouchedShaders)
     {
         // Create Directory Watcher
-        if( (m_waitPoolHandle == NULL) || (m_watchHandle == NULL) )
+        if ((m_waitPoolHandle == NULL) || (m_watchHandle == NULL))
         {
 #if defined(DEBUG) || defined(_DEBUG)
             const bool kb_Success = WatchDirectoryForChanges();
@@ -1174,7 +1177,7 @@ void ShaderCache::SetRecompileTouchedShadersFlag( const bool i_bRecompileWhenTou
 void ShaderCache::SetMaximumCoresForShaderCompiler( const int ki_MaxCores )
 {
 
-    switch( ki_MaxCores )
+    switch (ki_MaxCores)
     {
     case MAXCORES_NO_LIMIT:
         m_MaxCoresType = MAXCORES_NO_LIMIT;
@@ -1191,7 +1194,7 @@ void ShaderCache::SetMaximumCoresForShaderCompiler( const int ki_MaxCores )
     case MAXCORES_MULTI_THREADED:
     case MAXCORES_USE_ALL_BUT_ONE:
         m_MaxCoresType = MAXCORES_USE_ALL_BUT_ONE;
-        m_uNumCPUCoresToUse = ( m_uNumCPUCores > 1 ) ? ( m_uNumCPUCores - 1 ) : ( 1 );
+        m_uNumCPUCoresToUse = (m_uNumCPUCores > 1) ? (m_uNumCPUCores - 1) : (1);
         break;
     case MAXCORES_SINGLE_THREADED:
         m_MaxCoresType = MAXCORES_SINGLE_THREADED;
@@ -1243,13 +1246,13 @@ bool ShaderCache::WatchDirectoryForChanges( void )
     assert( !m_watchHandle );
     assert( !m_waitPoolHandle );
 
-    if( m_waitPoolHandle )
+    if (m_waitPoolHandle)
     {
         UnregisterWaitEx( m_waitPoolHandle, INVALID_HANDLE_VALUE );
         m_waitPoolHandle = NULL;
     }
 
-    if( m_watchHandle )
+    if (m_watchHandle)
     {
         FindCloseChangeNotification( m_watchHandle );
         m_watchHandle = NULL;
@@ -1259,7 +1262,7 @@ bool ShaderCache::WatchDirectoryForChanges( void )
     assert( !m_waitPoolHandle );
 
     HANDLE watchHandle = FindFirstChangeNotification( m_wsShaderSourceDir, TRUE, FILE_NOTIFY_CHANGE_LAST_WRITE | FILE_NOTIFY_CHANGE_SIZE );
-    if( watchHandle == INVALID_HANDLE_VALUE )
+    if (watchHandle == INVALID_HANDLE_VALUE)
     {
         wchar_t wsErrorString[m_uCOMMAND_LINE_MAX_LENGTH];
         DWORD error = GetLastError();
@@ -1271,7 +1274,7 @@ bool ShaderCache::WatchDirectoryForChanges( void )
     m_watchHandle = watchHandle;
 
     HANDLE poolHandle;
-    if( !RegisterWaitForSingleObject(&poolHandle, watchHandle, onDirectoryChangeEventTriggered, (void*) this, INFINITE, WT_EXECUTEINWAITTHREAD) )
+    if (!RegisterWaitForSingleObject( &poolHandle, watchHandle, onDirectoryChangeEventTriggered, (void*) this, INFINITE, WT_EXECUTEINWAITTHREAD ))
     {
         wchar_t wsErrorString[m_uCOMMAND_LINE_MAX_LENGTH];
         DWORD error = GetLastError();
@@ -1292,12 +1295,12 @@ bool ShaderCache::WatchDirectoryForChanges( void )
 
 void __stdcall ShaderCache::onDirectoryChangeEventTriggered( void* args, BOOLEAN /*timeout*/ )
 {
-    ShaderCache* pShaderCache = reinterpret_cast< ShaderCache * >( args );
+    ShaderCache* pShaderCache = reinterpret_cast<ShaderCache *>(args);
 
-    if( pShaderCache->RecompileTouchedShaders() )
+    if (pShaderCache->RecompileTouchedShaders())
     {
         // Don't recompile if shaders are currently compiling!
-        if( pShaderCache->ShadersReady() )
+        if (pShaderCache->ShadersReady())
         {
             pShaderCache->GenerateShaders( AMD::ShaderCache::CREATE_TYPE_COMPILE_CHANGES, true );
 
@@ -1331,7 +1334,7 @@ bool ShaderCache::GenerateShaderISA( Shader *pShader, const bool i_kbParseGPRPre
 {
 
     bool bSuccess = false;
-    if( !m_bGenerateShaderISA )
+    if (!m_bGenerateShaderISA)
     {
         return bSuccess;
     }
@@ -1354,14 +1357,14 @@ bool ShaderCache::GenerateShaderISA( Shader *pShader, const bool i_kbParseGPRPre
         swprintf_s( wsISACL, L"%s %s", pShader->m_wsISACommandLine, wsASM );
 
         wchar_t wsShaderSCDEVWorkingDir[m_uPATHNAME_MAX_LENGTH];
-        swprintf_s( wsShaderSCDEVWorkingDir, L"%s\\%s", m_wsSCDEVWorkingDir, AmdTargetInfo[ pShader->m_eISATarget ].m_Name );
+        swprintf_s( wsShaderSCDEVWorkingDir, L"%s\\%s", m_wsSCDEVWorkingDir, AmdTargetInfo[pShader->m_eISATarget].m_Name );
 #if defined(DEBUG) || defined(_DEBUG)
         const bool bRet1 = CreateDirectoryW( wsShaderSCDEVWorkingDir, NULL ) != ERROR_PATH_NOT_FOUND; assert( bRet1 );
 #else
         CreateDirectoryW( wsShaderSCDEVWorkingDir, NULL );
 #endif
         //swprintf_s( wsShaderSCDEVWorkingDir, L"%s\\%s\\%s", m_wsSCDEVWorkingDir, AmdTargetInfo[ pShader->m_eISATarget ].m_Name, pShader->m_wsRawFileName );
-        swprintf_s( wsShaderSCDEVWorkingDir, L"%s\\%s\\%s", m_wsSCDEVWorkingDir, AmdTargetInfo[ pShader->m_eISATarget ].m_Name, pShader->m_wsHashedFileName );
+        swprintf_s( wsShaderSCDEVWorkingDir, L"%s\\%s\\%s", m_wsSCDEVWorkingDir, AmdTargetInfo[pShader->m_eISATarget].m_Name, pShader->m_wsHashedFileName );
 #if defined(DEBUG) || defined(_DEBUG)
         const bool bRet2 = CreateDirectoryW( wsShaderSCDEVWorkingDir, NULL ) != ERROR_PATH_NOT_FOUND; assert( bRet2 );
 #else
@@ -1382,7 +1385,7 @@ bool ShaderCache::GenerateShaderISA( Shader *pShader, const bool i_kbParseGPRPre
         assert( bSuccess );
     }
 
-    if( bSuccess )
+    if (bSuccess)
     {
         pShader->m_wsCompileStatus = L"ISA Compiler: Phase 1 ... done!";
     }
@@ -1391,7 +1394,7 @@ bool ShaderCache::GenerateShaderISA( Shader *pShader, const bool i_kbParseGPRPre
         pShader->m_wsCompileStatus = L"ISA Compiler: Phase 1 ... failed!";
     }
 
-    if( bSuccess )
+    if (bSuccess)
     {
         pShader->m_wsCompileStatus = L"ISA Compiler: Phase 2";
 
@@ -1411,7 +1414,7 @@ bool ShaderCache::GenerateShaderISA( Shader *pShader, const bool i_kbParseGPRPre
         wcscat_s( wsASM, m_uFILENAME_MAX_LENGTH, L"\"" );
         wcscat_s( wsASM, m_uFILENAME_MAX_LENGTH, L" " );
         wcscat_s( wsASM, m_uFILENAME_MAX_LENGTH, L"\"" );
-        wcscat_s( wsASM, m_uFILENAME_MAX_LENGTH, AmdTargetInfo[ pShader->m_eISATarget ].m_Name );
+        wcscat_s( wsASM, m_uFILENAME_MAX_LENGTH, AmdTargetInfo[pShader->m_eISATarget].m_Name );
         wcscat_s( wsASM, m_uFILENAME_MAX_LENGTH, L"\"" );
         wcscat_s( wsASM, m_uFILENAME_MAX_LENGTH, L" " );
         wcscat_s( wsASM, m_uFILENAME_MAX_LENGTH, L"\"" );
@@ -1421,7 +1424,7 @@ bool ShaderCache::GenerateShaderISA( Shader *pShader, const bool i_kbParseGPRPre
         SHELLEXECUTEINFO shExecInfo;
         memset( &shExecInfo, 0, sizeof( SHELLEXECUTEINFO ) );
         shExecInfo.cbSize = sizeof( SHELLEXECUTEINFO );
-        shExecInfo.fMask = ( i_kbParseGPRPressure ) ? (SEE_MASK_NOASYNC | SEE_MASK_UNICODE) : SEE_MASK_ASYNCOK; // Optimization: Async if we don't plan to read this immediately
+        shExecInfo.fMask = (i_kbParseGPRPressure) ? (SEE_MASK_NOASYNC | SEE_MASK_UNICODE) : SEE_MASK_ASYNCOK; // Optimization: Async if we don't plan to read this immediately
         shExecInfo.hwnd = NULL;
         shExecInfo.lpFile = wsEXE;
         shExecInfo.nShow = SW_HIDE;
@@ -1430,7 +1433,7 @@ bool ShaderCache::GenerateShaderISA( Shader *pShader, const bool i_kbParseGPRPre
         bSuccess = ShellExecuteEx( &shExecInfo ) ? true : false;
         assert( bSuccess );
 
-        if( bSuccess )
+        if (bSuccess)
         {
             pShader->m_wsCompileStatus = L"ISA Compiler: Finished";
         }
@@ -1442,20 +1445,20 @@ bool ShaderCache::GenerateShaderISA( Shader *pShader, const bool i_kbParseGPRPre
         pShader->m_bGPRsUpToDate = false;
     }
 
-    if( i_kbParseGPRPressure )
+    if (i_kbParseGPRPressure)
     {
         unsigned int uNumVGPR = 0;
         unsigned int uNumSGPR = 0;
-        if( GetShaderGPRUsageFromISA( pShader, uNumVGPR, uNumSGPR ) )
+        if (GetShaderGPRUsageFromISA( pShader, uNumVGPR, uNumSGPR ))
         {
             wchar_t wsGPRS[m_uPATHNAME_MAX_LENGTH];
-            swprintf_s( wsGPRS, L"\n\n%s::%s\nVGPRs: %u\nSGPRs: %u\n\n", pShader->m_wsRawFileName, AmdTargetInfo[ pShader->m_eISATarget ].m_Name, uNumVGPR, uNumSGPR );
+            swprintf_s( wsGPRS, L"\n\n%s::%s\nVGPRs: %u\nSGPRs: %u\n\n", pShader->m_wsRawFileName, AmdTargetInfo[pShader->m_eISATarget].m_Name, uNumVGPR, uNumSGPR );
             OutputDebugStringW( wsGPRS );
         }
         else
         {
             wchar_t wsGPRS[m_uPATHNAME_MAX_LENGTH];
-            swprintf_s( wsGPRS, L"\n\nFailed to determine NumVGPR and NumSGPR for %s::%s\n\n", pShader->m_wsRawFileName, AmdTargetInfo[ pShader->m_eISATarget ].m_Name );
+            swprintf_s( wsGPRS, L"\n\nFailed to determine NumVGPR and NumSGPR for %s::%s\n\n", pShader->m_wsRawFileName, AmdTargetInfo[pShader->m_eISATarget].m_Name );
             OutputDebugStringW( wsGPRS );
         }
     }
@@ -1474,7 +1477,7 @@ void ShaderCache::DeleteISAFile( Shader *pShader )
 
 bool ShaderCache::GetShaderGPRUsageFromISA( Shader *pShader, unsigned int& io_uNumVGPR, unsigned int& io_uNumSGPR ) const
 {
-    if( !GenerateISAGPRPressure() )
+    if (!GenerateISAGPRPressure())
     {
         return true;
     }
@@ -1485,10 +1488,11 @@ bool ShaderCache::GetShaderGPRUsageFromISA( Shader *pShader, unsigned int& io_uN
 
     pShader->m_wsCompileStatus = L"Parsing GPR Pressure";
 
-    if( pShader->m_bGPRsUpToDate )
+    if (pShader->m_bGPRsUpToDate)
     {
         wchar_t wsGPRS[m_uPATHNAME_MAX_LENGTH];
-        swprintf_s( wsGPRS, L"\n\n%s::%s\nVGPRs: %u\nSGPRs: %u [Warning -- GetShaderGPRUsageFromISA called unnecessarily; GPRs Up To Date; Update Skipped]\n\n", pShader->m_wsRawFileName, AmdTargetInfo[ pShader->m_eISATarget ].m_Name, pShader->m_ISA_VGPRs, pShader->m_ISA_SGPRs );
+        swprintf_s( wsGPRS, L"\n\n%s::%s\nVGPRs: %u\nSGPRs: %u [Warning -- GetShaderGPRUsageFromISA called unnecessarily; GPRs Up To Date; Update Skipped]\n\n",
+            pShader->m_wsRawFileName, AmdTargetInfo[pShader->m_eISATarget].m_Name, pShader->m_ISA_VGPRs, pShader->m_ISA_SGPRs );
         OutputDebugStringW( wsGPRS );
         assert( false );
         pShader->m_wsCompileStatus = L"GPRs Up-to-date!";
@@ -1510,7 +1514,7 @@ bool ShaderCache::GetShaderGPRUsageFromISA( Shader *pShader, unsigned int& io_uN
     NumSgprs             = 28;
     */
 
-    if( pFile )
+    if (pFile)
     {
 
         wchar_t szLine[m_uCOMMAND_LINE_MAX_LENGTH];
@@ -1522,85 +1526,85 @@ bool ShaderCache::GetShaderGPRUsageFromISA( Shader *pShader, unsigned int& io_uN
         wchar_t szNumGPRs[32];
         wchar_t szALUPacking[32];
 
-        wcscpy_s( szNumVgprs,       32, L"NumVgprs" );                  // GCN Architecture (Vector GPR)
-        wcscpy_s( szNumSgprs,       32, L"NumSgprs" );                  // GCN Architecture (Scalar GPR)
-        wcscpy_s( szGPRPoolSize,    32, L"GprPoolSize" );               // VLIW Architecture
-        wcscpy_s( szNumGPRs,        32, L"SQ_PGM_RESOURCES:NUM_GPRS" ); // VLIW Architecture
-        wcscpy_s( szALUPacking,     32, L";AluPacking" );               // VLIW Architecture
+        wcscpy_s( szNumVgprs, 32, L"NumVgprs" );                  // GCN Architecture (Vector GPR)
+        wcscpy_s( szNumSgprs, 32, L"NumSgprs" );                  // GCN Architecture (Scalar GPR)
+        wcscpy_s( szGPRPoolSize, 32, L"GprPoolSize" );               // VLIW Architecture
+        wcscpy_s( szNumGPRs, 32, L"SQ_PGM_RESOURCES:NUM_GPRS" ); // VLIW Architecture
+        wcscpy_s( szALUPacking, 32, L";AluPacking" );               // VLIW Architecture
 
 
-        while( fgetws( pLine, m_uCOMMAND_LINE_MAX_LENGTH, pFile ) )
+        while (fgetws( pLine, m_uCOMMAND_LINE_MAX_LENGTH, pFile ))
         {
             wchar_t* pTemp = pLine;
-            while( *pTemp != L'\n' )
+            while (*pTemp != L'\n')
             {
 
-                if( !wcsncmp( pTemp, szNumVgprs, wcslen( szNumVgprs ) ) )
+                if (!wcsncmp( pTemp, szNumVgprs, wcslen( szNumVgprs ) ))
                 {
                     wchar_t *pStr = wcschr( pTemp, L'=' );
-                    if( pStr )
+                    if (pStr)
                     {
                         pStr += 2;
                         io_uNumVGPR = _wtoi( pStr );
                     }
                 }
-                else if( !wcsncmp( pTemp, szNumSgprs, wcslen( szNumSgprs ) ) )
+                else if (!wcsncmp( pTemp, szNumSgprs, wcslen( szNumSgprs ) ))
                 {
                     wchar_t *pStr = wcschr( pTemp, L'=' );
-                    if( pStr )
+                    if (pStr)
                     {
                         pStr += 2;
                         io_uNumSGPR = _wtoi( pStr );
                     }
                 }
-                else if( !wcsncmp( pTemp, szNumGPRs, wcslen( szNumGPRs ) ) )
+                else if (!wcsncmp( pTemp, szNumGPRs, wcslen( szNumGPRs ) ))
                 {
                     wchar_t *pStr = wcschr( pTemp, L'=' );
-                    if( pStr )
+                    if (pStr)
                     {
                         pStr += 2;
                         io_uNumVGPR = _wtoi( pStr );
-                        assert( (io_uNumSGPR == 0) || (io_uNumSGPR == ( ~0 )) );
+                        assert( (io_uNumSGPR == 0) || (io_uNumSGPR == (~0)) );
                         io_uNumSGPR = (~0u); // Special Flag to indicate that this is a GPR Pool
                     }
                 }
-                else if( !wcsncmp( pTemp, szALUPacking, wcslen( szALUPacking ) ) )
+                else if (!wcsncmp( pTemp, szALUPacking, wcslen( szALUPacking ) ))
                 {
                     wchar_t *pStr = wcschr( pTemp, L'=' );
-                    if( pStr )
+                    if (pStr)
                     {
                         pStr += 2;
-                        io_fALUPacking = static_cast< float >( _wtof(pStr) );
-                        assert( (io_uNumSGPR == 0) || (io_uNumSGPR == ( ~0 )) );
+                        io_fALUPacking = static_cast<float>(_wtof( pStr ));
+                        assert( (io_uNumSGPR == 0) || (io_uNumSGPR == (~0)) );
                         io_uNumSGPR = (~0u); // Special Flag to indicate that this is a GPR Pool
                     }
                 }
-                else if( !wcsncmp( pTemp, szGPRPoolSize, wcslen( szGPRPoolSize ) ) )
+                else if (!wcsncmp( pTemp, szGPRPoolSize, wcslen( szGPRPoolSize ) ))
                 {
                     wchar_t *pStr = wcschr( pTemp, L'=' );
-                    if( pStr )
+                    if (pStr)
                     {
                         pStr += 2;
                         io_uGPRPoolSize = _wtoi( pStr );
-                        assert( (io_uNumSGPR == 0) || (io_uNumSGPR == ( ~0 )) );
+                        assert( (io_uNumSGPR == 0) || (io_uNumSGPR == (~0)) );
                         io_uNumSGPR = (~0u); // Special Flag to indicate that this is a GPR Pool
                     }
                 }
 
-                if( (io_uNumVGPR > 0) && (io_uNumSGPR > 0) )
+                if ((io_uNumVGPR > 0) && (io_uNumSGPR > 0))
                 {
                     // Cache previous results
                     pShader->m_previous_ISA_VGPRs = pShader->m_ISA_VGPRs;
                     pShader->m_previous_ISA_SGPRs = pShader->m_ISA_SGPRs;
 
                     pShader->m_previous_ISA_GPRPoolSize = pShader->m_ISA_GPRPoolSize;
-                    pShader->m_previous_ISA_ALUPacking  = pShader->m_ISA_ALUPacking;
+                    pShader->m_previous_ISA_ALUPacking = pShader->m_ISA_ALUPacking;
 
                     pShader->m_ISA_VGPRs = io_uNumVGPR;
                     pShader->m_ISA_SGPRs = io_uNumSGPR;
 
                     pShader->m_ISA_GPRPoolSize = io_uGPRPoolSize;
-                    pShader->m_ISA_ALUPacking  = io_fALUPacking;
+                    pShader->m_ISA_ALUPacking = io_fALUPacking;
 
                     pShader->m_bGPRsUpToDate = true;
                     fclose( pFile );
@@ -1627,7 +1631,7 @@ bool ShaderCache::GetShaderGPRUsageFromISA( Shader *pShader, unsigned int& io_uN
 
 bool ShaderCache::GenerateShaderGPRUsageFromISAForAllShaders( const bool ik_bGenerateISAOnFailure )
 {
-    if( !GenerateISAGPRPressure() )
+    if (!GenerateISAGPRPressure())
     {
         return true;
     }
@@ -1635,15 +1639,16 @@ bool ShaderCache::GenerateShaderGPRUsageFromISAForAllShaders( const bool ik_bGen
 #if AMD_SDK_INTERNAL_BUILD
     bool bReturnValue = false;
 
-    for( std::list<Shader*>::iterator it = m_ShaderList.begin(); it != m_ShaderList.end(); it++)
+    for (std::list<Shader*>::iterator it = m_ShaderList.begin(); it != m_ShaderList.end(); it++)
     {
         Shader* pShader = *it;
         unsigned int VGPR = 0, SGPR = 0;
 
-        if( pShader->m_bGPRsUpToDate )
+        if (pShader->m_bGPRsUpToDate)
         {
             wchar_t wsGPRS[m_uPATHNAME_MAX_LENGTH];
-            swprintf_s( wsGPRS, L"\n\n%s::%s\nVGPRs: %u\nSGPRs: %u [GPRs Up To Date; Update Skipped]\n\n", pShader->m_wsRawFileName, AmdTargetInfo[ pShader->m_eISATarget ].m_Name, pShader->m_ISA_VGPRs, pShader->m_ISA_SGPRs );
+            swprintf_s( wsGPRS, L"\n\n%s::%s\nVGPRs: %u\nSGPRs: %u [GPRs Up To Date; Update Skipped]\n\n",
+                pShader->m_wsRawFileName, AmdTargetInfo[pShader->m_eISATarget].m_Name, pShader->m_ISA_VGPRs, pShader->m_ISA_SGPRs );
             OutputDebugStringW( wsGPRS );
             pShader->m_wsCompileStatus = L"GPRs Up-to-date!";
             continue;
@@ -1653,12 +1658,12 @@ bool ShaderCache::GenerateShaderGPRUsageFromISAForAllShaders( const bool ik_bGen
         bool bOK = GetShaderGPRUsageFromISA( pShader, VGPR, SGPR );
         // assert( k_bOK );
 
-        if( (!bOK) && ik_bGenerateISAOnFailure ) // Allow one single retry on failure...
+        if ((!bOK) && ik_bGenerateISAOnFailure) // Allow one single retry on failure...
         {
             // Possibly need to generate the Shader ISA? Try it once.
             pShader->m_wsCompileStatus = L"Generating ISA";
             const bool kGenSuccess = GenerateShaderISA( pShader, false ); // Don't parse GPR pressure (prevent infinite loop)
-            if( kGenSuccess )
+            if (kGenSuccess)
             {
                 bOK = GetShaderGPRUsageFromISA( pShader, VGPR, SGPR );
             }
@@ -1666,35 +1671,35 @@ bool ShaderCache::GenerateShaderGPRUsageFromISAForAllShaders( const bool ik_bGen
 
         const bool k_bOK = bOK;
 
-        if( k_bOK )
+        if (k_bOK)
         {
             wchar_t wsGPRS[m_uPATHNAME_MAX_LENGTH];
-            swprintf_s( wsGPRS, L"\n\n%s::%s\nVGPRs: %u\nSGPRs: %u\n\n", pShader->m_wsRawFileName, AmdTargetInfo[ pShader->m_eISATarget ].m_Name, VGPR, SGPR );
+            swprintf_s( wsGPRS, L"\n\n%s::%s\nVGPRs: %u\nSGPRs: %u\n\n", pShader->m_wsRawFileName, AmdTargetInfo[pShader->m_eISATarget].m_Name, VGPR, SGPR );
             OutputDebugStringW( wsGPRS );
         }
         else
         {
             wchar_t wsGPRS[m_uPATHNAME_MAX_LENGTH];
-            swprintf_s( wsGPRS, L"\n\nFailed to determine NumVGPR and NumSGPR for %s::%s\n\n", pShader->m_wsRawFileName, AmdTargetInfo[ pShader->m_eISATarget ].m_Name );
+            swprintf_s( wsGPRS, L"\n\nFailed to determine NumVGPR and NumSGPR for %s::%s\n\n", pShader->m_wsRawFileName, AmdTargetInfo[pShader->m_eISATarget].m_Name );
             OutputDebugStringW( wsGPRS );
         }
 
-        if( !k_bOK )
+        if (!k_bOK)
         {
-            if( m_ErrorDisplayType == ERROR_DISPLAY_IN_MESSAGE_BOX )
+            if (m_ErrorDisplayType == ERROR_DISPLAY_IN_MESSAGE_BOX)
             {
                 wchar_t wsFailureMessage[m_uPATHNAME_MAX_LENGTH];
-                swprintf_s( wsFailureMessage, L"*** Could not extract GPR usage from %s ISA.\nThe ISA Shader Compiler may have failed to execute. ***", AmdTargetInfo[ pShader->m_eISATarget ].m_Name );
+                swprintf_s( wsFailureMessage, L"*** Could not extract GPR usage from %s ISA.\nThe ISA Shader Compiler may have failed to execute. ***", AmdTargetInfo[pShader->m_eISATarget].m_Name );
                 MessageBoxW( NULL, wsFailureMessage, L"Error", MB_OK );
             }
             else
             {
                 wchar_t wsFailureMessage[m_uPATHNAME_MAX_LENGTH];
-                swprintf_s( wsFailureMessage, L"*** Could not extract GPR usage from %s ISA. The ISA Shader Compiler may have failed to execute. ***\n", AmdTargetInfo[ pShader->m_eISATarget ].m_Name );
+                swprintf_s( wsFailureMessage, L"*** Could not extract GPR usage from %s ISA. The ISA Shader Compiler may have failed to execute. ***\n", AmdTargetInfo[pShader->m_eISATarget].m_Name );
                 OutputDebugStringW( wsFailureMessage );
-                if( ShowShaderErrors() )
+                if (ShowShaderErrors())
                 {
-                    const bool kbAppendToError = ( wcslen(m_wsLastShaderError) < (3 * m_uCOMMAND_LINE_MAX_LENGTH) );
+                    const bool kbAppendToError = (wcslen( m_wsLastShaderError ) < (3 * m_uCOMMAND_LINE_MAX_LENGTH));
                     swprintf_s( m_wsLastShaderError, L"%s%s", (m_bHasShaderErrorsToDisplay && kbAppendToError) ? m_wsLastShaderError : L"", wsFailureMessage );
                     m_bHasShaderErrorsToDisplay = true;
                     m_shaderErrorRenderedCount = 0;
@@ -1720,47 +1725,54 @@ void ShaderCache::RenderISAInfo( CDXUTTextHelper* g_pTxtHelper, int iFontHeight,
     DirectX::XMVECTOR GreenFontColor = DirectX::XMVectorSet( 0.0f, 1.0f, 0.0f, 1.0f );
     DirectX::XMVECTOR BlueFontColor = DirectX::XMVectorSet( 0.0f, 0.0f, 1.0f, 1.0f );
 
-    if( !ShowISAGPRPressure() ) return;
+    if (!ShowISAGPRPressure()) { return; }
 
-    if( g_pTxtHelper )
+    if (g_pTxtHelper)
     {
         g_pTxtHelper->Begin();
         g_pTxtHelper->SetForegroundColor( FontColor );
         g_pTxtHelper->SetInsertionPos( 5, (m_bHasShaderErrorsToDisplay) ? 300 : 60 );
     }
 
-    for( std::list<Shader*>::iterator it = m_ShaderList.begin(); it != m_ShaderList.end(); it++)
+    for (std::list<Shader*>::iterator it = m_ShaderList.begin(); it != m_ShaderList.end(); it++)
     {
         Shader* pShader = *it;
 
-        if( i_pShaderCmp && (pShader != i_pShaderCmp) ) continue; // We're trying to update GPR info for a single shader, skip the rest
+        if (i_pShaderCmp && (pShader != i_pShaderCmp)) { continue; } // We're trying to update GPR info for a single shader, skip the rest
 
-        if( (pShader->m_ISA_SGPRs == 0) && (pShader->m_ISA_VGPRs == 0) )
+        if ((pShader->m_ISA_SGPRs == 0) && (pShader->m_ISA_VGPRs == 0))
         {
             // Failed to read ISA
-            swprintf_s( wsOverallProgress, L"%s.%s%s\t[Failed to locate ISA (try building all shaders?)]", pShader->m_wsRawFileName, AmdTargetInfo[ pShader->m_eISATarget ].m_Name, AmdTargetInfo[ pShader->m_eISATarget ].m_Info );
+            swprintf_s( wsOverallProgress, L"%s.%s%s\t[Failed to locate ISA (try building all shaders?)]",
+                pShader->m_wsRawFileName, AmdTargetInfo[pShader->m_eISATarget].m_Name, AmdTargetInfo[pShader->m_eISATarget].m_Info );
         }
-        else if( pShader->m_ISA_SGPRs == (~0) )
+        else if (pShader->m_ISA_SGPRs == (~0))
         {
             // VLIW Hardware, GPR Pool
-            swprintf_s( wsOverallProgress, L"%s.%s%s\t[VGPR: %u, SGPR: n/a, GPRPool: %u, ALUPacking %f]", pShader->m_wsRawFileName, AmdTargetInfo[ pShader->m_eISATarget ].m_Name, AmdTargetInfo[ pShader->m_eISATarget ].m_Info, pShader->m_ISA_VGPRs, pShader->m_ISA_GPRPoolSize, pShader->m_ISA_ALUPacking );
-            const int GPRDelta = ( pShader->m_ISA_VGPRs - pShader->m_previous_ISA_VGPRs );
-            if( (pShader->m_previous_ISA_VGPRs != 0) && (GPRDelta != 0) )
+            swprintf_s( wsOverallProgress, L"%s.%s%s\t[VGPR: %u, SGPR: n/a, GPRPool: %u, ALUPacking %f]",
+                pShader->m_wsRawFileName, AmdTargetInfo[pShader->m_eISATarget].m_Name, AmdTargetInfo[pShader->m_eISATarget].m_Info, pShader->m_ISA_VGPRs,
+                pShader->m_ISA_GPRPoolSize, pShader->m_ISA_ALUPacking );
+            const int GPRDelta = (pShader->m_ISA_VGPRs - pShader->m_previous_ISA_VGPRs);
+            if ((pShader->m_previous_ISA_VGPRs != 0) && (GPRDelta != 0))
             {
-                if( g_pTxtHelper )
-                    g_pTxtHelper->SetForegroundColor( ( GPRDelta > 0 ) ? RedFontColor : GreenFontColor );
-                swprintf_s( wsOverallProgress, L"%s\t[Prev VGPR: %u, Delta: %i] -- [Prev GPRPool: %u, Prev ALUPacking %f]", wsOverallProgress, pShader->m_previous_ISA_VGPRs, GPRDelta, pShader->m_previous_ISA_GPRPoolSize, pShader->m_previous_ISA_ALUPacking );
+                if (g_pTxtHelper)
+                {
+                    g_pTxtHelper->SetForegroundColor( (GPRDelta > 0) ? RedFontColor : GreenFontColor );
+                }
+                swprintf_s( wsOverallProgress, L"%s\t[Prev VGPR: %u, Delta: %i] -- [Prev GPRPool: %u, Prev ALUPacking %f]",
+                    wsOverallProgress, pShader->m_previous_ISA_VGPRs, GPRDelta, pShader->m_previous_ISA_GPRPoolSize, pShader->m_previous_ISA_ALUPacking );
             }
         }
         else
         {
-            swprintf_s( wsOverallProgress, L"%s.%s%s\t[VGPR: %u, SGPR: %u]", pShader->m_wsRawFileName, AmdTargetInfo[ pShader->m_eISATarget ].m_Name, AmdTargetInfo[ pShader->m_eISATarget ].m_Info, pShader->m_ISA_VGPRs, pShader->m_ISA_SGPRs );
-            const int VGPRDelta = ( pShader->m_ISA_VGPRs - pShader->m_previous_ISA_VGPRs );
-            const int SGPRDelta = ( pShader->m_ISA_SGPRs - pShader->m_previous_ISA_SGPRs );
+            swprintf_s( wsOverallProgress, L"%s.%s%s\t[VGPR: %u, SGPR: %u]",
+                pShader->m_wsRawFileName, AmdTargetInfo[pShader->m_eISATarget].m_Name, AmdTargetInfo[pShader->m_eISATarget].m_Info, pShader->m_ISA_VGPRs, pShader->m_ISA_SGPRs );
+            const int VGPRDelta = (pShader->m_ISA_VGPRs - pShader->m_previous_ISA_VGPRs);
+            const int SGPRDelta = (pShader->m_ISA_SGPRs - pShader->m_previous_ISA_SGPRs);
             DirectX::XMVECTOR thisColor;
-            if( VGPRDelta > 0 )
+            if (VGPRDelta > 0)
             {
-                if( SGPRDelta >= 0 )
+                if (SGPRDelta >= 0)
                 {
                     thisColor = RedFontColor;
                 }
@@ -1771,7 +1783,7 @@ void ShaderCache::RenderISAInfo( CDXUTTextHelper* g_pTxtHelper, int iFontHeight,
             }
             else
             {
-                if( SGPRDelta <= 0 )
+                if (SGPRDelta <= 0)
                 {
                     thisColor = GreenFontColor;
                 }
@@ -1781,29 +1793,38 @@ void ShaderCache::RenderISAInfo( CDXUTTextHelper* g_pTxtHelper, int iFontHeight,
                 }
             }
 
-            if( (pShader->m_previous_ISA_VGPRs != 0) && (VGPRDelta != 0) )
+            if ((pShader->m_previous_ISA_VGPRs != 0) && (VGPRDelta != 0))
             {
-                if( g_pTxtHelper )
+                if (g_pTxtHelper)
+                {
                     g_pTxtHelper->SetForegroundColor( thisColor );
+                }
                 swprintf_s( wsOverallProgress, L"%s\t[Prev VGPR: %u, Delta: %i]", wsOverallProgress, pShader->m_previous_ISA_VGPRs, VGPRDelta );
             }
-            if( (pShader->m_previous_ISA_SGPRs != 0) && (SGPRDelta != 0) )
+            if ((pShader->m_previous_ISA_SGPRs != 0) && (SGPRDelta != 0))
             {
-                if( g_pTxtHelper )
+                if (g_pTxtHelper)
+                {
                     g_pTxtHelper->SetForegroundColor( thisColor );
+                }
                 swprintf_s( wsOverallProgress, L"%s\t[Prev SGPR: %u, Delta: %i]", wsOverallProgress, pShader->m_previous_ISA_SGPRs, SGPRDelta );
             }
         }
-        if( g_pTxtHelper )
+        if (g_pTxtHelper)
         {
             g_pTxtHelper->DrawTextLine( wsOverallProgress );
             g_pTxtHelper->SetForegroundColor( FontColor );
         }
-        if( o_wsGPRInfo ) swprintf_s( o_wsGPRInfo, m_uPATHNAME_MAX_LENGTH, L"%s", wsOverallProgress ); // Write out the progress string
+        if (o_wsGPRInfo)
+        {
+            swprintf_s( o_wsGPRInfo, m_uPATHNAME_MAX_LENGTH, L"%s", wsOverallProgress ); // Write out the progress string
+        }
     }
 
-    if( g_pTxtHelper )
+    if (g_pTxtHelper)
+    {
         g_pTxtHelper->End();
+    }
 #endif
 }
 
@@ -1827,7 +1848,7 @@ public:
 
     void writeHTML( const wchar_t* i_wcsString )
     {
-        fwrite( i_wcsString, wcslen(i_wcsString) * sizeof(wchar_t), 1, m_pFile );
+        fwrite( i_wcsString, wcslen( i_wcsString ) * sizeof( wchar_t ), 1, m_pFile );
     }
 
     void StartTabTable( void )
@@ -1838,8 +1859,8 @@ public:
 
     void AddTab( const int i_tabID, const wchar_t* i_wcsTabName )
     {
-        wchar_t wsTabString[ AMD::ShaderCache::m_uPATHNAME_MAX_LENGTH ];
-        assert( wcslen(i_wcsTabName) < AMD::ShaderCache::m_uFILENAME_MAX_LENGTH );
+        wchar_t wsTabString[AMD::ShaderCache::m_uPATHNAME_MAX_LENGTH];
+        assert( wcslen( i_wcsTabName ) < AMD::ShaderCache::m_uFILENAME_MAX_LENGTH );
         swprintf_s( wsTabString, L"<li><a href=\"#tabs-%i\">%s</a></li>\n", i_tabID, i_wcsTabName );
         writeHTML( wsTabString );
     }
@@ -1851,8 +1872,8 @@ public:
 
     void AddTabBody( const int i_tabID, const wchar_t* i_wcsTabName, const wchar_t* i_wcsTabBody )
     {
-        wchar_t wsTabString[ AMD::ShaderCache::m_uPATHNAME_MAX_LENGTH ];
-        assert( wcslen(i_wcsTabName) < AMD::ShaderCache::m_uFILENAME_MAX_LENGTH );
+        wchar_t wsTabString[AMD::ShaderCache::m_uPATHNAME_MAX_LENGTH];
+        assert( wcslen( i_wcsTabName ) < AMD::ShaderCache::m_uFILENAME_MAX_LENGTH );
         swprintf_s( wsTabString, L"<div id=\"tabs-%i\">\n", i_tabID );
         writeHTML( wsTabString );
         writeHTML( i_wcsTabBody );
@@ -1866,9 +1887,9 @@ public:
 
     void AddFileTableRow( const wchar_t* i_wcsString, const bool i_bCreateLink = true )
     {
-        wchar_t wsTabString[ AMD::ShaderCache::m_uPATHNAME_MAX_LENGTH ];
-        assert( wcslen(i_wcsString) < AMD::ShaderCache::m_uFILENAME_MAX_LENGTH );
-        swprintf_s( wsTabString, L"<a href=\"%s\">%s</a>",  i_wcsString, i_wcsString );
+        wchar_t wsTabString[AMD::ShaderCache::m_uPATHNAME_MAX_LENGTH];
+        assert( wcslen( i_wcsString ) < AMD::ShaderCache::m_uFILENAME_MAX_LENGTH );
+        swprintf_s( wsTabString, L"<a href=\"%s\">%s</a>", i_wcsString, i_wcsString );
 
         writeHTML( L"<td>" );
         writeHTML( (i_bCreateLink) ? wsTabString : i_wcsString );
@@ -1884,7 +1905,7 @@ private:
     // Declare the copy constructor and assignment operator private, and don't implement them.
     // That is, make HTMLWriter uncopyable. This also prevents the compiler warning (level 4)
     // C4512 : assignment operator could not be generated (caused by const member variables)
-    HTMLWriter(const HTMLWriter&);
+    HTMLWriter( const HTMLWriter& );
     HTMLWriter& operator=(const HTMLWriter&);
 
     void WriteHTMLHeader( const wchar_t* i_wcsTitle = NULL )
@@ -1894,17 +1915,19 @@ private:
         writeHTML( L"<head>\n" );
         writeHTML( L"<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\">\n" );
         writeHTML( L"<meta http-equiv=\"X-UA-Compatible\" content=\"IE=7\">\n" );
-        if( m_iReloadRate > 0 )
+        if (m_iReloadRate > 0)
         {
-            wchar_t wsReloadRate[ AMD::ShaderCache::m_uPATHNAME_MAX_LENGTH ];
+            wchar_t wsReloadRate[AMD::ShaderCache::m_uPATHNAME_MAX_LENGTH];
             swprintf_s( wsReloadRate, L"<meta http-equiv=\"refresh\" content=\"%i\">\n", m_iReloadRate );
             writeHTML( wsReloadRate );
         }
         writeHTML( L"\t<title>" );
         writeHTML( (i_wcsTitle) ? i_wcsTitle : L"Page Generated by HTMLWriter" );
         writeHTML( L"</title>\n" );
-        if( m_bUseScripts )
+        if (m_bUseScripts)
+        {
             WriteScriptHeader();
+        }
         WriteHTMLHeadEnding();
     }
 
@@ -1952,14 +1975,16 @@ bool ShaderCache::CreateHashDigest( const std::list<Shader*>& i_ShaderList )
 
     _wfopen_s( &pFile, wsPathName, L"w+,ccs=UTF-8" );
 
-    if( !pFile )
+    if (!pFile)
+    {
         return false;
+    }
 
     HTMLWriter html( pFile, L"AMD ShaderCache Hash Digest", 0 ); // Refresh the page every 15 seconds
 
     int tabID = 0;
     html.StartTabTable();
-    for( std::list<Shader*>::const_iterator it = i_ShaderList.begin(); it != i_ShaderList.end(); it++ )
+    for (std::list<Shader*>::const_iterator it = i_ShaderList.begin(); it != i_ShaderList.end(); it++)
     {
         Shader* pShader = *it;
         html.AddTab( ++tabID, pShader->m_wsRawFileName );
@@ -1967,7 +1992,7 @@ bool ShaderCache::CreateHashDigest( const std::list<Shader*>& i_ShaderList )
     html.EndTabTableHeader();
 
     tabID = 0;
-    for( std::list<Shader*>::const_iterator it = i_ShaderList.begin(); it != i_ShaderList.end(); it++ )
+    for (std::list<Shader*>::const_iterator it = i_ShaderList.begin(); it != i_ShaderList.end(); it++)
     {
         Shader* pShader = *it;
         wchar_t wsShaderInfoHTML[16384];
@@ -2013,7 +2038,7 @@ bool ShaderCache::CreateHashDigest( const std::list<Shader*>& i_ShaderList )
             pShader->m_wsHashedFileName,
             pShader->m_wsTarget,
 #if AMD_SDK_INTERNAL_BUILD
-            AmdTargetInfo[ pShader->m_eISATarget ].m_Name,
+            AmdTargetInfo[pShader->m_eISATarget].m_Name,
 #endif
             pShader->m_wsSourceFile, pShader->m_wsSourceFile,
             pShader->m_wsPreprocessFile, pShader->m_wsPreprocessFile,
@@ -2023,14 +2048,14 @@ bool ShaderCache::CreateHashDigest( const std::list<Shader*>& i_ShaderList )
             pShader->m_wsHashFile, pShader->m_wsHashFile,
 #if AMD_SDK_INTERNAL_BUILD
             pShader->m_wsISAFile, pShader->m_wsISAFile,
-            AmdTargetInfo[ pShader->m_eISATarget ].m_Name, pShader->m_wsHashedFileName, AmdTargetInfo[ pShader->m_eISATarget ].m_Name, pShader->m_wsHashedFileName,
+            AmdTargetInfo[pShader->m_eISATarget].m_Name, pShader->m_wsHashedFileName, AmdTargetInfo[pShader->m_eISATarget].m_Name, pShader->m_wsHashedFileName,
 #endif
             pShader->m_wsCompileStatus,
             pShader->m_iCompileWaitCount,
             pShader->m_bBeingProcessed ? L"yes" : L"no",
             pShader->m_bShaderUpToDate ? L"yes" : L"no"
 #if AMD_SDK_INTERNAL_BUILD
-            ,pShader->m_bGPRsUpToDate ? L"yes" : L"no",
+            , pShader->m_bGPRsUpToDate ? L"yes" : L"no",
             pShader->m_ISA_VGPRs,
             pShader->m_ISA_SGPRs,
             pShader->m_previous_ISA_VGPRs,
@@ -2043,9 +2068,9 @@ bool ShaderCache::CreateHashDigest( const std::list<Shader*>& i_ShaderList )
             );
 
         // Append Macros to String
-        for( unsigned int i = 0; i < pShader->m_uNumMacros; ++i )
+        for (unsigned int i = 0; i < pShader->m_uNumMacros; ++i)
         {
-            wchar_t* wsMacroStart = &(wsShaderInfoHTML[ wcslen(wsShaderInfoHTML) ]);
+            wchar_t* wsMacroStart = &(wsShaderInfoHTML[wcslen( wsShaderInfoHTML )]);
             swprintf_s( wsMacroStart, m_uMACRO_MAX_LENGTH, L"%s: %i<br>\n", pShader->m_pMacros[i].m_wsName, pShader->m_pMacros[i].m_iValue );
         }
 
@@ -2059,17 +2084,18 @@ bool ShaderCache::CreateHashDigest( const std::list<Shader*>& i_ShaderList )
     html.writeHTML( L"<font face=\"Calibri\" size=\"-3\">\n" );
     // Error List
 
-    if( m_ErrorList.size() > 0 )
+    if (m_ErrorList.size() > 0)
     {
         html.writeHTML( L"<br><h1><center><font color=\"FF0000\">Error List</font></center></h1><br>\n" );
-        for( std::set<Shader*>::const_iterator it = m_ErrorList.begin(); it != m_ErrorList.end(); it++ )
+        for (std::set<Shader*>::const_iterator it = m_ErrorList.begin(); it != m_ErrorList.end(); it++)
         {
             Shader* pShader = *it;
             wchar_t wsShaderInfoHTML[16384];
-            swprintf_s( wsShaderInfoHTML, L"%s::%s <a href=\"%s\">%s</a> <a href=\"%s\">%s</a><br>\n", pShader->m_wsRawFileName, pShader->m_wsEntryPoint, pShader->m_wsSourceFile, L"Source HLSL", pShader->m_wsErrorFile, L"Errors" );
+            swprintf_s( wsShaderInfoHTML, L"%s::%s <a href=\"%s\">%s</a> <a href=\"%s\">%s</a><br>\n",
+                pShader->m_wsRawFileName, pShader->m_wsEntryPoint, pShader->m_wsSourceFile, L"Source HLSL", pShader->m_wsErrorFile, L"Errors" );
             html.writeHTML( wsShaderInfoHTML );
         }
-        if( m_bHasShaderErrorsToDisplay )
+        if (m_bHasShaderErrorsToDisplay)
         {
             html.writeHTML( L"<font color=\"FF0000\">\n" );
             std::wstring shaderErrors( m_wsLastShaderError );
@@ -2077,9 +2103,11 @@ bool ShaderCache::CreateHashDigest( const std::list<Shader*>& i_ShaderList )
             do
             {
                 offset = shaderErrors.find_first_of( L'\n' );
-                if( offset != shaderErrors.npos )
+                if (offset != shaderErrors.npos)
+                {
                     shaderErrors.replace( offset, 1, L"<br>" );
-            } while( offset != shaderErrors.npos );
+                }
+            } while (offset != shaderErrors.npos);
 
             html.writeHTML( shaderErrors.c_str() );
             html.writeHTML( L"</font>\n" );
@@ -2087,9 +2115,10 @@ bool ShaderCache::CreateHashDigest( const std::list<Shader*>& i_ShaderList )
     }
 
     html.writeHTML( L"<br><h1><center>File Table</center></h1><br>\n" );
-    html.writeHTML( L"<table><tr><td>Raw Filename</td><td>Filename Hash</td><td>Assembly File</td><td>Error File</td><td>Hash File</td><td>ISA File</td><td>Object File</td><td>Preprocess File</td></tr>\n" );
+    html.writeHTML( L"<table><tr><td>Raw Filename</td><td>Filename Hash</td><td>Assembly File</td><td>Error File</td><td>Hash File</td>" );
+    html.writeHTML( L"<td>ISA File</td><td>Object File</td><td>Preprocess File</td></tr>\n" );
 
-    for( std::list<Shader*>::const_iterator it = i_ShaderList.begin(); it != i_ShaderList.end(); it++ )
+    for (std::list<Shader*>::const_iterator it = i_ShaderList.begin(); it != i_ShaderList.end(); it++)
     {
         Shader* pShader = *it;
         html.writeHTML( L"\n\n<tr>" );
@@ -2129,25 +2158,25 @@ void ShaderCache::PreprocessShaders()
     bool compileStatusInitialized = false;
     /*if( m_bCreateHashDigest )
     {
-        compileStatusInitialized = CreateHashDigest( m_PreprocessList );
+    compileStatusInitialized = CreateHashDigest( m_PreprocessList );
     }*/
 
     // Setup Progress Info and Compile Status for all shaders
-    for( std::list<Shader*>::iterator it = m_PreprocessList.begin(); it != m_PreprocessList.end(); it++ )
+    for (std::list<Shader*>::iterator it = m_PreprocessList.begin(); it != m_PreprocessList.end(); it++)
     {
         pShader = *it;
         pShader->m_wsCompileStatus = L"Preparing to pre-process . . ."; // Starting to Process the Shader
         pShader->m_bBeingProcessed = false;
-        if( !compileStatusInitialized ) m_pProgressInfo[m_uProgressCounter++] = pShader; // Add this if Hash Digest hasn't already done it!
+        if (!compileStatusInitialized) { m_pProgressInfo[m_uProgressCounter++] = pShader; } // Add this if Hash Digest hasn't already done it!
     }
 
-    while( m_PreprocessList.size() )
+    while (m_PreprocessList.size())
     {
         bool bRemove = false;
 
-        for( std::list<Shader*>::iterator it = m_PreprocessList.begin(); it != m_PreprocessList.end(); it++ )
+        for (std::list<Shader*>::iterator it = m_PreprocessList.begin(); it != m_PreprocessList.end(); it++)
         {
-            if( bRemove )
+            if (bRemove)
             {
                 m_PreprocessList.remove( pShader );
                 bRemove = false;
@@ -2155,15 +2184,15 @@ void ShaderCache::PreprocessShaders()
 
             pShader = *it;
 
-            if( uNumWorkThreads < m_uNumCPUCoresToUse )
+            if (uNumWorkThreads < m_uNumCPUCoresToUse)
             {
                 // LAYLAFIXED: If we have 0 worker threads, then it implies we can't be processing a shader (so when (uNumWorkThreads == 0 ) && (m_bBeingProcessed == true), we have a bug!)
                 assert( (pShader->m_bBeingProcessed == false) || (uNumWorkThreads > 0) );
-                if( (pShader->m_bBeingProcessed == false) /*|| (uNumWorkThreads == 0)*/ )
+                if ((pShader->m_bBeingProcessed == false) /*|| (uNumWorkThreads == 0)*/)
                 {
                     bRemove = true;
                     pShader->m_wsCompileStatus = L"Finding Shader"; // Starting to PreProcess the Shader
-                    if( CheckShaderFile( pShader ) )
+                    if (CheckShaderFile( pShader ))
                     {
                         PreprocessShader( pShader );
                         pShader->m_wsCompileStatus = L"Preprocessing"; // Starting to PreProcess the Shader
@@ -2190,16 +2219,16 @@ void ShaderCache::PreprocessShaders()
                 break;
             }
 
-            Sleep(1);
+            Sleep( 1 );
         }
 
-        if( bRemove )
+        if (bRemove)
         {
             m_PreprocessList.remove( pShader );
             bRemove = false;
         }
 
-        if( m_bAbort )
+        if (m_bAbort)
         {
             break;
         }
@@ -2208,45 +2237,45 @@ void ShaderCache::PreprocessShaders()
         {
             HANDLE handles[MAXIMUM_WAIT_OBJECTS];
             DWORD nHandleCount = 0;
-            for( std::list<Shader*>::iterator it = m_HashList.begin(); it != m_HashList.end(); it++ )
+            for (std::list<Shader*>::iterator it = m_HashList.begin(); it != m_HashList.end(); it++)
             {
                 pShader = *it;
-                if( nHandleCount < MAXIMUM_WAIT_OBJECTS )
+                if (nHandleCount < MAXIMUM_WAIT_OBJECTS)
                 {
                     handles[nHandleCount++] = pShader->m_hCompileProcessHandle;
                 }
-                if( nHandleCount == MAXIMUM_WAIT_OBJECTS )
+                if (nHandleCount == MAXIMUM_WAIT_OBJECTS)
                 {
-                    WaitForMultipleObjects(nHandleCount, handles, TRUE, INFINITE);
+                    WaitForMultipleObjects( nHandleCount, handles, TRUE, INFINITE );
                     nHandleCount = 0;
                 }
             }
-            if( nHandleCount > 0 )
+            if (nHandleCount > 0)
             {
-                WaitForMultipleObjects(nHandleCount, handles, TRUE, INFINITE);
+                WaitForMultipleObjects( nHandleCount, handles, TRUE, INFINITE );
             }
         }
 
         // Close handles for current batch of preprocessing that is now finished
         {
-            for( std::list<Shader*>::iterator it = m_HashList.begin(); it != m_HashList.end(); it++ )
+            for (std::list<Shader*>::iterator it = m_HashList.begin(); it != m_HashList.end(); it++)
             {
                 pShader = *it;
-                CloseHandle(pShader->m_hCompileProcessHandle);
-                CloseHandle(pShader->m_hCompileThreadHandle);
+                CloseHandle( pShader->m_hCompileProcessHandle );
+                CloseHandle( pShader->m_hCompileThreadHandle );
                 pShader->m_hCompileProcessHandle = NULL;
                 pShader->m_hCompileThreadHandle = NULL;
             }
         }
 
         // Hash Preprocessed Shaders
-        while( m_HashList.size() && (!m_bAbort) )
+        while (m_HashList.size() && (!m_bAbort))
         {
             bRemove = false;
 
-            for( std::list<Shader*>::iterator it = m_HashList.begin(); it != m_HashList.end(); it++ )
+            for (std::list<Shader*>::iterator it = m_HashList.begin(); it != m_HashList.end(); it++)
             {
-                if( bRemove )
+                if (bRemove)
                 {
                     pShader->m_iCompileWaitCount = -1;
                     m_HashList.remove( pShader );
@@ -2255,7 +2284,7 @@ void ShaderCache::PreprocessShaders()
 
                 pShader = *it;
 
-                assert(pShader->m_bBeingProcessed == true );
+                assert( pShader->m_bBeingProcessed == true );
                 pShader->m_wsCompileStatus = L"Waiting for Preprocessor";
                 pShader->m_iCompileWaitCount++;
 
@@ -2272,14 +2301,14 @@ void ShaderCache::PreprocessShaders()
                 pShader->m_iCompileWaitCount++;
                 }*/
 
-                if( (pShader->m_bBeingProcessed == true ) && CreateHashFromPreprocessFile( pShader ) )
+                if ((pShader->m_bBeingProcessed == true) && CreateHashFromPreprocessFile( pShader ))
                 {
                     // Set Status to COMPARING HASH
                     pShader->m_wsCompileStatus = L"Comparing Hash";
                     //m_pProgressInfo[m_uProgressCounter++] = pShader;
                     //m_pProgressInfo[m_uProgressCounter++].m_wsFilename = pShader->m_wsPreprocessFile_with_ISA;
 
-                    if( !CompareHash( pShader ) )
+                    if (!CompareHash( pShader ))
                     {
                         DeleteObjectFile( pShader );
 
@@ -2289,7 +2318,7 @@ void ShaderCache::PreprocessShaders()
                     }
                     else
                     {
-                        if( CheckObjectFile( pShader ) )
+                        if (CheckObjectFile( pShader ))
                         {
                             m_CreateList.push_back( pShader );
                         }
@@ -2306,14 +2335,16 @@ void ShaderCache::PreprocessShaders()
 
                     pShader->m_bBeingProcessed = false;
 
-                    if ( uNumWorkThreads > 0 )
+                    if (uNumWorkThreads > 0)
+                    {
                         uNumWorkThreads--;
+                    }
 
                     bRemove = true;
                 }
                 else
                 {
-                    Sleep(1);
+                    Sleep( 1 );
                 }
                 /*else if( !bRemove )
                 {
@@ -2334,30 +2365,28 @@ void ShaderCache::PreprocessShaders()
                 }*/
             }
 
-            if( bRemove )
+            if (bRemove)
             {
                 m_HashList.remove( pShader );
             }
 
-            if( m_bAbort )
+            if (m_bAbort)
             {
                 break;
             }
 
-            Sleep(1);
+            Sleep( 1 );
 
         }
 
     }
 
-
-
 }
 
 // a binary predicate implemented as a function:
-bool shader_duplicate_ptr(AMD::ShaderCache::Shader* pFirst, AMD::ShaderCache::Shader* pSecond)
+bool shader_duplicate_ptr( AMD::ShaderCache::Shader* pFirst, AMD::ShaderCache::Shader* pSecond )
 {
-    return ( pFirst == pSecond );
+    return (pFirst == pSecond);
 }
 
 //--------------------------------------------------------------------------------------
@@ -2370,17 +2399,17 @@ void ShaderCache::CompileShaders()
 
     EnterCriticalSection( &m_CompileShaders_CriticalSection );
 
-    while( m_CompileList.size() )
+    while (m_CompileList.size())
     {
         bool bRemove = false;
 
-        Sleep(1);
+        Sleep( 1 );
 
-        for( std::list<Shader*>::iterator it = m_CompileList.begin(); it != m_CompileList.end(); it++ )
+        for (std::list<Shader*>::iterator it = m_CompileList.begin(); it != m_CompileList.end(); it++)
         {
 
-            Sleep(1);
-            if( bRemove )
+            Sleep( 1 );
+            if (bRemove)
             {
                 m_CompileList.remove( pShader );
                 bRemove = false;
@@ -2390,9 +2419,9 @@ void ShaderCache::CompileShaders()
 
             pShader->m_wsCompileStatus = L"Waiting to Compile...";
 
-            if( uNumWorkThreads < m_uNumCPUCoresToUse )
+            if (uNumWorkThreads < m_uNumCPUCoresToUse)
             {
-                if( pShader->m_bBeingProcessed == false )
+                if (pShader->m_bBeingProcessed == false)
                 {
                     bRemove = true;
                     pShader->m_wsCompileStatus = L"Compiling Shader";
@@ -2412,13 +2441,13 @@ void ShaderCache::CompileShaders()
             }
         }
 
-        if( bRemove )
+        if (bRemove)
         {
             m_CompileList.remove( pShader );
             bRemove = false;
         }
 
-        if( m_bAbort )
+        if (m_bAbort)
         {
             break;
         }
@@ -2427,45 +2456,45 @@ void ShaderCache::CompileShaders()
         {
             HANDLE handles[MAXIMUM_WAIT_OBJECTS];
             DWORD nHandleCount = 0;
-            for( std::list<Shader*>::iterator it = m_CompileCheckList.begin(); it != m_CompileCheckList.end(); it++ )
+            for (std::list<Shader*>::iterator it = m_CompileCheckList.begin(); it != m_CompileCheckList.end(); it++)
             {
                 pShader = *it;
-                if( nHandleCount < MAXIMUM_WAIT_OBJECTS )
+                if (nHandleCount < MAXIMUM_WAIT_OBJECTS)
                 {
                     handles[nHandleCount++] = pShader->m_hCompileProcessHandle;
                 }
-                if( nHandleCount == MAXIMUM_WAIT_OBJECTS )
+                if (nHandleCount == MAXIMUM_WAIT_OBJECTS)
                 {
-                    WaitForMultipleObjects(nHandleCount, handles, TRUE, INFINITE);
+                    WaitForMultipleObjects( nHandleCount, handles, TRUE, INFINITE );
                     nHandleCount = 0;
                 }
             }
-            if( nHandleCount > 0 )
+            if (nHandleCount > 0)
             {
-                WaitForMultipleObjects(nHandleCount, handles, TRUE, INFINITE);
+                WaitForMultipleObjects( nHandleCount, handles, TRUE, INFINITE );
             }
         }
 
         // Close handles for current batch of compiling that is now finished
         {
-            for( std::list<Shader*>::iterator it = m_CompileCheckList.begin(); it != m_CompileCheckList.end(); it++ )
+            for (std::list<Shader*>::iterator it = m_CompileCheckList.begin(); it != m_CompileCheckList.end(); it++)
             {
                 pShader = *it;
-                CloseHandle(pShader->m_hCompileProcessHandle);
-                CloseHandle(pShader->m_hCompileThreadHandle);
+                CloseHandle( pShader->m_hCompileProcessHandle );
+                CloseHandle( pShader->m_hCompileThreadHandle );
                 pShader->m_hCompileProcessHandle = NULL;
                 pShader->m_hCompileThreadHandle = NULL;
             }
         }
 
         // Check Compiled Shaders
-        while( m_CompileCheckList.size() && (!m_bAbort) )
+        while (m_CompileCheckList.size() && (!m_bAbort))
         {
             bRemove = false;
 
-            for( std::list<Shader*>::iterator it = m_CompileCheckList.begin(); it != m_CompileCheckList.end(); it++ )
+            for (std::list<Shader*>::iterator it = m_CompileCheckList.begin(); it != m_CompileCheckList.end(); it++)
             {
-                if( bRemove )
+                if (bRemove)
                 {
                     m_CompileCheckList.remove( pShader );
                     bRemove = false;
@@ -2476,7 +2505,7 @@ void ShaderCache::CompileShaders()
                 bool bHasObjectFile = false;
 
                 //pShader->m_wsCompileStatus = L"Waiting for Object File . . .";
-                if( CheckObjectFile( pShader ) )
+                if (CheckObjectFile( pShader ))
                 {
                     pShader->m_wsCompileStatus = L"Found Object File";
                     //m_pProgressInfo[m_uProgressCounter++].m_wsFilename = pShader->m_wsObjectFile_with_ISA;
@@ -2487,25 +2516,27 @@ void ShaderCache::CompileShaders()
 
                     pShader->m_bBeingProcessed = false;
 
-                    if ( uNumWorkThreads > 0 )
+                    if (uNumWorkThreads > 0)
+                    {
                         uNumWorkThreads--;
+                    }
 
                     bRemove = true;
                 }
 
                 //pShader->m_wsCompileStatus = L"Checking For Errors . . .";
                 bool bShaderHasCompilerError = false;
-                if( /*bHasObjectFile && */CheckErrorFile( pShader, bShaderHasCompilerError ) )
+                if ( /*bHasObjectFile && */CheckErrorFile( pShader, bShaderHasCompilerError ))
                 {
                     bRemove |= bShaderHasCompilerError;
 
-                    if( bHasObjectFile && !bShaderHasCompilerError )
+                    if (bHasObjectFile && !bShaderHasCompilerError)
                     {
-                        if( m_bGenerateShaderISA )
+                        if (m_bGenerateShaderISA)
                         {
                             pShader->m_wsCompileStatus = L"Generating ISA";
                             pShader->m_bShaderUpToDate = false; // Shader Has Been Updated
-                            if( GenerateShaderISA(pShader, false) )
+                            if (GenerateShaderISA( pShader, false ))
                             {
                                 pShader->m_wsCompileStatus = L"Done!";
                             }
@@ -2516,14 +2547,16 @@ void ShaderCache::CompileShaders()
                             pShader->m_bShaderUpToDate = false; // Shader Has Been Updated
                         }
                     }
-                    else if( bShaderHasCompilerError )
+                    else if (bShaderHasCompilerError)
                     {
                         pShader->m_bShaderUpToDate = true;
                         pShader->m_bGPRsUpToDate = true;
                         m_ErrorList.insert( pShader );
                         pShader->m_wsCompileStatus = L"Compiler Error!";
-                        if ( uNumWorkThreads > 0 )
+                        if (uNumWorkThreads > 0)
+                        {
                             uNumWorkThreads--;
+                        }
                     }
                     else
                     {
@@ -2532,21 +2565,21 @@ void ShaderCache::CompileShaders()
                 }
                 else
                 {
-                    Sleep(1);
+                    Sleep( 1 );
                 }
             }
 
-            if( bRemove )
+            if (bRemove)
             {
                 m_CompileCheckList.remove( pShader );
             }
 
-            if( m_bAbort )
+            if (m_bAbort)
             {
                 break;
             }
 
-            Sleep(1);
+            Sleep( 1 );
 
         }
     }
@@ -2555,7 +2588,7 @@ void ShaderCache::CompileShaders()
 
     LeaveCriticalSection( &m_CompileShaders_CriticalSection );
 
-    if( m_bCreateHashDigest )
+    if (m_bCreateHashDigest)
     {
         CreateHashDigest( m_CreateList );
     }
@@ -2570,15 +2603,15 @@ HRESULT ShaderCache::CreateShaders()
     HRESULT hr = E_FAIL;
     Shader* pShader = NULL;
 
-    for( std::list<Shader*>::iterator it = m_CreateList.begin(); it != m_CreateList.end(); it++ )
+    for (std::list<Shader*>::iterator it = m_CreateList.begin(); it != m_CreateList.end(); it++)
     {
         pShader = *it;
 
-        if( pShader->m_ppShader )
+        if (pShader->m_ppShader)
         {
-            if( NULL == *(pShader->m_ppShader) || (!pShader->m_bShaderUpToDate) )
+            if (NULL == *(pShader->m_ppShader) || (!pShader->m_bShaderUpToDate))
             {
-                assert( (!pShader->m_bShaderUpToDate) || (NULL != *( pShader->m_ppShader )) );
+                assert( (!pShader->m_bShaderUpToDate) || (NULL != *(pShader->m_ppShader)) );
                 hr = CreateShader( pShader );
                 assert( S_OK == hr );
             }
@@ -2595,7 +2628,7 @@ void ShaderCache::InvalidateShaders( void )
 {
     Shader* pShader = NULL;
 
-    for( std::list<Shader*>::iterator it = m_ShaderList.begin(); it != m_ShaderList.end(); it++ )
+    for (std::list<Shader*>::iterator it = m_ShaderList.begin(); it != m_ShaderList.end(); it++)
     {
         pShader = *it;
         pShader->m_bShaderUpToDate = false;
@@ -2621,7 +2654,7 @@ void ShaderCache::StripPathInfoFromPreprocessFile( Shader* pShader, FILE* pFile,
     // fxc accepts both forward and back slashes, so convert any forward
     // slashes to back slashes for consistency
     char* pForwardSlash = strchr( szSourceFileWithBackSlashes, L'/' );
-    while( pForwardSlash )
+    while (pForwardSlash)
     {
         *pForwardSlash = '\\';
         pForwardSlash = strchr( szSourceFileWithBackSlashes, L'/' );
@@ -2634,7 +2667,7 @@ void ShaderCache::StripPathInfoFromPreprocessFile( Shader* pShader, FILE* pFile,
     // support the case where the source filename doesn't contain any path info
     // (this would happen if shaders were in the project working directory instead of
     // a subfolder)
-    if( !pFileName )
+    if (!pFileName)
     {
         pFileName = szSourceFileWithBackSlashes;
     }
@@ -2651,14 +2684,14 @@ void ShaderCache::StripPathInfoFromPreprocessFile( Shader* pShader, FILE* pFile,
     char szFxcLineDirective[32];
     strcpy_s( szFxcLineDirective, 32, "#line" );
 
-    while( fgets( pLine, m_uCOMMAND_LINE_MAX_LENGTH, pFile ) )
+    while (fgets( pLine, m_uCOMMAND_LINE_MAX_LENGTH, pFile ))
     {
         // check if this is a line directive
         char* pStartOfFxcLineDirective = strstr( pLine, szFxcLineDirective );
-        if( pStartOfFxcLineDirective )
+        if (pStartOfFxcLineDirective)
         {
             // if it is, then check if the filename appears after #line
-            if( !strstr( pStartOfFxcLineDirective, pFileName ) )
+            if (!strstr( pStartOfFxcLineDirective, pFileName ))
             {
                 // if it is a line directive, but not one containing the filename,
                 // copy it over to the destination buffer
@@ -2688,7 +2721,7 @@ BOOL ShaderCache::CreateHashFromPreprocessFile( Shader* pShader )
 
     const unsigned int kuMaxPath = AMD::ShaderCache::m_uPATHNAME_MAX_LENGTH;
     const size_t kPathLength = wcslen( wsShaderPathName );
-    if( kPathLength >= kuMaxPath )
+    if (kPathLength >= kuMaxPath)
     {
         wchar_t wsErrorText[m_uCOMMAND_LINE_MAX_LENGTH];
         swprintf_s( wsErrorText, L"Error: PATH LENGTH TOO LONG [%u/%u]\n\n%s", (unsigned)kPathLength, kuMaxPath, wsShaderPathName );
@@ -2698,7 +2731,7 @@ BOOL ShaderCache::CreateHashFromPreprocessFile( Shader* pShader )
 
     _wfopen_s( &pFile, wsShaderPathName, L"rt" );
 
-    if( pFile )
+    if (pFile)
     {
         fseek( pFile, 0, SEEK_END );
         int iFileSize = ftell( pFile );
@@ -2710,7 +2743,7 @@ BOOL ShaderCache::CreateHashFromPreprocessFile( Shader* pShader )
         // shader cache, purely because the path has changed
         StripPathInfoFromPreprocessFile( pShader, pFile, pFileBuf, iFileSize );
 
-        if( NULL != pShader->m_pHash )
+        if (NULL != pShader->m_pHash)
         {
             free( pShader->m_pHash );
             pShader->m_pHash = NULL;
@@ -2719,7 +2752,7 @@ BOOL ShaderCache::CreateHashFromPreprocessFile( Shader* pShader )
 
         CreateHash( pFileBuf, iFileSize, &pShader->m_pHash, &pShader->m_uHashLength );
 
-        delete[] pFileBuf;
+        delete [] pFileBuf;
         fclose( pFile );
 
         return TRUE;
@@ -2734,7 +2767,7 @@ BOOL ShaderCache::CreateHashFromPreprocessFile( Shader* pShader )
 void ShaderCache::Shader::SetupHashedFilename( void )
 {
 
-    if( NULL != m_pFilenameHash )
+    if (NULL != m_pFilenameHash)
     {
         free( m_pFilenameHash );
         m_pFilenameHash = NULL;
@@ -2744,7 +2777,7 @@ void ShaderCache::Shader::SetupHashedFilename( void )
     // TODO: Convert into URL-Safe String
     // Convert filename from wchar_t to char*
     size_t i;
-    char asciiString[ m_uPATHNAME_MAX_LENGTH ];
+    char asciiString[m_uPATHNAME_MAX_LENGTH];
     memset( asciiString, '\0', sizeof( char[m_uPATHNAME_MAX_LENGTH] ) );
     wcstombs_s( &i, asciiString, m_uPATHNAME_MAX_LENGTH, m_wsRawFileName, m_uPATHNAME_MAX_LENGTH );
     CreateHash( asciiString, 0, &m_pFilenameHash, &m_uFilenameHashLength );
@@ -2770,20 +2803,20 @@ void ShaderCache::CreateHash( const char* data, int iFileSize, BYTE** hash, long
     size_t bufLen = 0;
 
     // DwFlags is set to zero to attempt to open an existing key container.
-    if( !CryptAcquireContext( &hProv, NULL, NULL, PROV_RSA_FULL, 0 ) )
+    if (!CryptAcquireContext( &hProv, NULL, NULL, PROV_RSA_FULL, 0 ))
     {
         // An error occurred in acquiring the context. This could mean that
         // the key container requested does not exist. In this case, the
         // function can be called again to attempt to create a new key container.
         if (GetLastError() == NTE_BAD_KEYSET)
         {
-            if( !CryptAcquireContext( &hProv, NULL, NULL, PROV_RSA_FULL, CRYPT_NEWKEYSET ) )
+            if (!CryptAcquireContext( &hProv, NULL, NULL, PROV_RSA_FULL, CRYPT_NEWKEYSET ))
             {
                 return;
             }
         }
     }
-    if( !CryptCreateHash( hProv, CALG_MD5, 0, 0, &hHash ) )
+    if (!CryptCreateHash( hProv, CALG_MD5, 0, 0, &hHash ))
     {
         return;
     }
@@ -2793,30 +2826,30 @@ void ShaderCache::CreateHash( const char* data, int iFileSize, BYTE** hash, long
     pbBuffer = (BYTE*)malloc( bufLen + 1 );
     memset( pbBuffer, 0, bufLen + 1 );
 
-    for( i = 0; i < bufLen; i++ )
+    for (i = 0; i < bufLen; i++)
     {
         pbBuffer[i] = (BYTE)data[i];
     }
 
-    if( !CryptHashData( hHash, pbBuffer, (DWORD)bufLen, 0 ) )
+    if (!CryptHashData( hHash, pbBuffer, (DWORD)bufLen, 0 ))
     {
         return;
     }
 
     dwCount = sizeof( DWORD );
-    if( !CryptGetHashParam( hHash, HP_HASHSIZE, (BYTE *)&dwHashLen, &dwCount, 0 ) )
+    if (!CryptGetHashParam( hHash, HP_HASHSIZE, (BYTE *)&dwHashLen, &dwCount, 0 ))
     {
         return;
     }
 
-    if( ( pbHash = (unsigned char*)malloc( dwHashLen ) ) == NULL )
+    if ((pbHash = (unsigned char*)malloc( dwHashLen )) == NULL)
     {
         return;
     }
 
     memset( pbHash, 0, dwHashLen );
 
-    if( !CryptGetHashParam( hHash, HP_HASHVAL, pbHash, &dwHashLen, 0 ) )
+    if (!CryptGetHashParam( hHash, HP_HASHVAL, pbHash, &dwHashLen, 0 ))
     {
         return;
     }
@@ -2824,17 +2857,17 @@ void ShaderCache::CreateHash( const char* data, int iFileSize, BYTE** hash, long
     *hash = pbHash;
     *len = dwHashLen;
 
-    if( hHash )
+    if (hHash)
     {
         CryptDestroyHash( hHash );
     }
 
-    if( hProv )
+    if (hProv)
     {
         CryptReleaseContext( hProv, 0 );
     }
 
-    if( NULL != pbBuffer )
+    if (NULL != pbBuffer)
     {
         free( pbBuffer );
         pbBuffer = NULL;
@@ -2854,7 +2887,7 @@ void ShaderCache::WriteHashFile( Shader* pShader )
 
     _wfopen_s( &pFile, wsShaderPathName, L"wb" );
 
-    if( pFile )
+    if (pFile)
     {
         fwrite( pShader->m_pHash, pShader->m_uHashLength, 1, pFile );
 
@@ -2875,7 +2908,7 @@ BOOL ShaderCache::CompareHash( Shader* pShader )
 
     _wfopen_s( &pFile, wsShaderPathName, L"rb" );
 
-    if( pFile )
+    if (pFile)
     {
         fseek( pFile, 0, SEEK_END );
         int iFileSize = ftell( pFile );
@@ -2886,13 +2919,13 @@ BOOL ShaderCache::CompareHash( Shader* pShader )
 
         fclose( pFile );
 
-        if( !memcmp( pShader->m_pHash, pFileBuf, pShader->m_uHashLength ) )
+        if (!memcmp( pShader->m_pHash, pFileBuf, pShader->m_uHashLength ))
         {
-            delete[] pFileBuf;
+            delete [] pFileBuf;
             return TRUE;
         }
 
-        delete[] pFileBuf;
+        delete [] pFileBuf;
     }
 
     return FALSE;
@@ -2916,7 +2949,7 @@ HRESULT ShaderCache::CreateShader( Shader* pShader )
 
     _wfopen_s( &pFile, wsShaderPathName, L"rb" );
 
-    if( pFile )
+    if (pFile)
     {
         fseek( pFile, 0, SEEK_END );
         int iFileSize = ftell( pFile );
@@ -2924,12 +2957,12 @@ HRESULT ShaderCache::CreateShader( Shader* pShader )
         char* pFileBuf = new char[iFileSize];
         fread( pFileBuf, 1, iFileSize, pFile );
 
-        switch( pShader->m_eShaderType )
+        switch (pShader->m_eShaderType)
         {
         case SHADER_TYPE_VERTEX:
             hr = DXUTGetD3D11Device()->CreateVertexShader( pFileBuf, iFileSize, NULL, (ID3D11VertexShader**)pShader->m_ppShader );
             assert( S_OK == hr );
-            if( pShader->m_uNumDescElements && (pTempD3DShader == NULL) )
+            if (pShader->m_uNumDescElements && (pTempD3DShader == NULL))
             { // Only create the Input Layout if one doesn't already exist (it shouldn't change at runtime... I *think*)
                 hr = DXUTGetD3D11Device()->CreateInputLayout( pShader->m_pInputLayoutDesc, pShader->m_uNumDescElements, pFileBuf, iFileSize, pShader->m_ppInputLayout );
             }
@@ -2956,11 +2989,11 @@ HRESULT ShaderCache::CreateShader( Shader* pShader )
             break;
         }
 
-        delete[] pFileBuf;
+        delete [] pFileBuf;
         fclose( pFile );
     }
 
-    if( hr == S_OK )
+    if (hr == S_OK)
     {
         SAFE_RELEASE( pTempD3DShader ); // Clean up Old Shader
         pShader->m_bShaderUpToDate = true;
@@ -2982,9 +3015,9 @@ BOOL ShaderCache::CompileShader( Shader* pShader )
     STARTUPINFO si;
     PROCESS_INFORMATION pi;
 
-    ZeroMemory( &si, sizeof(si) );
-    si.cb = sizeof(si);
-    ZeroMemory( &pi, sizeof(pi) );
+    ZeroMemory( &si, sizeof( si ) );
+    si.cb = sizeof( si );
+    ZeroMemory( &pi, sizeof( pi ) );
 
     // Start the child process.
     BOOL bSuccess = CreateProcess( m_wsFxcExePath,   // Application name
@@ -2998,8 +3031,8 @@ BOOL ShaderCache::CompileShader( Shader* pShader )
         &si,              // Pointer to STARTUPINFO structure
         &pi );            // Pointer to PROCESS_INFORMATION structure
 
-    assert(pShader->m_hCompileProcessHandle == NULL);
-    assert(pShader->m_hCompileThreadHandle == NULL);
+    assert( pShader->m_hCompileProcessHandle == NULL );
+    assert( pShader->m_hCompileThreadHandle == NULL );
     pShader->m_hCompileProcessHandle = pi.hProcess;
     pShader->m_hCompileThreadHandle = pi.hThread;
 
@@ -3015,9 +3048,9 @@ BOOL ShaderCache::PreprocessShader( Shader* pShader )
     STARTUPINFO si;
     PROCESS_INFORMATION pi;
 
-    ZeroMemory( &si, sizeof(si) );
-    si.cb = sizeof(si);
-    ZeroMemory( &pi, sizeof(pi) );
+    ZeroMemory( &si, sizeof( si ) );
+    si.cb = sizeof( si );
+    ZeroMemory( &pi, sizeof( pi ) );
 
     // Start the child process.
     BOOL bSuccess = CreateProcess( m_wsFxcExePath,   // Application name
@@ -3031,8 +3064,8 @@ BOOL ShaderCache::PreprocessShader( Shader* pShader )
         &si,              // Pointer to STARTUPINFO structure
         &pi );            // Pointer to PROCESS_INFORMATION structure
 
-    assert(pShader->m_hCompileProcessHandle == NULL);
-    assert(pShader->m_hCompileThreadHandle == NULL);
+    assert( pShader->m_hCompileProcessHandle == NULL );
+    assert( pShader->m_hCompileThreadHandle == NULL );
     pShader->m_hCompileProcessHandle = pi.hProcess;
     pShader->m_hCompileThreadHandle = pi.hThread;
 
@@ -3048,13 +3081,16 @@ BOOL ShaderCache::CheckShaderFile( Shader* pShader )
 
     CreateFullPathFromInputFilename( wsShaderPathName, pShader->m_wsSourceFile );
 
-    if( _waccess( wsShaderPathName, 00 ) != -1 ) {
+    if (_waccess( wsShaderPathName, 00 ) != -1)
+    {
         return TRUE;
-    } else {
+    }
+    else
+    {
         wchar_t wsErrorText[m_uCOMMAND_LINE_MAX_LENGTH];
         swprintf_s( wsErrorText, L"Error: %s (FILE NOT FOUND)\n", wsShaderPathName );
 
-        const bool kbAppendToError = ( wcslen(m_wsLastShaderError) < (3 * m_uCOMMAND_LINE_MAX_LENGTH) );
+        const bool kbAppendToError = (wcslen( m_wsLastShaderError ) < (3 * m_uCOMMAND_LINE_MAX_LENGTH));
         swprintf_s( m_wsLastShaderError, L"%s%s", (m_bHasShaderErrorsToDisplay && kbAppendToError) ? m_wsLastShaderError : L"", wsErrorText );
         m_bHasShaderErrorsToDisplay = true;
         m_shaderErrorRenderedCount = 0;
@@ -3075,13 +3111,13 @@ BOOL ShaderCache::CheckObjectFile( Shader* pShader )
 
     _wfopen_s( &pFile, wsShaderPathName, L"rt" );
 
-    if( pFile )
+    if (pFile)
     {
         fseek( pFile, 0, SEEK_END );
         int iFileSize = ftell( pFile );
         fclose( pFile );
 
-        if( iFileSize > 0 )
+        if (iFileSize > 0)
         {
             return TRUE;
         }
@@ -3099,7 +3135,7 @@ BOOL ShaderCache::CheckFXC()
     FILE* pFile = NULL;
     _wfopen_s( &pFile, m_wsFxcExePath, L"rb" );
 
-    if( pFile )
+    if (pFile)
     {
         fclose( pFile );
 
@@ -3114,12 +3150,12 @@ BOOL ShaderCache::CheckFXC()
 //--------------------------------------------------------------------------------------
 BOOL ShaderCache::CheckSCDEV()
 {
-    if( !m_bGenerateShaderISA ) return FALSE;
+    if (!m_bGenerateShaderISA) { return FALSE; }
 
     FILE* pFile = NULL;
     _wfopen_s( &pFile, m_wsDevExePath, L"rb" );
 
-    if( pFile )
+    if (pFile)
     {
         fclose( pFile );
 
@@ -3142,15 +3178,15 @@ BOOL ShaderCache::CheckErrorFile( Shader* pShader, bool& io_bHasShaderCompilerEr
 
     _wfopen_s( &pFile, wsShaderPathName, L"rt" );
 
-    if( pFile )
+    if (pFile)
     {
         fseek( pFile, 0, SEEK_END );
         int iFileSize = ftell( pFile );
 
-        if( iFileSize > 0 )
+        if (iFileSize > 0)
         {
             rewind( pFile );
-            if( IsAnError( pFile ) )
+            if (IsAnError( pFile ))
             {
                 io_bHasShaderCompilerError = true;
 
@@ -3164,13 +3200,13 @@ BOOL ShaderCache::CheckErrorFile( Shader* pShader, bool& io_bHasShaderCompilerEr
 
                 DeleteHashFile( pShader );
 
-                if( m_ErrorDisplayType == ERROR_DISPLAY_IN_MESSAGE_BOX )
+                if (m_ErrorDisplayType == ERROR_DISPLAY_IN_MESSAGE_BOX)
                 {
                     wchar_t wsShaderPathName[m_uPATHNAME_MAX_LENGTH];
                     swprintf_s( wsShaderPathName, L"*** The HLSL Shader Compiler has found the following ERROR(s) ***" );
                     MessageBoxW( NULL, m_wsLastShaderError, wsShaderPathName, MB_OK );
                 }
-                else if( m_ErrorDisplayType == ERROR_DISPLAY_IN_DEBUG_OUTPUT_AND_BREAK )
+                else if (m_ErrorDisplayType == ERROR_DISPLAY_IN_DEBUG_OUTPUT_AND_BREAK)
                 {
                     DebugBreak();
                 }
@@ -3193,12 +3229,12 @@ void ShaderCache::RenderShaderErrors( CDXUTTextHelper* g_pTxtHelper, int iFontHe
 {
     wchar_t wsOverallProgress[m_uPATHNAME_MAX_LENGTH];
 
-    if( !m_bHasShaderErrorsToDisplay )
+    if (!m_bHasShaderErrorsToDisplay)
     {
         return;
     }
 
-    if( ShowShaderErrors() )
+    if (ShowShaderErrors())
     {
         g_pTxtHelper->Begin();
         g_pTxtHelper->SetForegroundColor( FontColor );
@@ -3206,7 +3242,7 @@ void ShaderCache::RenderShaderErrors( CDXUTTextHelper* g_pTxtHelper, int iFontHe
 
         // 2500 frames @ 500 fps = ~5 seconds
         const unsigned int ki_FramesToDisplayErrorsFor = ki_FrameTimeout;
-        if( m_bHasShaderErrorsToDisplay && (m_shaderErrorRenderedCount < ki_FramesToDisplayErrorsFor) )
+        if (m_bHasShaderErrorsToDisplay && (m_shaderErrorRenderedCount < ki_FramesToDisplayErrorsFor))
         {
             swprintf_s( wsOverallProgress, L"*** Shader Compiler Generated ERROR(s) -- this notification will auto-hide in %i frames ***", (ki_FramesToDisplayErrorsFor - m_shaderErrorRenderedCount) );
             g_pTxtHelper->DrawTextLine( wsOverallProgress );
@@ -3224,7 +3260,7 @@ void ShaderCache::RenderShaderErrors( CDXUTTextHelper* g_pTxtHelper, int iFontHe
         g_pTxtHelper->End();
     }
 
-    else if( m_ErrorDisplayType == ERROR_DISPLAY_IN_MESSAGE_BOX )
+    else if (m_ErrorDisplayType == ERROR_DISPLAY_IN_MESSAGE_BOX)
     {
         m_bHasShaderErrorsToDisplay = false;
         m_shaderErrorRenderedCount = 0;
@@ -3233,7 +3269,7 @@ void ShaderCache::RenderShaderErrors( CDXUTTextHelper* g_pTxtHelper, int iFontHe
         MessageBoxW( NULL, m_wsLastShaderError, wsShaderPathName, MB_OK );
     }
 
-    else if( m_ErrorDisplayType == ERROR_DISPLAY_IN_DEBUG_OUTPUT_AND_BREAK )
+    else if (m_ErrorDisplayType == ERROR_DISPLAY_IN_DEBUG_OUTPUT_AND_BREAK)
     {
         m_bHasShaderErrorsToDisplay = false;
         m_shaderErrorRenderedCount = 0;
@@ -3252,17 +3288,17 @@ void ShaderCache::PrintShaderErrors( FILE* pFile )
     wchar_t szError[32];
     wcscpy_s( szError, 32, L"error" );
 
-    while( fgetws( pLine, m_uCOMMAND_LINE_MAX_LENGTH, pFile ) )
+    while (fgetws( pLine, m_uCOMMAND_LINE_MAX_LENGTH, pFile ))
     {
         OutputDebugStringW( pLine );
 
         wchar_t* pTemp = pLine;
-        while( *pTemp != L'\n' )
+        while (*pTemp != L'\n')
         {
 
-            if( !wcsncmp( pTemp, szError, wcslen( szError ) ) )
+            if (!wcsncmp( pTemp, szError, wcslen( szError ) ))
             {
-                const bool kbAppendToError = ( wcslen(m_wsLastShaderError) < (3 * m_uCOMMAND_LINE_MAX_LENGTH) );
+                const bool kbAppendToError = (wcslen( m_wsLastShaderError ) < (3 * m_uCOMMAND_LINE_MAX_LENGTH));
                 swprintf_s( m_wsLastShaderError, L"%s%s", (m_bHasShaderErrorsToDisplay && kbAppendToError) ? m_wsLastShaderError : L"", pLine );
                 m_bHasShaderErrorsToDisplay = true;
                 m_shaderErrorRenderedCount = 0;
@@ -3287,12 +3323,12 @@ BOOL ShaderCache::IsAnError( FILE* pFile )
     char szError[32];
     strcpy_s( szError, 32, "error" );
 
-    while( fgets( pLine, m_uCOMMAND_LINE_MAX_LENGTH, pFile ) )
+    while (fgets( pLine, m_uCOMMAND_LINE_MAX_LENGTH, pFile ))
     {
         char* pTemp = pLine;
-        while( *pTemp != '\n' )
+        while (*pTemp != '\n')
         {
-            if( !strncmp( pTemp, szError, strlen( szError ) ) )
+            if (!strncmp( pTemp, szError, strlen( szError ) ))
             {
                 return TRUE;
             }
@@ -3323,7 +3359,7 @@ void ShaderCache::DeleteFileByFilename( const wchar_t* pwsFile ) const
 //--------------------------------------------------------------------------------------
 void ShaderCache::DeleteErrorFiles()
 {
-    for( std::list<Shader*>::iterator it = m_ShaderList.begin(); it != m_ShaderList.end(); it++)
+    for (std::list<Shader*>::iterator it = m_ShaderList.begin(); it != m_ShaderList.end(); it++)
     {
         Shader* pShader = *it;
 
@@ -3346,7 +3382,7 @@ void ShaderCache::DeleteErrorFile( Shader* pShader )
 //--------------------------------------------------------------------------------------
 void ShaderCache::DeleteAssemblyFiles()
 {
-    for( std::list<Shader*>::iterator it = m_ShaderList.begin(); it != m_ShaderList.end(); it++)
+    for (std::list<Shader*>::iterator it = m_ShaderList.begin(); it != m_ShaderList.end(); it++)
     {
         Shader* pShader = *it;
 
@@ -3370,7 +3406,7 @@ void ShaderCache::DeleteAssemblyFile( Shader* pShader )
 //--------------------------------------------------------------------------------------
 void ShaderCache::DeleteObjectFiles()
 {
-    for( std::list<Shader*>::iterator it = m_ShaderList.begin(); it != m_ShaderList.end(); it++)
+    for (std::list<Shader*>::iterator it = m_ShaderList.begin(); it != m_ShaderList.end(); it++)
     {
         Shader* pShader = *it;
 
@@ -3393,7 +3429,7 @@ void ShaderCache::DeleteObjectFile( Shader* pShader )
 //--------------------------------------------------------------------------------------
 void ShaderCache::DeletePreprocessFiles()
 {
-    for( std::list<Shader*>::iterator it = m_ShaderList.begin(); it != m_ShaderList.end(); it++)
+    for (std::list<Shader*>::iterator it = m_ShaderList.begin(); it != m_ShaderList.end(); it++)
     {
         Shader* pShader = *it;
 
@@ -3416,7 +3452,7 @@ void ShaderCache::DeletePreprocessFile( Shader* pShader )
 //--------------------------------------------------------------------------------------
 void ShaderCache::DeleteHashFiles()
 {
-    for( std::list<Shader*>::iterator it = m_ShaderList.begin(); it != m_ShaderList.end(); it++)
+    for (std::list<Shader*>::iterator it = m_ShaderList.begin(); it != m_ShaderList.end(); it++)
     {
         Shader* pShader = *it;
 
@@ -3432,9 +3468,3 @@ void ShaderCache::DeleteHashFile( Shader* pShader )
 {
     DeleteFileByFilename( pShader->m_wsHashFile );
 }
-
-
-//--------------------------------------------------------------------------------------
-// EOF
-//--------------------------------------------------------------------------------------
-

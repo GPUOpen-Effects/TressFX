@@ -81,7 +81,7 @@ HRESULT Mesh::Create(ID3D11Device * pDevice, const char * path, const char * nam
 
     aiScene* scene = (aiScene*)importer.ReadFile(filename.c_str(), 0);
 
-    if (!scene) return E_FAIL;
+    if (!scene) { return E_FAIL; }
 
     _id = crcFast((const unsigned char *)filename.c_str(), (int)filename.length());
 
@@ -93,7 +93,7 @@ HRESULT Mesh::Create(ID3D11Device * pDevice, const char * path, const char * nam
             num_faces += scene->mMeshes[i]->mNumFaces;
         }
 
-        if (num_vertices == 0 || num_faces == 0) return S_OK;
+        if (num_vertices == 0 || num_faces == 0)  { return S_OK; }
 
         int current_vertex = 0;
         int current_face = 0;
@@ -138,13 +138,19 @@ HRESULT Mesh::Create(ID3D11Device * pDevice, const char * path, const char * nam
             for (unsigned int j = 0; j < mesh->mNumVertices; j++)
             {
                 if (position != NULL)
-                    memcpy(&_vertex[current_vertex + j].position, &position[j], sizeof(float) * 3);
+                {
+                    memcpy( &_vertex[current_vertex + j].position, &position[j], sizeof( float ) * 3 );
+                }
 
                 if (normal != NULL)
-                    memcpy(&_vertex[current_vertex + j].normal, &normal[j], sizeof(float) * 3);
+                {
+                    memcpy( &_vertex[current_vertex + j].normal, &normal[j], sizeof( float ) * 3 );
+                }
 
                 if (uv != NULL)
-                    memcpy(&_vertex[current_vertex + j].uv, &uv[j], sizeof(float) * 2);
+                {
+                    memcpy( &_vertex[current_vertex + j].uv, &uv[j], sizeof( float ) * 2 );
+                }
             }
 
             if (mesh->HasFaces())
@@ -258,9 +264,14 @@ ID3D11ShaderResourceView ** Mesh::srv()
 {
 #ifndef AMD_SDK_MINIMAL
     if (_srv.size())
+    {
         return &_srv[0];
+    }
     else
 #endif
+    {
         return NULL;
+    }
 }
-}
+
+} // namespace AMD

@@ -23,10 +23,10 @@
 //--------------------------------------------------------------------------------------
 // File: Geometry.h
 //
-// Classes for geometric primitives and collision and visibility testing
+// Classes for geometric primitives and collision and visibility testing.
 //--------------------------------------------------------------------------------------
-#ifndef __AMD_GEOMETRY_H__
-#define __AMD_GEOMETRY_H__
+#ifndef AMD_SDK_GEOMETRY_H
+#define AMD_SDK_GEOMETRY_H
 
 namespace AMD
 {
@@ -34,4 +34,3 @@ namespace AMD
 }
 
 #endif
-

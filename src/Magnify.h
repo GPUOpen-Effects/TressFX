@@ -23,13 +23,11 @@
 //--------------------------------------------------------------------------------------
 // File: Magnify.h
 //
-// Magnify class definition. This class magnifies a region of a given surface, and renders a scaled
-// sprite at the given position on the screen.
+// Magnify class definition. This class magnifies a region of a given surface
+// and renders a scaled sprite at the given position on the screen.
 //--------------------------------------------------------------------------------------
-
-
-#ifndef _MAGNIFY_H_
-#define _MAGNIFY_H_
+#ifndef AMD_SDK_MAGNIFY_H
+#define AMD_SDK_MAGNIFY_H
 
 namespace AMD
 {
@@ -104,9 +102,4 @@ private:
 
 } // namespace AMD
 
-#endif // _MAGNIFY_H_
-
-
-//--------------------------------------------------------------------------------------
-// EOF
-//--------------------------------------------------------------------------------------
+#endif // AMD_SDK_MAGNIFY_H

@@ -405,10 +405,8 @@
 * }
 *
 ***********************************************************/
-
-
-#ifndef _TIMER_H
-#define _TIMER_H
+#ifndef AMD_SDK_TIMER_H
+#define AMD_SDK_TIMER_H
 
 //namespace AMD
 //{
@@ -480,16 +478,16 @@ class GpuTimer : public Timer
 private:
     struct TsRecord
     {
-        union
+        union TsRecordState
         {
-            struct
+            struct TsRecordData
             {
                 unsigned frameID        :30;
                 unsigned startIssued    : 1;
                 unsigned stopIssued     : 1;
             } data;
-            UINT state;
-        };
+            UINT stateWord;
+        } state;
         ID3D11Query* pStart;
         ID3D11Query* pStop;
         ID3D11Query* pDisjointTS;
@@ -516,7 +514,7 @@ private:
     UINT                    m_nextRetrTs;
     UINT                    m_FrameID;
 
-    struct
+    struct CurTimeFrameBits
     {
         UINT        id      :30;
         UINT        invalid : 1;
@@ -545,7 +543,6 @@ private:
 
     void WaitIdle();
 };
-
 
 
 // TimingEvent:     one timing event managed by TimerEx
@@ -695,4 +692,4 @@ public:
 #endif
 //} // namespace AMD
 
-#endif // _TIMER_H
+#endif // AMD_SDK_TIMER_H

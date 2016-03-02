@@ -88,31 +88,31 @@ cbuffer cbSprite
 
 PsSpriteInput VsSprite( VsSpriteInput I )
 {
-    PsSpriteInput O = (PsSpriteInput)0;
+    PsSpriteInput Output = (PsSpriteInput)0;
 
     // Output our final position
-    O.v4Pos.x = ( ( g_f4PlotParams.z * I.v3Pos.x + g_f4PlotParams.x ) / ( g_f4ViewportSize.x / 2.0f ) ) - 1.0f;
-    O.v4Pos.y = -( ( g_f4PlotParams.w * I.v3Pos.y + g_f4PlotParams.y ) / ( g_f4ViewportSize.y / 2.0f ) ) + 1.0f;
-    O.v4Pos.z = I.v3Pos.z;
-    O.v4Pos.w = 1.0f;
+    Output.v4Pos.x = ( ( g_f4PlotParams.z * I.v3Pos.x + g_f4PlotParams.x ) / ( g_f4ViewportSize.x / 2.0f ) ) - 1.0f;
+    Output.v4Pos.y = -( ( g_f4PlotParams.w * I.v3Pos.y + g_f4PlotParams.y ) / ( g_f4ViewportSize.y / 2.0f ) ) + 1.0f;
+    Output.v4Pos.z = I.v3Pos.z;
+    Output.v4Pos.w = 1.0f;
 
     // Propogate texture coordinate
-    O.v2Tex = I.v2Tex;
+    Output.v2Tex = I.v2Tex;
 
-    return O;
+    return Output;
 }
 
 PsSpriteBorderInput VsSpriteBorder( VsSpriteBorderInput I )
 {
-    PsSpriteBorderInput O = (PsSpriteBorderInput)0;
+    PsSpriteBorderInput Output = (PsSpriteBorderInput)0;
 
     // Output our final position
-    O.v4Pos.x = ( ( g_f4PlotParams.z * I.v3Pos.x + g_f4PlotParams.x ) / ( g_f4ViewportSize.x / 2.0f ) ) - 1.0f;
-    O.v4Pos.y = -( ( g_f4PlotParams.w * I.v3Pos.y + g_f4PlotParams.y ) / ( g_f4ViewportSize.y / 2.0f ) ) + 1.0f;
-    O.v4Pos.z = I.v3Pos.z;
-    O.v4Pos.w = 1.0f;
+    Output.v4Pos.x = ( ( g_f4PlotParams.z * I.v3Pos.x + g_f4PlotParams.x ) / ( g_f4ViewportSize.x / 2.0f ) ) - 1.0f;
+    Output.v4Pos.y = -( ( g_f4PlotParams.w * I.v3Pos.y + g_f4PlotParams.y ) / ( g_f4ViewportSize.y / 2.0f ) ) + 1.0f;
+    Output.v4Pos.z = I.v3Pos.z;
+    Output.v4Pos.w = 1.0f;
 
-    return O;
+    return Output;
 }
 
 
@@ -137,7 +137,6 @@ float4 PsSpriteVolume( PsSpriteInput I ) : SV_Target
 }
 
 
-
 float4 PsSpriteUntextured( PsSpriteInput I ) : SV_Target
 {
     return g_f4SpriteColor;
@@ -155,7 +154,7 @@ float4 PsSpriteMS( PsSpriteInput I ) : SV_Target
     v4Color.z = 0.0f;
     v4Color.w = 0.0f;
 
-    switch( g_f4SampleIndex.x )
+    switch ( g_f4SampleIndex.x )
     {
     case 0:
         v4Color = g_SpriteTextureMS.Load( n2TexCoord, 0 );
@@ -192,12 +191,12 @@ float4 PsSpriteAsDepth( PsSpriteInput I ) : SV_Target
 
         v4Color.x = 1.0f - v4Color.x;
 
-    if( v4Color.x < g_f4DepthRange.x )
+    if ( v4Color.x < g_f4DepthRange.x )
     {
         v4Color.x = g_f4DepthRange.x;
     }
 
-    if( v4Color.x > g_f4DepthRange.y )
+    if ( v4Color.x > g_f4DepthRange.y )
     {
         v4Color.x = g_f4DepthRange.y;
     }
@@ -217,7 +216,7 @@ float4 PsSpriteAsDepthMS( PsSpriteInput I ) : SV_Target
 
     float fColor = 0.0f;
 
-    switch( g_f4SampleIndex.x )
+    switch ( g_f4SampleIndex.x )
     {
     case 0:
         fColor = g_SpriteDepthTextureMS.Load( n2TexCoord, 0 ).x;
@@ -247,12 +246,12 @@ float4 PsSpriteAsDepthMS( PsSpriteInput I ) : SV_Target
 
     fColor = 1.0f - fColor;
 
-    if( fColor < g_f4DepthRange.x )
+    if ( fColor < g_f4DepthRange.x )
     {
         fColor = g_f4DepthRange.x;
     }
 
-    if( fColor > g_f4DepthRange.y )
+    if ( fColor > g_f4DepthRange.y )
     {
         fColor = g_f4DepthRange.y;
     }
@@ -269,8 +268,3 @@ float4 PsSpriteBorder( PsSpriteBorderInput I ) : SV_Target
 {
     return g_f4BorderColor;
 }
-
-
-//--------------------------------------------------------------------------------------
-// EOF
-//--------------------------------------------------------------------------------------

@@ -25,22 +25,6 @@
 
 //using namespace AMD;
 
-#if !defined( _ASSERT )
-#define _ASSERT(exp)
-#endif
-
-#ifndef SAFE_RELEASE
-#define SAFE_RELEASE(p) if(p){p->Release(); p=NULL;}
-#endif
-
-#ifndef SAFE_DELETE
-#define SAFE_DELETE(p) if(p){delete p; p=NULL;}
-#endif
-
-#ifndef SAFE_DELETE_ARRAY
-#define SAFE_DELETE_ARRAY(p) if(p){delete[] p; p=NULL;}
-#endif
-
 #if USE_RDTSC
 __declspec(naked) LONGLONG __cdecl rdtsc_time(void)
 {
@@ -51,9 +35,9 @@ __declspec(naked) LONGLONG __cdecl rdtsc_time(void)
 
 //-----------------------------------------------------------------------------
 Timer::Timer() :
-    m_LastTime(0.0),
-    m_SumTime(0.0),
-    m_NumFrames(0)
+m_LastTime( 0.0 ),
+m_SumTime( 0.0 ),
+m_NumFrames( 0 )
 {
 }
 
@@ -80,10 +64,10 @@ double Timer::GetTimeNumFrames()
 //-----------------------------------------------------------------------------
 
 CpuTimer::CpuTimer() :
-    Timer()
+Timer()
 {
     LARGE_INTEGER freq;
-    QueryPerformanceFrequency(&freq);
+    QueryPerformanceFrequency( &freq );
     m_freq = static_cast<double>(freq.QuadPart);
 
 #if USE_RDTSC
@@ -105,7 +89,7 @@ CpuTimer::~CpuTimer()
 void CpuTimer::Reset( bool bResetSum )
 {
     m_LastTime = 0.0;
-    if( bResetSum )
+    if (bResetSum)
     {
         m_SumTime = 0.0;
         m_NumFrames = 0;
@@ -121,7 +105,7 @@ void CpuTimer::Start()
 #if USE_RDTSC
     m_startTime.QuadPart = rdtsc_time();
 #else
-    QueryPerformanceCounter(&m_startTime);
+    QueryPerformanceCounter( &m_startTime );
 #endif
 }
 
@@ -134,24 +118,24 @@ void CpuTimer::Stop()
     t.QuadPart = rdtsc_time();
     freq = m_freqRdtsc;
 #else
-    QueryPerformanceCounter(&t);
+    QueryPerformanceCounter( &t );
     freq = m_freq;
 #endif
 
     m_LastTime += static_cast<double>(t.QuadPart - m_startTime.QuadPart) / freq;
-    m_SumTime +=  static_cast<double>(t.QuadPart - m_startTime.QuadPart) / freq;
+    m_SumTime += static_cast<double>(t.QuadPart - m_startTime.QuadPart) / freq;
 }
 
-void CpuTimer::Delay(double sec)
+void CpuTimer::Delay( double sec )
 {
     LARGE_INTEGER start, stop;
     double t;
 
-    QueryPerformanceCounter(&start);
+    QueryPerformanceCounter( &start );
 
     do
     {
-        QueryPerformanceCounter(&stop);
+        QueryPerformanceCounter( &stop );
 
         t = static_cast<double>(stop.QuadPart - start.QuadPart) / m_freq;
     } while (t < sec);
@@ -159,23 +143,23 @@ void CpuTimer::Delay(double sec)
 
 //-----------------------------------------------------------------------------
 
-GpuTimer::GpuTimer(ID3D11Device* pDev, UINT64 freq, UINT numTimeStamps ) :
-    Timer(),
-    m_pDevCtx(NULL),
-    m_numTimeStamps(numTimeStamps),
-    m_curIssueTs(m_numTimeStamps-1),
-    m_nextRetrTs(0),
-    m_FrameID(0),
+GpuTimer::GpuTimer( ID3D11Device* pDev, UINT64 freq, UINT numTimeStamps ) :
+Timer(),
+m_pDevCtx( NULL ),
+m_numTimeStamps( numTimeStamps ),
+m_curIssueTs( m_numTimeStamps - 1 ),
+m_nextRetrTs( 0 ),
+m_FrameID( 0 ),
 
-    m_CurTime(0.0)
+m_CurTime( 0.0 )
 {
     HRESULT hr;
 
-    _ASSERT(pDev != NULL);
-    _ASSERT(numTimeStamps>0);
+    _ASSERT( pDev != NULL );
+    _ASSERT( numTimeStamps>0 );
 
-    pDev->GetImmediateContext(&m_pDevCtx);
-    _ASSERT(m_pDevCtx != NULL);
+    pDev->GetImmediateContext( &m_pDevCtx );
+    _ASSERT( m_pDevCtx != NULL );
 
     D3D11_QUERY_DESC qd;
     qd.MiscFlags = 0;
@@ -185,18 +169,18 @@ GpuTimer::GpuTimer(ID3D11Device* pDev, UINT64 freq, UINT numTimeStamps ) :
     {
         qd.Query = D3D11_QUERY_TIMESTAMP_DISJOINT;
 
-        hr = pDev->CreateQuery(&qd, &m_ts[i].pDisjointTS);
-        _ASSERT((hr == S_OK) && (m_ts[i].pDisjointTS != NULL));
+        hr = pDev->CreateQuery( &qd, &m_ts[i].pDisjointTS );
+        _ASSERT( (hr == S_OK) && (m_ts[i].pDisjointTS != NULL) );
 
         qd.Query = D3D11_QUERY_TIMESTAMP;
 
-        hr = pDev->CreateQuery(&qd, &m_ts[i].pStart);
-        _ASSERT((hr == S_OK) && (m_ts[i].pStart != NULL));
+        hr = pDev->CreateQuery( &qd, &m_ts[i].pStart );
+        _ASSERT( (hr == S_OK) && (m_ts[i].pStart != NULL) );
 
-        hr = pDev->CreateQuery(&qd, &m_ts[i].pStop);
-        _ASSERT((hr == S_OK) && (m_ts[i].pStop != NULL));
+        hr = pDev->CreateQuery( &qd, &m_ts[i].pStop );
+        _ASSERT( (hr == S_OK) && (m_ts[i].pStop != NULL) );
 
-        m_ts[i].state = 0;
+        m_ts[i].state.stateWord = 0;
     }
     m_CurTimeFrame.id = 0;
     m_CurTimeFrame.invalid = 1;
@@ -208,78 +192,84 @@ GpuTimer::~GpuTimer()
 {
     for (UINT i = 0; i < m_numTimeStamps; i++)
     {
-        SAFE_RELEASE(m_ts[i].pDisjointTS);
-        SAFE_RELEASE(m_ts[i].pStart);
-        SAFE_RELEASE(m_ts[i].pStop);
+        SAFE_RELEASE( m_ts[i].pDisjointTS );
+        SAFE_RELEASE( m_ts[i].pStart );
+        SAFE_RELEASE( m_ts[i].pStop );
     }
-    SAFE_DELETE_ARRAY(m_ts);
+    SAFE_DELETE_ARRAY( m_ts );
 
-    SAFE_RELEASE(m_pDevCtx);
+    SAFE_RELEASE( m_pDevCtx );
 }
 
 void GpuTimer::Reset( bool bResetSum )
 {
     FinishCollection();
-    m_FrameID = (m_FrameID+1) & 0x3FFFFFFF;
+    m_FrameID = (m_FrameID + 1) & 0x3FFFFFFF;
 
-    if( bResetSum )
+    if (bResetSum)
     {
         WaitIdle();
         m_CurTimeFrame.invalid = 1;
-        m_CurTime   = 0.0;
-        m_LastTime  = 0.0;
-        m_SumTime   = 0.0;
+        m_CurTime = 0.0;
+        m_LastTime = 0.0;
+        m_SumTime = 0.0;
         m_NumFrames = 0;
     }
 }
 
 void GpuTimer::Start()
 {
-    if( ++m_curIssueTs == m_numTimeStamps )
+    if (++m_curIssueTs == m_numTimeStamps)
+    {
         m_curIssueTs = 0;
+    }
 
-    if( 0 != m_ts[m_curIssueTs].data.startIssued )
+    if (0 != m_ts[m_curIssueTs].state.data.startIssued)
     {
         _ASSERT( false && "CPU stall required! This should never happen. Please increase GpuTimer::NumTimeStamps in Timer.h" );
         CollectData( m_curIssueTs, TRUE );
     }
 
-    m_ts[m_curIssueTs].data.frameID = m_FrameID;
-    m_ts[m_curIssueTs].data.startIssued = 1;
-    m_ts[m_curIssueTs].data.stopIssued = 0;
-    m_pDevCtx->Begin(m_ts[m_curIssueTs].pDisjointTS);
-    m_pDevCtx->End(m_ts[m_curIssueTs].pStart);
+    m_ts[m_curIssueTs].state.data.frameID = m_FrameID;
+    m_ts[m_curIssueTs].state.data.startIssued = 1;
+    m_ts[m_curIssueTs].state.data.stopIssued = 0;
+    m_pDevCtx->Begin( m_ts[m_curIssueTs].pDisjointTS );
+    m_pDevCtx->End( m_ts[m_curIssueTs].pStart );
 }
 
 void GpuTimer::Stop()
 {
     // check if timestamp start has been issued but no stop yet
-    _ASSERT( (m_ts[m_curIssueTs].data.startIssued == 1) && (m_ts[m_curIssueTs].data.stopIssued == 0) );
+    _ASSERT( (m_ts[m_curIssueTs].state.data.startIssued == 1) && (m_ts[m_curIssueTs].state.data.stopIssued == 0) );
 
-    m_ts[m_curIssueTs].data.stopIssued = 1;
-    m_pDevCtx->End(m_ts[m_curIssueTs].pStop);
-    m_pDevCtx->End(m_ts[m_curIssueTs].pDisjointTS);
+    m_ts[m_curIssueTs].state.data.stopIssued = 1;
+    m_pDevCtx->End( m_ts[m_curIssueTs].pStop );
+    m_pDevCtx->End( m_ts[m_curIssueTs].pDisjointTS );
 }
 
 void GpuTimer::WaitIdle()
 {
-    while( m_nextRetrTs != m_curIssueTs )
+    while (m_nextRetrTs != m_curIssueTs)
     {
         CollectData( m_nextRetrTs, true );
 
-        if( ++m_nextRetrTs == m_numTimeStamps )
+        if (++m_nextRetrTs == m_numTimeStamps)
+        {
             m_nextRetrTs = 0;
+        }
     }
 
     // retrieve the current Ts
     CollectData( m_nextRetrTs, true );
-    if( ++m_nextRetrTs == m_numTimeStamps )
+    if (++m_nextRetrTs == m_numTimeStamps)
+    {
         m_nextRetrTs = 0;
+    }
 
-    if( 0 == m_CurTimeFrame.invalid )
+    if (0 == m_CurTimeFrame.invalid)
     {
         m_LastTime = m_CurTime;
-        m_SumTime +=  m_CurTime;
+        m_SumTime += m_CurTime;
         ++m_NumFrames;
     }
 }
@@ -287,38 +277,43 @@ void GpuTimer::WaitIdle()
 void GpuTimer::FinishCollection()
 {
     // retrieve all available timestamps
-    while( CollectData(m_nextRetrTs) )
+    while (CollectData( m_nextRetrTs ))
     {
-        if( ++m_nextRetrTs == m_numTimeStamps )
+        if (++m_nextRetrTs == m_numTimeStamps)
+        {
             m_nextRetrTs = 0;
+        }
     }
 }
 
-bool GpuTimer::CollectData(UINT idx, BOOL stall)
+bool GpuTimer::CollectData( UINT idx, BOOL stall )
 {
-    if( !m_ts[idx].data.stopIssued )
+    if (!m_ts[idx].state.data.stopIssued)
+    {
         return false;
+    }
+
     // start collecting data from a new frame?
-    if( m_ts[idx].data.frameID != m_CurTimeFrame.id )
+    if (m_ts[idx].state.data.frameID != m_CurTimeFrame.id)
     {
         // if frametimes collected are valid: write them into m_time
         // so m_time always contains the most recent valid timing data
-        if( 0 == m_CurTimeFrame.invalid )
+        if (0 == m_CurTimeFrame.invalid)
         {
             m_LastTime = m_CurTime;
-            m_SumTime +=  m_CurTime;
+            m_SumTime += m_CurTime;
             ++m_NumFrames;
         }
 
         // start collecting time data of the next frame
         m_CurTime = 0.0;
-        m_CurTimeFrame.id = m_ts[idx].data.frameID;
+        m_CurTimeFrame.id = m_ts[idx].state.data.frameID;
         m_CurTimeFrame.invalid = 0;
     }
 
     // if we want to retrieve the next timing data NOW the CPU will stall
     // increase NumTimeStamps in Timer.h to prevent this from happening
-    if( stall )
+    if (stall)
     {
         HRESULT hr;
         UINT64 start, stop;
@@ -326,26 +321,26 @@ bool GpuTimer::CollectData(UINT idx, BOOL stall)
         D3D11_QUERY_DATA_TIMESTAMP_DISJOINT tsd;
         do
         {
-            hr = m_pDevCtx->GetData(m_ts[idx].pDisjointTS, &tsd, sizeof(D3D11_QUERY_DATA_TIMESTAMP_DISJOINT), 0);
+            hr = m_pDevCtx->GetData( m_ts[idx].pDisjointTS, &tsd, sizeof( D3D11_QUERY_DATA_TIMESTAMP_DISJOINT ), 0 );
         } while (hr == S_FALSE);
 
-        _ASSERT(hr == S_OK);
+        _ASSERT( hr == S_OK );
 
         do
         {
-            hr = m_pDevCtx->GetData(m_ts[idx].pStart, &start, sizeof(UINT64), 0);
+            hr = m_pDevCtx->GetData( m_ts[idx].pStart, &start, sizeof( UINT64 ), 0 );
         } while (hr == S_FALSE);
 
-        _ASSERT(hr == S_OK);
+        _ASSERT( hr == S_OK );
 
         do
         {
-            hr = m_pDevCtx->GetData(m_ts[idx].pStop, &stop, sizeof(UINT64), 0);
+            hr = m_pDevCtx->GetData( m_ts[idx].pStop, &stop, sizeof( UINT64 ), 0 );
         } while (hr == S_FALSE);
 
-        _ASSERT(hr == S_OK);
+        _ASSERT( hr == S_OK );
 
-        if( tsd.Disjoint || ((start & 0xFFFFFFFF) == 0xFFFFFFFF) || ((stop & 0xFFFFFFFF) == 0xFFFFFFFF) )
+        if (tsd.Disjoint || ((start & 0xFFFFFFFF) == 0xFFFFFFFF) || ((stop & 0xFFFFFFFF) == 0xFFFFFFFF))
         {
             // mark current frametime as invalid
             m_CurTimeFrame.invalid = 1;
@@ -355,7 +350,7 @@ bool GpuTimer::CollectData(UINT idx, BOOL stall)
             m_CurTime += static_cast<double>(stop - start) / static_cast<double>(tsd.Frequency);
         }
 
-        m_ts[idx].state = 0;
+        m_ts[idx].state.stateWord = 0;
         return true;
     }
 
@@ -363,22 +358,22 @@ bool GpuTimer::CollectData(UINT idx, BOOL stall)
     UINT64 start, stop;
 
     D3D11_QUERY_DATA_TIMESTAMP_DISJOINT tsd;
-    if( S_FALSE == m_pDevCtx->GetData(m_ts[idx].pDisjointTS, &tsd, sizeof(D3D11_QUERY_DATA_TIMESTAMP_DISJOINT), 0) )
+    if (S_FALSE == m_pDevCtx->GetData( m_ts[idx].pDisjointTS, &tsd, sizeof( D3D11_QUERY_DATA_TIMESTAMP_DISJOINT ), 0 ))
     {
         return false;
     }
-    if( S_FALSE == m_pDevCtx->GetData(m_ts[idx].pStart, &start, sizeof(UINT64), 0) )
+    if (S_FALSE == m_pDevCtx->GetData( m_ts[idx].pStart, &start, sizeof( UINT64 ), 0 ))
     {
         return false;
     }
 
-    if( S_FALSE == m_pDevCtx->GetData(m_ts[idx].pStop, &stop, sizeof(UINT64), 0) )
+    if (S_FALSE == m_pDevCtx->GetData( m_ts[idx].pStop, &stop, sizeof( UINT64 ), 0 ))
     {
         return false;
     }
 
     // all data was available, so evaluate times
-    if( tsd.Disjoint || ((start & 0xFFFFFFFF) == 0xFFFFFFFF) || ((stop & 0xFFFFFFFF) == 0xFFFFFFFF) )
+    if (tsd.Disjoint || ((start & 0xFFFFFFFF) == 0xFFFFFFFF) || ((stop & 0xFFFFFFFF) == 0xFFFFFFFF))
     {
         // mark current frametime as invalid
         m_CurTimeFrame.invalid = 1;
@@ -389,34 +384,34 @@ bool GpuTimer::CollectData(UINT idx, BOOL stall)
         m_CurTime += static_cast<double>(dt) / static_cast<double>(tsd.Frequency);
     }
 
-    m_ts[idx].state = 0;
+    m_ts[idx].state.stateWord = 0;
     return true;
 }
 
 //-----------------------------------------------------------------------------
 
-GpuCpuTimer::GpuCpuTimer(ID3D11Device* pDev) :
-    CpuTimer()
+GpuCpuTimer::GpuCpuTimer( ID3D11Device* pDev ) :
+CpuTimer()
 {
     HRESULT hr;
 
-    _ASSERT(pDev != NULL);
+    _ASSERT( pDev != NULL );
 
-    pDev->GetImmediateContext(&m_pDevCtx);
-    _ASSERT(m_pDevCtx != NULL);
+    pDev->GetImmediateContext( &m_pDevCtx );
+    _ASSERT( m_pDevCtx != NULL );
 
     D3D11_QUERY_DESC qd;
     qd.Query = D3D11_QUERY_EVENT;
     qd.MiscFlags = 0;
 
-    hr = pDev->CreateQuery(&qd, &m_pEvent);
-    _ASSERT((hr == S_OK) && (m_pEvent != NULL));
+    hr = pDev->CreateQuery( &qd, &m_pEvent );
+    _ASSERT( (hr == S_OK) && (m_pEvent != NULL) );
 }
 
 GpuCpuTimer::~GpuCpuTimer()
 {
-    SAFE_RELEASE(m_pEvent);
-    SAFE_RELEASE(m_pDevCtx);
+    SAFE_RELEASE( m_pEvent );
+    SAFE_RELEASE( m_pDevCtx );
 }
 
 void GpuCpuTimer::Start()
@@ -433,30 +428,30 @@ void GpuCpuTimer::Stop()
 
 void GpuCpuTimer::WaitIdle()
 {
-    m_pDevCtx->End(m_pEvent);
+    m_pDevCtx->End( m_pEvent );
 
     HRESULT hr;
     BOOL data;
 
     do
     {
-        hr = m_pDevCtx->GetData(m_pEvent, &data, sizeof(BOOL), 0);
+        hr = m_pDevCtx->GetData( m_pEvent, &data, sizeof( BOOL ), 0 );
     } while (hr == S_FALSE);
 
-    _ASSERT(hr == S_OK);
+    _ASSERT( hr == S_OK );
 }
 
 //-----------------------------------------------------------------------------
 // convenience timer functions
 //-----------------------------------------------------------------------------
 
-TimingEvent::TimingEvent( ) :
-    m_name(NULL),
-    m_nameLen(0),
-    m_used( false ),
-    m_parent(NULL),
-    m_firstChild(NULL),
-    m_next(NULL)
+TimingEvent::TimingEvent() :
+m_name( NULL ),
+m_nameLen( 0 ),
+m_used( false ),
+m_parent( NULL ),
+m_firstChild( NULL ),
+m_next( NULL )
 {
     m_gpu = (NULL != TimerEx::Instance().GetDevice()) ? new GpuTimer( TimerEx::Instance().GetDevice(), 0, 16 ) : NULL;
 }
@@ -464,52 +459,54 @@ TimingEvent::TimingEvent( ) :
 TimingEvent::~TimingEvent()
 {
     SAFE_DELETE( m_gpu );
-    SAFE_DELETE_ARRAY(m_name);
+    SAFE_DELETE_ARRAY( m_name );
 }
 
-void TimingEvent::SetName(LPCWSTR name)
+void TimingEvent::SetName( LPCWSTR name )
 {
-    size_t len_req = wcslen(name)+1;
-    if( len_req > m_nameLen )
+    size_t len_req = wcslen( name ) + 1;
+    if (len_req > m_nameLen)
     {
-        SAFE_DELETE_ARRAY(m_name);
-        int len_alloc = 32 + (len_req&0xFFFFFFE0);  // round up to next multiple of 32 so when reused we don't have to realloc too often
+        SAFE_DELETE_ARRAY( m_name );
+        int len_alloc = 32 + (len_req & 0xFFFFFFE0);  // round up to next multiple of 32 so when reused we don't have to realloc too often
         m_name = new WCHAR[len_alloc];
         m_nameLen = len_alloc;
     }
-    wcscpy_s( m_name, m_nameLen, name);
+    wcscpy_s( m_name, m_nameLen, name );
 }
 
-LPCWSTR TimingEvent::GetName( )
+LPCWSTR TimingEvent::GetName()
 {
     return m_name;
 }
 
-void TimingEvent::Start( )
+void TimingEvent::Start()
 {
     m_used = true;
-    if( NULL != m_gpu ) m_gpu->Start();
+    if (NULL != m_gpu) { m_gpu->Start(); }
     m_cpu.Start();
 }
 
-void TimingEvent::Stop( )
+void TimingEvent::Stop()
 {
     m_cpu.Stop();
-    if( NULL != m_gpu ) m_gpu->Stop();
+    if (NULL != m_gpu) { m_gpu->Stop(); }
     m_used = true;
 }
 
 double TimingEvent::GetTime( TimerType type, bool stall )
 {
-    switch( type )
+    switch (type)
     {
     case ttCpu:
         return m_cpu.GetTime();
     case ttGpu:
-        if( NULL != m_gpu )
+        if (NULL != m_gpu)
         {
-            if( stall )
+            if (stall)
+            {
                 m_gpu->WaitIdle();
+            }
             return m_gpu->GetTime();
         }
         // else fallthrough
@@ -520,16 +517,18 @@ double TimingEvent::GetTime( TimerType type, bool stall )
 
 double TimingEvent::GetAvgTime( TimerType type, bool stall )
 {
-    switch( type )
+    switch (type)
     {
     case ttCpu:
-        return m_cpu.GetSumTime()/m_cpu.GetTimeNumFrames();
+        return m_cpu.GetSumTime() / m_cpu.GetTimeNumFrames();
     case ttGpu:
-        if( NULL != m_gpu )
+        if (NULL != m_gpu)
         {
-            if( stall )
+            if (stall)
+            {
                 m_gpu->WaitIdle();
-            return m_gpu->GetSumTime()/m_gpu->GetTimeNumFrames();
+            }
+            return m_gpu->GetSumTime() / m_gpu->GetTimeNumFrames();
         }
         // else fallthrough
     default:
@@ -537,55 +536,57 @@ double TimingEvent::GetAvgTime( TimerType type, bool stall )
     }
 }
 
-TimingEvent* TimingEvent::GetTimer(LPCWSTR timerId)
+TimingEvent* TimingEvent::GetTimer( LPCWSTR timerId )
 {
-    size_t len = wcslen(timerId);
+    size_t len = wcslen( timerId );
     size_t seperator = wcscspn( timerId, L"/|\\" );
 
-    if( seperator<len )
+    if (seperator < len)
     {
-        LPWSTR idCopy = new WCHAR[len+1];
-        wcscpy_s( idCopy, len+1, timerId );
+        LPWSTR idCopy = new WCHAR[len + 1];
+        wcscpy_s( idCopy, len + 1, timerId );
         idCopy[seperator] = 0;
 
         TimingEvent* te = m_firstChild;
-        while( te )
+        while (te)
         {
-            if( !wcscmp(idCopy, te->m_name ) )
+            if (!wcscmp( idCopy, te->m_name ))
             {
-                te = te->GetTimerRec( &idCopy[seperator+1] );
-                delete[] idCopy;
+                te = te->GetTimerRec( &idCopy[seperator + 1] );
+                delete [] idCopy;
                 return te;
             }
             te = te->m_next;
         }
 
-        delete[] idCopy;
+        delete [] idCopy;
     }
     else
     {
         TimingEvent* te = m_firstChild;
-        while( te )
+        while (te)
         {
-            if( !wcscmp(timerId, te->m_name ) )
+            if (!wcscmp( timerId, te->m_name ))
+            {
                 return te;
+            }
             te = te->m_next;
         }
     }
     return NULL;
 }
 
-TimingEvent* TimingEvent::GetParent( )
+TimingEvent* TimingEvent::GetParent()
 {
     return m_parent;
 }
 
-TimingEvent* TimingEvent::GetFirstChild( )
+TimingEvent* TimingEvent::GetFirstChild()
 {
     return m_firstChild;
 }
 
-TimingEvent* TimingEvent::GetNextTimer( )
+TimingEvent* TimingEvent::GetNextTimer()
 {
     return m_next;
 }
@@ -593,18 +594,22 @@ TimingEvent* TimingEvent::GetNextTimer( )
 // when this function is called we know we're working on a copy of the name, so we can "destruct" it
 TimingEvent* TimingEvent::GetTimerRec( LPWSTR timerId )
 {
-    size_t len = wcslen(timerId);
+    size_t len = wcslen( timerId );
     size_t seperator = wcscspn( timerId, L"/|\\" );
-    if( seperator<len )
+    if (seperator < len)
+    {
         timerId[seperator] = 0;
+    }
 
     TimingEvent* te = m_firstChild;
-    while( te )
+    while (te)
     {
-        if( !wcscmp(timerId, te->m_name ) )
+        if (!wcscmp( timerId, te->m_name ))
         {
-            if( seperator<len )
-                te = te->GetTimerRec( &timerId[seperator+1] );
+            if (seperator < len)
+            {
+                te = te->GetTimerRec( &timerId[seperator + 1] );
+            }
 
             return te;
         }
@@ -618,20 +623,22 @@ TimingEvent* TimingEvent::FindLastChildUsed()
 {
     TimingEvent* ret = NULL;
     TimingEvent* te = m_firstChild;
-    while( te )
+    while (te)
     {
-        if( te->m_used )
+        if (te->m_used)
+        {
             ret = te;
+        }
         te = te->m_next;
     }
     return ret;
 }
 //-----------------------------------------------------------------------------
 
-TimerEx::TimerEx( ) :
-    m_pDev(NULL),
-    m_Current(NULL),
-    m_Unused(NULL)
+TimerEx::TimerEx() :
+m_pDev( NULL ),
+m_Current( NULL ),
+m_Unused( NULL )
 {
 };
 
@@ -645,7 +652,7 @@ TimerEx::~TimerEx()
 void TimerEx::DeleteTimerTree( TimingEvent* te )
 {
     // first delete all children
-    while( NULL != te )
+    while (NULL != te)
     {
         DeleteTimerTree( te->m_firstChild );
 
@@ -660,11 +667,11 @@ void TimerEx::Init( ID3D11Device* pDev )
     m_pDev = pDev;
 }
 
-void TimerEx::Destroy( )
+void TimerEx::Destroy()
 {
     // delete all unused
     TimingEvent* te = m_Unused;
-    while( NULL != te )
+    while (NULL != te)
     {
         TimingEvent* tmp = te;
         te = te->m_next;
@@ -682,16 +689,16 @@ void TimerEx::Destroy( )
 void TimerEx::Reset( TimingEvent* te, bool bResetSum )
 {
     TimingEvent* prev = NULL;
-    while( NULL != te )
+    while (NULL != te)
     {
         // recursion
         Reset( te->m_firstChild, bResetSum );
 
         // reset the timer event
         te->m_cpu.Reset( bResetSum );
-        if( NULL != te->m_gpu ) te->m_gpu->Reset( bResetSum );
+        if (NULL != te->m_gpu) { te->m_gpu->Reset( bResetSum ); }
 
-        if( te->m_used || !bResetSum )
+        if (te->m_used || !bResetSum)
         {
             //if it was used this frame: just reset
             te->m_used = false;
@@ -700,7 +707,7 @@ void TimerEx::Reset( TimingEvent* te, bool bResetSum )
         }
         else
         {
-            if( bResetSum && !te->m_used )
+            if (bResetSum && !te->m_used)
             {
                 te->m_used = false;
                 // if it was not used this frame
@@ -708,15 +715,21 @@ void TimerEx::Reset( TimingEvent* te, bool bResetSum )
                 TimingEvent* tmp = te;
                 te = te->m_next;
 
-                if( NULL == prev )
+                if (NULL == prev)
                 {
-                    if( NULL == tmp->m_parent )
+                    if (NULL == tmp->m_parent)
+                    {
                         m_Root = tmp->m_next;
+                    }
                     else
+                    {
                         tmp->m_parent->m_firstChild = tmp->m_next;
+                    }
                 }
                 else
+                {
                     prev->m_next = tmp->m_next;
+                }
 
                 tmp->m_parent = NULL;
                 tmp->m_next = m_Unused;
@@ -731,19 +744,21 @@ void TimerEx::Reset( bool bResetSum )
     _ASSERT( "init not called or called with NULL" && (m_pDev != NULL) );
     _ASSERT( "Stop() not called for every Start(...)" && (m_Current == NULL) );
 
-    if( NULL != m_Root )
+    if (NULL != m_Root)
+    {
         Reset( m_Root, bResetSum );
+    }
 }
 
 void TimerEx::Start( LPCWSTR timerId )
 {
     _ASSERT( "init not called or called with NULL" && (m_pDev != NULL) );
 
-    TimingEvent* te = (NULL == m_Current) ? GetTimer(timerId) : m_Current->GetTimer(timerId);
-    if( NULL == te )
+    TimingEvent* te = (NULL == m_Current) ? GetTimer( timerId ) : m_Current->GetTimer( timerId );
+    if (NULL == te)
     {
         // create new timer event
-        if( NULL == m_Unused )
+        if (NULL == m_Unused)
         {
             te = new TimingEvent();
         }
@@ -759,13 +774,15 @@ void TimerEx::Start( LPCWSTR timerId )
 
         // now look where to insert it
         TimingEvent* lu = NULL;
-        if( NULL == m_Current )
+        if (NULL == m_Current)
         {
             TimingEvent* tmp = m_Root;
-            while( tmp )
+            while (tmp)
             {
-                if( tmp->m_used )
+                if (tmp->m_used)
+                {
                     lu = tmp;
+                }
                 tmp = tmp->m_next;
             }
         }
@@ -774,14 +791,14 @@ void TimerEx::Start( LPCWSTR timerId )
             lu = m_Current->FindLastChildUsed();
         }
 
-        if( NULL != lu )
+        if (NULL != lu)
         {
             te->m_next = lu->m_next;
             lu->m_next = te;
         }
         else
         {
-            if( NULL == m_Current )
+            if (NULL == m_Current)
             {
                 te->m_next = m_Root;
                 m_Root = te;
@@ -799,7 +816,7 @@ void TimerEx::Start( LPCWSTR timerId )
     m_Current->Start();
 }
 
-void TimerEx::Stop( )
+void TimerEx::Stop()
 {
     _ASSERT( "init not called or called with NULL" && (m_pDev != NULL) );
     _ASSERT( "Start(...) not called before Stop()" && (m_Current != NULL) );
@@ -814,13 +831,17 @@ double TimerEx::GetTime( TimerType type, LPCWSTR timerId, bool stall )
 
     TimingEvent* te = NULL;
 
-    if( NULL != m_Current )
+    if (NULL != m_Current)
+    {
         te = m_Current->GetTimer( timerId );
+    }
 
-    if( NULL == te )
+    if (NULL == te)
+    {
         te = GetTimer( timerId );
+    }
 
-    return ( NULL != te ) ? te->GetTime(type, stall) : 0.0;
+    return (NULL != te) ? te->GetTime( type, stall ) : 0.0;
 }
 
 double TimerEx::GetAvgTime( TimerType type, LPCWSTR timerId, bool stall )
@@ -829,50 +850,58 @@ double TimerEx::GetAvgTime( TimerType type, LPCWSTR timerId, bool stall )
 
     TimingEvent* te = NULL;
 
-    if( NULL != m_Current )
+    if (NULL != m_Current)
+    {
         te = m_Current->GetTimer( timerId );
+    }
 
-    if( NULL == te )
+    if (NULL == te)
+    {
         te = GetTimer( timerId );
+    }
 
-    return ( NULL != te ) ? te->GetAvgTime(type, stall) : 0.0;
+    return (NULL != te) ? te->GetAvgTime( type, stall ) : 0.0;
 }
 
 
 TimingEvent* TimerEx::GetTimer( LPCWSTR timerId )
 {
-    if( NULL == timerId )
+    if (NULL == timerId)
+    {
         return m_Root;
+    }
 
     _ASSERT( "init not called" && (m_pDev != NULL) );
 
-    size_t len = wcslen(timerId);
+    size_t len = wcslen( timerId );
     size_t seperator = wcscspn( timerId, L"/|\\" );
-    if( seperator < len )
+    if (seperator < len)
     {
-        LPWSTR idCopy = new WCHAR[len+1];
-        wcscpy_s( idCopy, len+1, timerId );
+        LPWSTR idCopy = new WCHAR[len + 1];
+        wcscpy_s( idCopy, len + 1, timerId );
         idCopy[seperator] = 0;
         TimingEvent* te = m_Root;
-        while( te )
+        while (te)
         {
-            if( !wcscmp(idCopy, te->m_name ) )
+            if (!wcscmp( idCopy, te->m_name ))
             {
-                te = te->GetTimerRec( &idCopy[seperator+1] );
-                delete[] idCopy;
+                te = te->GetTimerRec( &idCopy[seperator + 1] );
+                delete [] idCopy;
                 return te;
             }
             te = te->m_next;
         }
-        delete[] idCopy;
+        delete [] idCopy;
     }
     else
     {
         TimingEvent* te = m_Root;
-        while( te )
+        while (te)
         {
-            if( !wcscmp(timerId, te->m_name ) )
+            if (!wcscmp( timerId, te->m_name ))
+            {
                 return te;
+            }
             te = te->m_next;
         }
     }
