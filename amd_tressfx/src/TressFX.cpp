@@ -62,7 +62,7 @@ TRESSFX_RETURN_CODE AMD_TRESSFX_DLL_API TressFX_GetVersion(uint* major, uint* mi
 
 //--------------------------------------------------------------------------------------
 //
-// TressFXInitialize
+// TressFX_Initialize
 //
 // Initializes TressFX rendering and simulation. Allocates the needed resources.
 // The opaque initialization happens only once for the lifetime of the program, and
@@ -85,7 +85,7 @@ TRESSFX_RETURN_CODE AMD_TRESSFX_DLL_API TressFX_Initialize(TressFX_Desc & desc)
 
 //--------------------------------------------------------------------------------------
 //
-// TressFXLoadRawAsset
+// TressFX_LoadRawAsset
 //
 // Reads the contents of a binary .tfx file. The data in pRawHairBlob is what was
 // read from the .tfx file without any processing. Data from multiple .tfx files
@@ -165,7 +165,7 @@ TRESSFX_RETURN_CODE AMD_TRESSFX_DLL_API TressFX_Simulate(TressFX_Desc & desc, fl
 
 //--------------------------------------------------------------------------------------
 //
-// TressFX_BeginRender
+// TressFX_Begin
 //
 // Indicates that hair simulation and rendering will begin
 //
@@ -205,7 +205,7 @@ TRESSFX_RETURN_CODE AMD_TRESSFX_DLL_API TressFX_Render(TressFX_Desc & desc)
 
 //--------------------------------------------------------------------------------------
 //
-// TressFX_EndRender
+// TressFX_End
 //
 // Indicates that hair rendering is finished. Final post-process rendering can be
 // done at this point
@@ -232,7 +232,7 @@ TRESSFX_RETURN_CODE AMD_TRESSFX_DLL_API TressFX_Resize(TressFX_Desc & desc)
 
 //--------------------------------------------------------------------------------------
 //
-// TressFX_Resize
+// TressFX_Release
 //
 // Releases any memory allocated by the library
 //
@@ -256,9 +256,10 @@ TRESSFX_RETURN_CODE AMD_TRESSFX_DLL_API TressFX_Release(TressFX_Desc & desc)
 
 //--------------------------------------------------------------------------------------
 //
-// TressFX_Resize
+// TressFX_GenerateTransforms
 //
-// Releases any memory allocated by the library
+// Calculates the transformations for each strand.
+// Used for fur skinning.
 //
 //--------------------------------------------------------------------------------------
 TRESSFX_RETURN_CODE AMD_TRESSFX_DLL_API TressFX_GenerateTransforms(TressFX_Desc & desc, TressFX_SceneMesh &sceneMesh)
