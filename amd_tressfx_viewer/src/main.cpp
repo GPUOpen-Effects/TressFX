@@ -182,12 +182,17 @@ struct SliderRange
     float max;
 };
 
-// default settings
+// slider ranges
 static const SliderRange    g_hairDensity = {0.f, 1.f};
-static const SliderRange    g_hairAlpha = {0.f, 1.0f};
+static const SliderRange    g_hairAlpha = {0.f, 1.f};
 static const SliderRange    g_hairAlphaSM = {0.f, 0.03f};
 static const SliderRange    g_fiberRadius = {0.02f, 0.2f}; // in mm
-static const SliderRange    g_fiberSpacing = {0.1f, 2.f}; // 1 fiber every 15 x fiber-thickness distance
+
+// default settings
+static const float          g_hairDensityDefault = 1.0f;
+static const float          g_hairAlphaDefault = 0.5f;
+static const float          g_hairAlphaSMDefault = 0.004f;
+static const float          g_fiberRadiusDefault = 0.15f;
 
 // Global Simulation Settings
 //float     g_wind_magnitude = 0.f;
@@ -403,33 +408,33 @@ void InitApp()
 
     g_RenderHUD.m_GUI.AddCheckBox(IDC_CHECKBOX_TRANSPARENCY, NULL, iX, iY += AMD::HUD::iElementDelta, AMD::HUD::iElementWidth,
         AMD::HUD::iElementHeight, true);
-    swprintf_s(szMessage, L" Transparency:%.4f", 0.5);
+    swprintf_s(szMessage, L" Transparency:%.4f", g_hairAlphaDefault);
     g_RenderHUD.m_GUI.AddStatic( IDC_OPACITY_STATIC, szMessage, iX + AMD::HUD::iElementDelta, iY, AMD::HUD::iElementWidth,
         AMD::HUD::iElementHeight );
     g_RenderHUD.m_GUI.AddSlider( IDC_OPACITY, iX, iY += AMD::HUD::iElementDelta, AMD::HUD::iElementWidth, AMD::HUD::iElementHeight,
-        0, 100, (int)(100 * (g_hairAlpha.min - g_hairAlpha.min) / (g_hairAlpha.max - g_hairAlpha.min)) );
+        0, 100, (int)(100 * g_hairAlphaDefault) );
 
     g_RenderHUD.m_GUI.AddCheckBox(IDC_CHECKBOX_SM, NULL, iX, iY += AMD::HUD::iElementDelta, AMD::HUD::iElementWidth,
         AMD::HUD::iElementHeight, true);
-    swprintf_s(szMessage, L" Self-shadowing:%.4f", g_hairAlphaSM.max);
+    swprintf_s(szMessage, L" Self-shadowing:%.4f", g_hairAlphaSMDefault);
     g_RenderHUD.m_GUI.AddStatic( IDC_OPACITYSM_STATIC, szMessage, iX + AMD::HUD::iElementDelta, iY,
         AMD::HUD::iElementWidth, AMD::HUD::iElementHeight );
     g_RenderHUD.m_GUI.AddSlider( IDC_OPACITYSM, iX, iY += AMD::HUD::iElementDelta, AMD::HUD::iElementWidth, AMD::HUD::iElementHeight,
-        0, 100, (int)(100 * (g_hairAlphaSM.max - g_hairAlphaSM.min) / (g_hairAlphaSM.max - g_hairAlphaSM.min)) );
+        0, 100, (int)(100 * g_hairAlphaSMDefault) );
 
     iY += AMD::HUD::iElementDelta/2;
 
-    swprintf_s(szMessage, L"Density:%.4f", g_hairDensity.max);
+    swprintf_s(szMessage, L"Density:%.4f", g_hairDensityDefault);
     g_RenderHUD.m_GUI.AddStatic( IDC_DENSITY_STATIC, szMessage, iX, iY += AMD::HUD::iElementDelta, AMD::HUD::iElementWidth,
         AMD::HUD::iElementHeight );
     g_RenderHUD.m_GUI.AddSlider( IDC_DENSITY, iX, iY += AMD::HUD::iElementDelta, AMD::HUD::iElementWidth,
-        AMD::HUD::iElementHeight, 0, 100, (int)(100 * (g_hairDensity.max - g_hairDensity.min) / (g_hairDensity.max - g_hairDensity.min)) );
+        AMD::HUD::iElementHeight, 0, 100, (int)(100 * g_hairDensityDefault) );
 
-    swprintf_s(szMessage, L"Hair thickness:%.4f", g_fiberRadius.max);
+    swprintf_s(szMessage, L"Hair thickness:%.4f", g_fiberRadiusDefault);
     g_RenderHUD.m_GUI.AddStatic( IDC_FIBERRADIUS_STATIC, szMessage, iX, iY += AMD::HUD::iElementDelta, AMD::HUD::iElementWidth,
         AMD::HUD::iElementHeight );
     g_RenderHUD.m_GUI.AddSlider( IDC_FIBERRADIUS, iX, iY += AMD::HUD::iElementDelta, AMD::HUD::iElementWidth, AMD::HUD::iElementHeight,
-        0, 200, (int)(100 * (g_fiberRadius.max - g_fiberRadius.min) / (g_fiberRadius.max - g_fiberRadius.min)) );
+        0, 200, (int)(100 * g_fiberRadiusDefault) );
 
     g_RenderHUD.m_GUI.AddCheckBox(IDC_CHECKBOX_LOD, L"Distance adaptive LOD", iX, iY += AMD::HUD::iElementDelta,
         AMD::HUD::iElementWidth, AMD::HUD::iElementHeight, true);
