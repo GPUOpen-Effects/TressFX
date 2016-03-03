@@ -289,7 +289,7 @@ TFXProjectFile::TFXCapsule::TFXCapsule(float x0_, float y0_, float z0_, float x1
             {
                 Ks2 =  (float)_wtof(sTokens[1].c_str());
             }
-            else if ( token.find(L"Ex1") != std::string::npos )
+            else if ( token.find(L"Ex2") != std::string::npos )
             {
                 Ex2 =  (float)_wtof(sTokens[1].c_str());
             }
