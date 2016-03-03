@@ -28,6 +28,7 @@
 
 #define AMD_TRESSFX_VERSION_MAJOR                    3
 #define AMD_TRESSFX_VERSION_MINOR                    0
+#define AMD_TRESSFX_VERSION_PATCH                    1
 
 // default to static lib
 #ifndef AMD_TRESSFX_COMPILE_DYNAMIC_LIB
@@ -43,6 +44,8 @@
 #else // AMD_TRESSFX_COMPILE_DYNAMIC_LIB
 #    define AMD_TRESSFX_DLL_API
 #endif // AMD_TRESSFX_COMPILE_DYNAMIC_LIB
+
+#include "AMD_Types.h"
 
 #define MAX_SHAPE_PARAMS    16
 #define MAX_SCENE_MESHES    32
@@ -81,6 +84,10 @@ enum TRESSFX_RETURN_CODE
     TRESSFX_RETURN_CODE_FAIL,
     TRESSFX_RETURN_CODE_INVALID_DEVICE,
     TRESSFX_RETURN_CODE_INVALID_DEVICE_CONTEXT,
+    TRESSFX_RETURN_CODE_INVALID_ARGUMENT,
+    TRESSFX_RETURN_CODE_INVALID_POINTER,
+    TRESSFX_RETURN_CODE_D3D11_CALL_FAILED,
+
     TRESSFX_RETURN_CODE_COUNT,
 };
 
@@ -227,6 +234,7 @@ struct TressFX_Desc
 
 extern "C"
 {
+    AMD_TRESSFX_DLL_API TRESSFX_RETURN_CODE TressFX_GetVersion(uint* major, uint* minor, uint* patch);
     AMD_TRESSFX_DLL_API TRESSFX_RETURN_CODE TressFX_Initialize(TressFX_Desc & desc);
     AMD_TRESSFX_DLL_API TRESSFX_RETURN_CODE TressFX_LoadRawAsset(TressFX_Desc & desc,   const TressFX_GuideFollowParams& guideFollowParams, TressFX_HairBlob *pRawHairBlob);
     AMD_TRESSFX_DLL_API TRESSFX_RETURN_CODE TressFX_LoadProcessedAsset(TressFX_Desc & desc, TressFX_HairBlob *pHairBlob, TressFX_SceneMesh *sceneMesh, ID3D11ShaderResourceView *pTextureSRV);

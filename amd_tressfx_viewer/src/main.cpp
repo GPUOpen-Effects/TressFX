@@ -336,13 +336,20 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
     DXUTSetCallbackD3D11DeviceDestroyed( OnD3D11DestroyDevice );
     DXUTSetCallbackD3D11FrameRender( OnD3D11FrameRender );
 
+    // It is okay to call TressFX_GetVersion before TressFX_Initialize
+    unsigned int major, minor, patch;
+    AMD::TressFX_GetVersion( &major, &minor, &patch );
+
+    WCHAR windowTitle[64];
+    swprintf_s( windowTitle, 64, L"TressFX Viewer v%d.%d.%d", major, minor, patch );
+
     InitApp();
     DXUTInit( true, true );
     DXUTSetCursorSettings( true, true );
-    DXUTCreateWindow( L"TressFX Viewer v3.0" );
+    DXUTCreateWindow( windowTitle );
 
     // Require D3D_FEATURE_LEVEL_11_0
-    DXUTCreateDevice( D3D_FEATURE_LEVEL_11_0, true, g_ScreenWidth, g_ScreenHeight);
+    DXUTCreateDevice( D3D_FEATURE_LEVEL_11_0, true, g_ScreenWidth, g_ScreenHeight );
 
     DXUTMainLoop(); // Enter into the DXUT render loop
 

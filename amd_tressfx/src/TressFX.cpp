@@ -39,6 +39,29 @@ namespace AMD
 {
 //--------------------------------------------------------------------------------------
 //
+// TressFX_GetVersion
+//
+// Gets the TressFX library version number.
+// This can be called before TressFX_Initialize.
+//
+//
+//--------------------------------------------------------------------------------------
+TRESSFX_RETURN_CODE AMD_TRESSFX_DLL_API TressFX_GetVersion(uint* major, uint* minor, uint* patch)
+{
+    if (major == NULL || minor == NULL || patch == NULL)
+    {
+        return TRESSFX_RETURN_CODE_INVALID_POINTER;
+    }
+
+    *major = AMD_TRESSFX_VERSION_MAJOR;
+    *minor = AMD_TRESSFX_VERSION_MINOR;
+    *patch = AMD_TRESSFX_VERSION_PATCH;
+
+    return TRESSFX_RETURN_CODE_SUCCESS;
+}
+
+//--------------------------------------------------------------------------------------
+//
 // TressFXInitialize
 //
 // Initializes TressFX rendering and simulation. Allocates the needed resources.
