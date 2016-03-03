@@ -1,6 +1,6 @@
 # AMD TressFX
 
-<img src="amd_tressfx_viewer/media/Thumbnail.png" width="480" height="285" />
+![AMD TressFX](http://gpuopen-effects.github.io/media/effects/tressfx_thumbnail.png)
 
 The TressFX library implements AMD's TressFX hair/fur rendering and simulation technology for DirectX 11. The TressFX technology uses the GPU to simulate and render high-quality, realistic hair and fur. TressFX makes use of the processing power of high-performance GPUs to do realistic rendering and utilizes DirectCompute to physically simulate each individual strand of hair.
 
@@ -39,7 +39,7 @@ For Visual Studio 2015, this version of Premake adds the `WindowsTargetPlatformV
 * ContentExporter is distributed under the terms of the MIT License. See `amd_tressfx_tools\ContentExporter\src\LICENSE`
 * Premake is distributed under the terms of the BSD License. See `premake\LICENSE.txt`.
 
-DXUT and ContentExporter are only needed for the viewer, not the core library. Only first-party software (specifically `ags_lib`, `amd_tressfx`, and `amd_lib`) is needed to build the TressFX library.
+DXUT and ContentExporter are only needed for the viewer, not the core library. Only first-party software (specifically `amd_tressfx`, and `amd_lib`) is needed to build the TressFX library.
 
 ### Attribution
 * AMD, the AMD Arrow logo, Radeon, and combinations thereof are either registered trademarks or trademarks of Advanced Micro Devices, Inc. in the United States and/or other countries.
