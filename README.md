@@ -23,7 +23,8 @@ Start with the TressFX viewer to see example content or to check out the code.
 
 * Visual Studio solutions for VS2012, VS2013, and VS2015 can be found in the `amd_tressfx_viewer\build` directory.
 * There are also solutions for just the core library in the `amd_tressfx\build` directory.
-* Additional documentation is available in the `amd_tressfx\doc` and `amd_tressfx_viewer\doc` directories.
+* Additional documentation is available in the `amd_tressfx_viewer\doc` directory.
+* Documentation for the Maya exporter is available in the `amd_tressfx_tools\MayaPlugin\doc` directory.
 
 ### Premake
 The Visual Studio solutions and projects in this repo were generated with Premake. If you need to regenerate the Visual Studio files, double-click on `gpuopen_tressfx_update_vs_files.bat` in the `premake` directory.
