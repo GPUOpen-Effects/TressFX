@@ -23,7 +23,7 @@ Start with the TressFX viewer to see example content or to check out the code.
 
 * Visual Studio solutions for VS2012, VS2013, and VS2015 can be found in the `amd_tressfx_viewer\build` directory.
 * There are also solutions for just the core library in the `amd_tressfx\build` directory.
-* Additional documentation is available in the `amd_tressfx_viewer\doc` directory.
+* Additional documentation is available in the `amd_tressfx\doc` and `amd_tressfx_viewer\doc` directories.
 * Pre-exported example models ready for use in the viewer can be found in the `amd_tressfx_viewer\media` directory.
   * Look for `DEFAULT_TFXPROJFILENAME` near the top of main.cpp to start up with a different model.
   * Or you can load a different model after start-up with the "(O)pen project" button.
