@@ -87,45 +87,47 @@ struct PS_INPUT_HAIR
 
 cbuffer cbPerFrame : register( b1 )
 {
-    matrix      g_mWorld            : packoffset( c0  );
-    matrix      g_mViewProj         : packoffset( c4  );
-    matrix      g_mInvViewProj      : packoffset( c8  );
-    matrix      g_mViewProjLight    : packoffset( c12 );
+    matrix      g_mWorld                        : packoffset( c0  );
+    matrix      g_mViewProj                     : packoffset( c4  );
+    matrix      g_mInvViewProj                  : packoffset( c8  );
+    matrix      g_mViewProjLight                : packoffset( c12 );
 
-    float3      g_vEye              : packoffset( c16 );
-    float       g_fvFov             : packoffset( c16.w );
+    float3      g_vEye                          : packoffset( c16 );
+    float       g_fvFov                         : packoffset( c16.w );
 
-    float4      g_AmbientLightColor : packoffset( c17 );
-    float4      g_PointLightColor   : packoffset( c18 );
-    float4      g_PointLightPos     : packoffset( c19 );
-    float4      g_MatBaseColor      : packoffset( c20 );
-    float4      g_MatKValue         : packoffset( c21 ); // Ka, Kd, Ks, Ex
+    float4      g_AmbientLightColor             : packoffset( c17 );
+    float4      g_PointLightColor               : packoffset( c18 );
+    float4      g_PointLightPos                 : packoffset( c19 );
+    float4      g_MatBaseColor                  : packoffset( c20 );
+    float4      g_MatKValue                     : packoffset( c21 ); // Ka, Kd, Ks, Ex
 
-    float       g_FiberAlpha        : packoffset( c22.x );
-    float       g_HairShadowAlpha   : packoffset( c22.y );
-    float       g_bExpandPixels     : packoffset( c22.z );
-    float       g_FiberRadius       : packoffset( c22.w );
+    float       g_FiberAlpha                    : packoffset( c22.x );
+    float       g_HairShadowAlpha               : packoffset( c22.y );
+    float       g_bExpandPixels                 : packoffset( c22.z );
+    float       g_FiberRadius                   : packoffset( c22.w );
 
-    float4      g_WinSize           : packoffset( c23 ); // screen size
+    float4      g_WinSize                       : packoffset( c23 ); // screen size
 
-    float       g_FiberSpacing      : packoffset( c24.x ); // average spacing between fibers
-    float       g_bThinTip          : packoffset( c24.y );
-    float       g_fNearLight        : packoffset( c24.z );
-    float       g_fFarLight         : packoffset( c24.w );
+    float       g_FiberSpacing                  : packoffset( c24.x ); // average spacing between fibers
+    float       g_bThinTip                      : packoffset( c24.y );
+    float       g_fNearLight                    : packoffset( c24.z );
+    float       g_fFarLight                     : packoffset( c24.w );
 
-    int         g_iTechSM           : packoffset( c25.x );
-    int         g_bUseCoverage      : packoffset( c25.y );
-    int         g_iStrandCopies     : packoffset( c25.z ); // strand copies that the transparency shader will produce
-    int         g_iMaxFragments     : packoffset( c25.w );
+    int         g_iTechSM                       : packoffset( c25.x );
+    int         g_bUseCoverage                  : packoffset( c25.y );
+    int         g_iStrandCopies                 : packoffset( c25.z ); // strand copies that the transparency shader will produce
+    int         g_iMaxFragments                 : packoffset( c25.w );
 
-    float       g_alphaThreshold    : packoffset( c26.x );
-    float       g_fHairKs2          : packoffset( c26.y ); // for second highlight
-    float       g_fHairEx2          : packoffset( c26.z ); // for second highlight
-    int         g_OptionalSRVs      : packoffset( c26.w );
+    float       g_alphaThreshold                : packoffset( c26.x );
+    float       g_fHairKs2                      : packoffset( c26.y ); // for second highlight
+    float       g_fHairEx2                      : packoffset( c26.z ); // for second highlight
+    int         g_OptionalSRVs                  : packoffset( c26.w );
 
-    matrix      g_mInvViewProjViewport: packoffset( c27 );
+    matrix      g_mInvViewProjViewport          : packoffset( c27 );
 
-    int         g_NumVerticesPerStrand : packoffset( c31 );
+    int         g_NumVerticesPerStrand          : packoffset( c31.x );
+    int         g_NumFollowHairsPerGuideHair    : packoffset( c31.y );
+    int         g_bSingleHeadTransform          : packoffset( c31.z );
 };
 
 // Bit fields for optional SRVs
@@ -145,6 +147,15 @@ struct PPLL_STRUCT
 };
 
 //--------------------------------------------------------------------------------------
+// Transforms structure
+//--------------------------------------------------------------------------------------
+struct Transforms
+{
+    row_major float4x4  tfm;
+    float4              quat;
+};
+
+//--------------------------------------------------------------------------------------
 // SRV buffers
 //--------------------------------------------------------------------------------------
 StructuredBuffer<PPLL_STRUCT>           LinkedListSRV               : register(t0);
@@ -159,8 +170,9 @@ Buffer<float>                           g_HairThicknessCoeffs       : register( 
 
 StructuredBuffer<float4>                g_HairVertexPositions       : register( t7 );
 StructuredBuffer<float4>                g_HairVertexTangents        : register( t8 );
+StructuredBuffer<Transforms>            g_Transforms                : register( t9 );
 
-StructuredBuffer<float2>                g_txHairStrandTexCd         : register( t9 );
+StructuredBuffer<float2>                g_txHairStrandTexCd         : register( t10 );
 
 //--------------------------------------------------------------------------------------
 // Unordered Access
@@ -221,6 +233,20 @@ VS_OUTPUT_SCREENQUAD VS_ScreenQuad(VS_INPUT_SCREENQUAD input)
 //      Vertex Shader Code
 //
 //--------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------
+//
+//      GetVertex
+//
+//--------------------------------------------------------------------------------------
+inline float4 GetVertex(int index) {
+    if (g_bSingleHeadTransform) {
+        return mul(g_HairVertexPositions[index], g_mWorld);
+    } else {
+        uint stride = g_NumFollowHairsPerGuideHair + 1;
+        uint globalStrandIndex = (uint)index / (uint)g_NumVerticesPerStrand / stride * stride;
+        return mul(g_HairVertexPositions[index], g_Transforms[globalStrandIndex].tfm);
+    }
+}
 
 //--------------------------------------------------------------------------------------
 //
@@ -273,7 +299,7 @@ VS_OUTPUT_SM VS_GenerateHairSM( uint vertexId : SV_VertexID )
 {
     VS_OUTPUT_SM Output;
 
-    float4 pos = g_HairVertexPositions[vertexId];
+    float4 pos = GetVertex(vertexId);
 
     // Transform the position from object space to homogeneous projection space
     Output.Position = mul( float4(pos.xyz, 1), g_mViewProjLight );
@@ -296,7 +322,7 @@ PS_INPUT_HAIR VS_RenderHair( uint vertexId : SV_VertexID )
 
     // Get updated positions and tangents from simulation result
     float3 t = g_HairVertexTangents[index].xyz;
-    float3 v = g_HairVertexPositions[index].xyz;
+    float3 v = GetVertex(index).xyz;
 
     // Get hair strand thickness
     float ratio = ( g_bThinTip > 0 ) ? g_HairThicknessCoeffs[index] : 1.0;
@@ -315,7 +341,7 @@ PS_INPUT_HAIR VS_RenderHair( uint vertexId : SV_VertexID )
     Output.Position = mul(float4(temp, 1.f), g_mViewProj);
     Output.Position = Output.Position + fDirCoef * float4(proj_right * expandPixels / g_WinSize.y, 0.f, 0.f) * Output.Position.w;
     Output.Tangent  = float4(t, ratio);
-    Output.p0p1     = float4( v.xy, g_HairVertexPositions[index+1].xy );
+    Output.p0p1     = float4( v.xy, GetVertex(index+1).xy );
     Output.strandColor = StrandColor(index);
 
     return Output;
@@ -342,7 +368,7 @@ PS_INPUT_HAIR VS_RenderHair_StrandCopies( uint vertexId : SV_VertexID, uint inst
 
     // Get updated positions and tangents from simulation result
     float3 t = g_HairVertexTangents[index].xyz;
-    float3 v = randOffset + g_HairVertexPositions[index].xyz;  // We apply a random offset to each vertex when multiple strands are requested
+    float3 v = randOffset + GetVertex(index).xyz;  // We apply a random offset to each vertex when multiple strands are requested
 
     // Get hair strand thickness
     float ratio = ( g_bThinTip > 0 ) ? g_HairThicknessCoeffs[index] : 1.0;
@@ -361,7 +387,7 @@ PS_INPUT_HAIR VS_RenderHair_StrandCopies( uint vertexId : SV_VertexID, uint inst
     Output.Position = mul(float4(temp, 1.f), g_mViewProj);
     Output.Position = Output.Position + fDirCoef * float4(proj_right * expandPixels/ g_WinSize.y, 0.f, 0.f) * Output.Position.w;
     Output.Tangent  = float4(t, ratio);
-    Output.p0p1     = float4( v.xy, randOffset.xy + g_HairVertexPositions[index+1].xy );
+    Output.p0p1     = float4( v.xy, randOffset.xy + GetVertex(index+1).xy );
     Output.strandColor = StrandColor(index);
 
     return Output;
@@ -379,7 +405,7 @@ PS_INPUT_HAIR VS_RenderHair_AA( uint vertexId : SV_VertexID )
 
     // Get updated positions and tangents from simulation result
     float3 t = g_HairVertexTangents[index].xyz;
-    float3 v = g_HairVertexPositions[index].xyz;
+    float3 v = GetVertex(index).xyz;
 
     // Get hair strand thickness
     float ratio = ( g_bThinTip > 0 ) ? g_HairThicknessCoeffs[index] : 1.0;
@@ -430,7 +456,7 @@ PS_INPUT_HAIR VS_RenderHair_AA_StrandCopies( uint vertexId : SV_VertexID, uint i
 
     // Get updated positions and tangents from simulation result
     float3 t = g_HairVertexTangents[index].xyz;
-    float3 v = randOffset + g_HairVertexPositions[index].xyz;  // We apply a random offset to each vertex when multiple strands are requested
+    float3 v = randOffset + GetVertex(index).xyz;  // We apply a random offset to each vertex when multiple strands are requested
 
     // Get hair strand thickness
     float ratio = ( g_bThinTip > 0 ) ? g_HairThicknessCoeffs[index] : 1.0;

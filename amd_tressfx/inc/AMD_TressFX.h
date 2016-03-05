@@ -56,22 +56,23 @@
 #define ALPHA_THRESHOLD     0.99f/255.0f    // minimum alpha value required to render a hair fragment
 
 // shader resource view slots
-#define IDSRV_PPLL                          0
-#define IDSRV_HEAD_PPLL                     1
-#define IDSRV_SCENESM                       2
-#define IDSRV_HAIRSM                        3
-#define IDSRV_HAIR_COLOR_TEXTURE            4
-#define IDSRV_NOISEMAP                      5
-#define IDSRV_HAIR_THICKNESSES              6
-#define IDSRV_HAIR_VERTEX_POSITIONS         7
-#define IDSRV_HAIR_TANGENTS                 8
-#define IDSRV_HAIR_STRAND_TEX_COORDS        9
-#define IDSRV_HAIR_VERTEX_TEX_COORDS        10
-#define IDSRV_HAIR_VERTEX_COLORS            11
+#define IDSRV_PPLL                              0
+#define IDSRV_HEAD_PPLL                         1
+#define IDSRV_SCENESM                           2
+#define IDSRV_HAIRSM                            3
+#define IDSRV_HAIR_COLOR_TEXTURE                4
+#define IDSRV_NOISEMAP                          5
+#define IDSRV_HAIR_THICKNESSES                  6
+#define IDSRV_HAIR_VERTEX_POSITIONS_RELATIVE    7
+#define IDSRV_HAIR_TANGENTS                     8
+#define IDSRV_HAIR_TRANSFORMS                   9
+#define IDSRV_HAIR_STRAND_TEX_COORDS            10
+#define IDSRV_HAIR_VERTEX_TEX_COORDS            11
+#define IDSRV_HAIR_VERTEX_COLORS                12
 
 
 #if defined(DEBUG) || defined(_DEBUG)
-#define AMD_TRESSFX_DEBUG                   1
+#define AMD_TRESSFX_DEBUG                       1
 #endif
 
 namespace AMD

@@ -89,6 +89,7 @@ cbuffer ConstBufferCS_GenerateTransforms : register( b4 )
 cbuffer ConstBufferCS_HeadTransform : register( b5 )
 {
     row_major float4x4 g_ModelTransformForHead;
+    row_major float4x4 g_InvModelTransformForHead;
     float4 g_ModelRotateForHead; // quaternion
     int g_bSingleHeadTransform; // If true, then simulation is for hair and all hair strands will be affected by a single head transformation
                                 // If false, then simulation is for fur and each hair strand will have its own transformation which comes from associated skinned triangle
@@ -110,13 +111,14 @@ struct HairToTriangleMapping
 };
 
 // UAVs
-RWStructuredBuffer<float4>      g_HairVertexPositions       : register(u0);
-RWStructuredBuffer<float4>      g_HairVertexPositionsPrev   : register(u1);
-RWStructuredBuffer<float4>      g_HairVertexTangents        : register(u2);
-RWStructuredBuffer<float4>      g_InitialHairPositions      : register(u3);
-RWStructuredBuffer<float4>      g_GlobalRotations           : register(u4);
-RWStructuredBuffer<float4>      g_LocalRotations            : register(u5);
-RWStructuredBuffer<Transforms>  g_Transforms                : register(u6);
+RWStructuredBuffer<float4>      g_HairVertexPositions           : register(u0);
+RWStructuredBuffer<float4>      g_HairVertexPositionsRelative   : register(u1);
+RWStructuredBuffer<float4>      g_HairVertexPositionsPrev       : register(u2);
+RWStructuredBuffer<float4>      g_HairVertexTangents            : register(u3);
+RWStructuredBuffer<float4>      g_InitialHairPositions          : register(u4);
+RWStructuredBuffer<float4>      g_GlobalRotations               : register(u5);
+RWStructuredBuffer<float4>      g_LocalRotations                : register(u6);
+RWStructuredBuffer<Transforms>  g_Transforms                    : register(u7);
 
 // SRVs
 Buffer<float>                           g_HairRestLengthSRV         : register(t0);
@@ -191,6 +193,15 @@ float4 InverseQuaternion(float4 q)
     q.w = q.w / lengthSqr;
 
     return q;
+}
+
+inline row_major float4x4 InverseAffineTransformation(row_major float4x4 R) {
+    //invert rotation
+    row_major float4x4 inverse = transpose(R);
+    inverse._m03_m13_m23 = float3(0, 0, 0);
+    //invert translation
+    inverse._m30_m31_m32 = -mul(R._m30_m31_m32_m33, inverse).xyz;
+    return inverse;
 }
 
 float3 MultQuaternionAndVector(float4 q, float3 v)
@@ -367,6 +378,16 @@ bool CapsuleCollision(float4 curPosition, float4 oldPosition, inout float3 newPo
     return false;
 }
 
+inline void SetOutputPosition(float4 position, int globalVertexIndex, uint globalStrandIndex) {
+    if (g_bSingleHeadTransform) {
+        g_HairVertexPositionsRelative[globalVertexIndex] = mul(float4(position.xyz, 1), g_InvModelTransformForHead);
+    } else {
+        uint stride = g_NumFollowHairsPerGuideHair + 1;
+        globalStrandIndex = globalStrandIndex / stride * stride; // get strand index of guide hair
+        g_HairVertexPositionsRelative[globalVertexIndex] = mul(float4(position.xyz, 1), InverseAffineTransformation(g_Transforms[globalStrandIndex].tfm));
+    }
+}
+
 //--------------------------------------------------------------------------------------
 //
 //  UpdateFinalVertexPositions
@@ -374,10 +395,11 @@ bool CapsuleCollision(float4 curPosition, float4 oldPosition, inout float3 newPo
 //  Updates the  hair vertex positions based on the physics simulation
 //
 //--------------------------------------------------------------------------------------
-void UpdateFinalVertexPositions(float4 oldPosition, float4 newPosition, int globalVertexIndex, int localVertexIndex, int numVerticesInTheStrand)
+void UpdateFinalVertexPositions(float4 oldPosition, float4 newPosition, int globalVertexIndex, int localVertexIndex, int numVerticesInTheStrand, uint globalStrandIndex)
 {
     g_HairVertexPositionsPrev[globalVertexIndex] = oldPosition;
     g_HairVertexPositions[globalVertexIndex] = newPosition;
+    SetOutputPosition(newPosition, globalVertexIndex, globalStrandIndex);
 }
 
 //--------------------------------------------------------------------------------------
@@ -479,7 +501,7 @@ void IntegrationAndGlobalShapeConstraints(uint GIndex : SV_GroupIndex,
     }
 
     // update global position buffers
-    UpdateFinalVertexPositions(currentPos, sharedPos[indexForSharedMem], globalVertexIndex, localVertexIndex, numVerticesInTheStrand);
+    UpdateFinalVertexPositions(currentPos, sharedPos[indexForSharedMem], globalVertexIndex, localVertexIndex, numVerticesInTheStrand, globalStrandIndex);
 }
 
 //--------------------------------------------------------------------------------------
@@ -569,8 +591,9 @@ void LocalShapeConstraints(uint GIndex : SV_GroupIndex,
             }
 
             g_HairVertexPositions[globalVertexIndex].xyz = pos.xyz;
+            SetOutputPosition(float4(pos.xyz, 1), globalVertexIndex, globalStrandIndex);
             g_HairVertexPositions[globalVertexIndex+1].xyz = pos_plus_one.xyz;
-
+            SetOutputPosition(float4(pos_plus_one.xyz, 1), globalVertexIndex + 1, globalStrandIndex);
             pos = pos_plus_one;
         }
     }
@@ -688,6 +711,7 @@ void LocalShapeConstraintsWithIteration(uint GIndex : SV_GroupIndex,
     {
         globalVertexIndex = globalRootVertexIndex + locVertIndex;
         g_HairVertexPositions[globalVertexIndex] = sharedStrandPos[locVertIndex];
+        SetOutputPosition(sharedStrandPos[locVertIndex], globalVertexIndex, globalStrandIndex);
     }
 
     return;
@@ -854,6 +878,7 @@ void LengthConstriantsWindAndCollision(uint GIndex : SV_GroupIndex,
     // update global position buffers
     //---------------------------------------
     g_HairVertexPositions[globalVertexIndex] = sharedPos[indexForSharedMem];
+    SetOutputPosition(sharedPos[indexForSharedMem], globalVertexIndex, globalStrandIndex);
 
     if (bAnyColDetected)
         g_HairVertexPositionsPrev[globalVertexIndex] = sharedPos[indexForSharedMem];
@@ -881,6 +906,7 @@ void UpdateFollowHairVertices(uint GIndex : SV_GroupIndex,
         float factor = g_TipSeparationFactor*((float)localVertexIndex / (float)numVerticesInTheStrand) + 1.0f;
 		float3 followPos = sharedPos[indexForSharedMem].xyz + factor*g_FollowHairRootOffset[globalFollowStrandIndex].xyz;
         g_HairVertexPositions[globalFollowVertexIndex].xyz = followPos;
+        SetOutputPosition(float4(followPos, 1), globalFollowVertexIndex, globalStrandIndex);
         g_HairVertexTangents[globalFollowVertexIndex] = sharedTangent[indexForSharedMem];
     }
 

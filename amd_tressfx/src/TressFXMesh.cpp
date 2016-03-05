@@ -56,14 +56,16 @@ TressFXMesh::TressFXMesh(void) :
   , m_pThicknessCoeffsSRV(NULL)
 {
     m_HairVertexPositionsUAB = NULL;
+    m_HairVertexPositionsRelativeUAB = NULL;
     m_HairVertexPositionsPrevUAB = NULL;
 
-    m_HairVertexPositionsSRV = NULL;
+    m_HairVertexPositionsRelativeSRV = NULL;
 
     m_HairStrandTypeBuffer = NULL;
     m_HairStrandTypeSRV = NULL;
 
     m_HairVertexPositionsUAV = NULL;
+    m_HairVertexPositionsRelativeUAV = NULL;
     m_HairVertexPositionsPrevUAV = NULL;
 
     m_HairLengthBuffer = NULL;
@@ -108,6 +110,7 @@ TressFXMesh::TressFXMesh(void) :
     m_HairTransformsBuffer = NULL;
     m_HairSkinMappingSRV = NULL;
     m_HairTransformsUAV = NULL;
+    m_HairTransformsSRV = NULL;
     m_pStrandTexCoordBuffer = NULL;
     m_pStrandTexCoordSRV = NULL;
 }
@@ -321,8 +324,10 @@ HRESULT TressFXMesh::CreateBufferAndViews(ID3D11Device* pd3dDevice, TressFX_Scen
         bufferDescUA.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
         bufferDescUA.StructureByteStride  = sizeof(XMFLOAT4);
         AMD_SAFE_RELEASE(m_HairVertexPositionsUAB);
+        AMD_SAFE_RELEASE(m_HairVertexPositionsRelativeUAB);
         AMD_SAFE_RELEASE(m_HairVertexPositionsPrevUAB);
         AMD_V_RETURN(pd3dDevice->CreateBuffer(&bufferDescUA, &initialData, &m_HairVertexPositionsUAB));
+        AMD_V_RETURN(pd3dDevice->CreateBuffer(&bufferDescUA, &initialData, &m_HairVertexPositionsRelativeUAB));
         AMD_V_RETURN(pd3dDevice->CreateBuffer(&bufferDescUA, &initialData, &m_HairVertexPositionsPrevUAB));
     }
 
@@ -345,16 +350,16 @@ HRESULT TressFXMesh::CreateBufferAndViews(ID3D11Device* pd3dDevice, TressFX_Scen
     }
 
     //-----------------------
-    // m_HairVertexPositionsSRV
+    // m_HairVertexPositionsRelativeSRV
     //-----------------------
     {
         D3D11_SHADER_RESOURCE_VIEW_DESC sbSRVDesc;
-        sbSRVDesc.Buffer.FirstElement           = 0;
-        sbSRVDesc.Buffer.NumElements            = m_HairAsset.m_NumTotalHairVertices;
-        sbSRVDesc.Format                        = DXGI_FORMAT_UNKNOWN; //DXGI_FORMAT_R32G32B32A32_FLOAT
-        sbSRVDesc.ViewDimension                 = D3D11_SRV_DIMENSION_BUFFER;
-        AMD_SAFE_RELEASE(m_HairVertexPositionsSRV);
-        AMD_V_RETURN( pd3dDevice->CreateShaderResourceView(m_HairVertexPositionsUAB, &sbSRVDesc, &m_HairVertexPositionsSRV) );
+        sbSRVDesc.Buffer.FirstElement = 0;
+        sbSRVDesc.Buffer.NumElements = m_HairAsset.m_NumTotalHairVertices;
+        sbSRVDesc.Format = DXGI_FORMAT_UNKNOWN; //DXGI_FORMAT_R32G32B32A32_FLOAT
+        sbSRVDesc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
+        AMD_SAFE_RELEASE(m_HairVertexPositionsRelativeSRV);
+        AMD_V_RETURN(pd3dDevice->CreateShaderResourceView(m_HairVertexPositionsRelativeUAB, &sbSRVDesc, &m_HairVertexPositionsRelativeSRV));
     }
 
     //-----------------------
@@ -381,8 +386,10 @@ HRESULT TressFXMesh::CreateBufferAndViews(ID3D11Device* pd3dDevice, TressFX_Scen
         sbUAVDesc.Format                    = DXGI_FORMAT_UNKNOWN; //DXGI_FORMAT_R32G32B32A32_FLOAT
         sbUAVDesc.ViewDimension             = D3D11_UAV_DIMENSION_BUFFER;
         AMD_SAFE_RELEASE(m_HairVertexPositionsUAV);
+        AMD_SAFE_RELEASE(m_HairVertexPositionsRelativeUAV);
         AMD_SAFE_RELEASE(m_HairVertexPositionsPrevUAV);
         AMD_V_RETURN( pd3dDevice->CreateUnorderedAccessView(m_HairVertexPositionsUAB, &sbUAVDesc, &m_HairVertexPositionsUAV) );
+        AMD_V_RETURN(pd3dDevice->CreateUnorderedAccessView(m_HairVertexPositionsRelativeUAB, &sbUAVDesc, &m_HairVertexPositionsRelativeUAV));
         AMD_V_RETURN( pd3dDevice->CreateUnorderedAccessView(m_HairVertexPositionsPrevUAB, &sbUAVDesc, &m_HairVertexPositionsPrevUAV) );
     }
 
@@ -615,6 +622,14 @@ HRESULT TressFXMesh::CreateBufferAndViews(ID3D11Device* pd3dDevice, TressFX_Scen
             AMD_SAFE_RELEASE(m_HairTransformsBuffer);
             AMD_V_RETURN(pd3dDevice->CreateBuffer(&bufferDescUA, &initialData, &m_HairTransformsBuffer));
 
+            D3D11_SHADER_RESOURCE_VIEW_DESC desc;
+            desc.Buffer.FirstElement = 0;
+            desc.Buffer.NumElements = m_HairAsset.m_NumTotalHairStrands;
+            desc.Format = DXGI_FORMAT_UNKNOWN;
+            desc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
+            AMD_SAFE_RELEASE(m_HairTransformsSRV);
+            AMD_V_RETURN(pd3dDevice->CreateShaderResourceView(m_HairTransformsBuffer, &desc, &m_HairTransformsSRV));
+
             D3D11_UNORDERED_ACCESS_VIEW_DESC sbUAVDesc;
             sbUAVDesc.Buffer.FirstElement       = 0;
             sbUAVDesc.Buffer.Flags              = 0;
@@ -679,11 +694,13 @@ void TressFXMesh::OnDestroy()
 
     //compute shader variables
     AMD_SAFE_RELEASE(m_HairVertexPositionsUAB);
+    AMD_SAFE_RELEASE(m_HairVertexPositionsRelativeUAB);
     AMD_SAFE_RELEASE(m_HairVertexPositionsPrevUAB);
     AMD_SAFE_RELEASE(m_HairVertexTangentsUAB);
-    AMD_SAFE_RELEASE(m_HairVertexPositionsSRV);
+    AMD_SAFE_RELEASE(m_HairVertexPositionsRelativeSRV);
     AMD_SAFE_RELEASE(m_HairVertexTangentsSRV);
     AMD_SAFE_RELEASE(m_HairVertexPositionsUAV);
+    AMD_SAFE_RELEASE(m_HairVertexPositionsRelativeUAV);
     AMD_SAFE_RELEASE(m_HairVertexPositionsPrevUAV);
     AMD_SAFE_RELEASE(m_HairVertexTangentsUAV);
 
@@ -714,6 +731,7 @@ void TressFXMesh::OnDestroy()
     AMD_SAFE_RELEASE(m_HairSkinMappingSRV);
     AMD_SAFE_RELEASE(m_HairTransformsBuffer);
     AMD_SAFE_RELEASE(m_HairTransformsUAV);
+    AMD_SAFE_RELEASE(m_HairTransformsSRV);
     AMD_SAFE_RELEASE(m_pStrandTexCoordBuffer);
     AMD_SAFE_RELEASE(m_pStrandTexCoordSRV);
 

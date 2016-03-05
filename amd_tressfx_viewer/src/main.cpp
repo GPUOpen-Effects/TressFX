@@ -615,7 +615,7 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
     static double fTimeFromLastFrame = 0.0f;
     const bool bSimulationEnabled = g_DemoModel.m_TressFXParams.hairParams.bSimulation;
     const double fTimeForAnimationUpdate = bSimulationEnabled && g_bAdvanceTime ? fTime : fTimeFromLastFrame;
-    if (bSimulationEnabled && g_bAdvanceTime)
+    if (g_bAdvanceTime)
     {
         fTimeFromLastFrame = fTime;
     }
@@ -813,10 +813,12 @@ void MoveModel(int msg, WPARAM wParam, LPARAM lParam)
 
                 bool bSimulate = g_SimulationHUD.m_GUI.GetCheckBox(IDC_CHECKBOX_SIMULATE)->GetChecked();
 
-                if ( bSimulate )
+                if ( !bSimulate )
                 {
-                    pModel->m_modelTransformForHead = pModel->m_modelTransformForHead * modelTransform;
+                    pModel->m_TressFXParams.bWarp = true;
                 }
+
+                pModel->m_modelTransformForHead = pModel->m_modelTransformForHead * modelTransform;
             }
             break;
         case WM_RBUTTONUP:
@@ -884,10 +886,12 @@ void RotateModel(int msg, WPARAM wParam, LPARAM lParam)
 
                 bool bSimulate = g_SimulationHUD.m_GUI.GetCheckBox(IDC_CHECKBOX_SIMULATE)->GetChecked();
 
-                if ( bSimulate )
+                if (!bSimulate)
                 {
-                    pModel->m_modelTransformForHead = modelTransform * pModel->m_modelTransformForHead;
+                    pModel->m_TressFXParams.bWarp = true;
                 }
+
+                pModel->m_modelTransformForHead = modelTransform * pModel->m_modelTransformForHead;
             }
             break;
         case WM_RBUTTONUP:
@@ -1117,7 +1121,7 @@ static TressFX_SimulationParams* GetCurrentSimulationParams()
 static int GetSelectedSectionIndex()
 {
     int selectedIndex = g_SimulationHUD.m_GUI.GetComboBox(IDC_COMBOBOX_HAIR_SECTION)->GetSelectedIndex();
-    
+
     if ( selectedIndex < 0 )
     {
         selectedIndex = 0;
