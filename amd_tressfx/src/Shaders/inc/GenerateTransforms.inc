@@ -85,8 +85,8 @@
 // g_MeshVertices                    texture  float4         buf    4        1
 // g_TransformedVerts                texture  float4         buf    5        1
 // g_HairToMeshMapping               texture  struct         r/o    6        1
-// g_InitialHairPositions                UAV  struct         r/w    3        1
-// g_Transforms                          UAV  struct         r/w    6        1
+// g_InitialHairPositions                UAV  struct         r/w    4        1
+// g_Transforms                          UAV  struct         r/w    7        1
 // ConstBufferCS_Per_Frame           cbuffer      NA          NA    0        1
 //
 //
@@ -108,8 +108,8 @@ dcl_constantbuffer cb0[10], immediateIndexed
 dcl_resource_buffer (float,float,float,float) t4
 dcl_resource_buffer (float,float,float,float) t5
 dcl_resource_structured t6, 24 
-dcl_uav_structured u3, 16
-dcl_uav_structured u6, 80
+dcl_uav_structured u4, 16
+dcl_uav_structured u7, 80
 dcl_input vThreadIDInGroupFlattened
 dcl_input vThreadGroupID.x
 dcl_temps 11
@@ -175,7 +175,7 @@ dp3 r10.x, r7.xyzx, r4.xyzx
 dp3 r7.x, r7.xyzx, r8.xyzx
 mov r0.y, r10.x
 mov r0.z, r7.x
-store_structured u6.xyzw, r1.x, l(0), r0.xyzw
+store_structured u7.xyzw, r1.x, l(0), r0.xyzw
 mov r5.z, r6.y
 mov r6.y, r5.x
 mov r5.x, r3.x
@@ -190,15 +190,15 @@ dp3 r7.y, r5.xyzx, r8.xyzx
 mov r3.y, r10.y
 mov r3.z, r7.y
 mov r3.w, l(0)
-store_structured u6.xyzw, r1.x, l(16), r3.xyzw
+store_structured u7.xyzw, r1.x, l(16), r3.xyzw
 mov r4.x, r0.z
 mov r4.y, r10.z
 mov r4.z, r7.z
 mov r4.w, l(0)
-store_structured u6.xyzw, r1.x, l(32), r4.xyzw
+store_structured u7.xyzw, r1.x, l(32), r4.xyzw
 udiv r0.w, null, l(64), cb0[9].x
 imul null, r0.w, r0.w, r1.x
-ld_structured_indexable(structured_buffer, stride=16)(mixed,mixed,mixed,mixed) r1.yzw, r0.w, l(0), u3.xxyz
+ld_structured_indexable(structured_buffer, stride=16)(mixed,mixed,mixed,mixed) r1.yzw, r0.w, l(0), u4.xxyz
 dp3 r2.x, -r1.yzwy, r0.xyzx
 add r0.x, r0.x, r3.y
 dp3 r3.x, -r1.yzwy, r10.xyzx
@@ -214,21 +214,21 @@ mov r3.yw, r2.zzzw
 dp2 r4.y, r3.xyxx, l(1.000000, 1.000000, 0.000000, 0.000000)
 dp2 r4.z, r3.zwzz, l(1.000000, 1.000000, 0.000000, 0.000000)
 mov r4.w, l(1.000000)
-store_structured u6.xyzw, r1.x, l(48), r4.xyzw
+store_structured u7.xyzw, r1.x, l(48), r4.xyzw
 mul r2.w, r0.x, l(0.500000)
 add r0.x, r0.x, r0.x
 div r2.xyz, r0.wzyw, r0.xxxx
-store_structured u6.xyzw, r1.x, l(64), r2.xyzw
+store_structured u7.xyzw, r1.x, l(64), r2.xyzw
 ret 
 // Approximately 106 instruction slots used
 #endif
 
 const BYTE GenerateTransforms_Data[] =
 {
-     68,  88,  66,  67, 114, 210, 
-    112, 112, 177, 146,  80, 206, 
-     59, 180,  36,  19, 163, 213, 
-    100,  59,   1,   0,   0,   0, 
+     68,  88,  66,  67, 179,  13, 
+    193, 198, 241, 116,  47,  27, 
+    227, 137, 127, 239, 182,  67, 
+     29,  44,   1,   0,   0,   0, 
     224,  25,   0,   0,   5,   0, 
       0,   0,  52,   0,   0,   0, 
     220,  12,   0,   0, 236,  12, 
@@ -264,12 +264,12 @@ const BYTE GenerateTransforms_Data[] =
      50,   1,   0,   0,   6,   0, 
       0,   0,   6,   0,   0,   0, 
       1,   0,   0,   0,  16,   0, 
-      0,   0,   3,   0,   0,   0, 
+      0,   0,   4,   0,   0,   0, 
       1,   0,   0,   0,   1,   0, 
       0,   0,  73,   1,   0,   0, 
       6,   0,   0,   0,   6,   0, 
       0,   0,   1,   0,   0,   0, 
-     80,   0,   0,   0,   6,   0, 
+     80,   0,   0,   0,   7,   0, 
       0,   0,   1,   0,   0,   0, 
       1,   0,   0,   0,  86,   1, 
       0,   0,   0,   0,   0,   0, 
@@ -794,10 +794,10 @@ const BYTE GenerateTransforms_Data[] =
       0, 112,  16,   0,   6,   0, 
       0,   0,  24,   0,   0,   0, 
     158,   0,   0,   4,   0, 224, 
-     17,   0,   3,   0,   0,   0, 
+     17,   0,   4,   0,   0,   0, 
      16,   0,   0,   0, 158,   0, 
       0,   4,   0, 224,  17,   0, 
-      6,   0,   0,   0,  80,   0, 
+      7,   0,   0,   0,  80,   0, 
       0,   0,  95,   0,   0,   2, 
       0,  64,   2,   0,  95,   0, 
       0,   2,  18,  16,   2,   0, 
@@ -1097,7 +1097,7 @@ const BYTE GenerateTransforms_Data[] =
       0,   0,  10,   0,  16,   0, 
       7,   0,   0,   0, 168,   0, 
       0,   9, 242, 224,  17,   0, 
-      6,   0,   0,   0,  10,   0, 
+      7,   0,   0,   0,  10,   0, 
      16,   0,   1,   0,   0,   0, 
       1,  64,   0,   0,   0,   0, 
       0,   0,  70,  14,  16,   0, 
@@ -1157,7 +1157,7 @@ const BYTE GenerateTransforms_Data[] =
      16,   0,   3,   0,   0,   0, 
       1,  64,   0,   0,   0,   0, 
       0,   0, 168,   0,   0,   9, 
-    242, 224,  17,   0,   6,   0, 
+    242, 224,  17,   0,   7,   0, 
       0,   0,  10,   0,  16,   0, 
       1,   0,   0,   0,   1,  64, 
       0,   0,  16,   0,   0,   0, 
@@ -1177,7 +1177,7 @@ const BYTE GenerateTransforms_Data[] =
       0,   0,   1,  64,   0,   0, 
       0,   0,   0,   0, 168,   0, 
       0,   9, 242, 224,  17,   0, 
-      6,   0,   0,   0,  10,   0, 
+      7,   0,   0,   0,  10,   0, 
      16,   0,   1,   0,   0,   0, 
       1,  64,   0,   0,  32,   0, 
       0,   0,  70,  14,  16,   0, 
@@ -1199,7 +1199,7 @@ const BYTE GenerateTransforms_Data[] =
       0,   0,  58,   0,  16,   0, 
       0,   0,   0,   0,   1,  64, 
       0,   0,   0,   0,   0,   0, 
-      6, 233,  17,   0,   3,   0, 
+      6, 233,  17,   0,   4,   0, 
       0,   0,  16,   0,   0,   8, 
      18,   0,  16,   0,   2,   0, 
       0,   0, 150,   7,  16, 128, 
@@ -1277,7 +1277,7 @@ const BYTE GenerateTransforms_Data[] =
      16,   0,   4,   0,   0,   0, 
       1,  64,   0,   0,   0,   0, 
     128,  63, 168,   0,   0,   9, 
-    242, 224,  17,   0,   6,   0, 
+    242, 224,  17,   0,   7,   0, 
       0,   0,  10,   0,  16,   0, 
       1,   0,   0,   0,   1,  64, 
       0,   0,  48,   0,   0,   0, 
@@ -1297,7 +1297,7 @@ const BYTE GenerateTransforms_Data[] =
      16,   0,   0,   0,   0,   0, 
       6,   0,  16,   0,   0,   0, 
       0,   0, 168,   0,   0,   9, 
-    242, 224,  17,   0,   6,   0, 
+    242, 224,  17,   0,   7,   0, 
       0,   0,  10,   0,  16,   0, 
       1,   0,   0,   0,   1,  64, 
       0,   0,  64,   0,   0,   0, 

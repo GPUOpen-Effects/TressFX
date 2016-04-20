@@ -83,7 +83,9 @@ struct CB_PER_FRAME
     XMMATRIX    m_mInvViewProjViewport;
 
     int         m_mNumVerticesPerStrand;
-    int         padding0[3];
+    int         m_mNumFollowHairsPerGuideHair;
+    int         m_bSingleHeadTransform;
+    int         padding0;
 };
 
 // Optional SRVs
@@ -607,7 +609,7 @@ HRESULT TressFXRenderer::OnResizedSwapChain( ID3D11Device* pd3dDevice, int width
 void TressFXRenderer::BeginHairFrame(ID3D11DeviceContext* pd3dContext,
                                     DirectX::XMVECTOR eyePoint, DirectX::XMVECTOR lightPosition,
                                     DirectX::XMMATRIX *pModelTransformForHead,  DirectX::XMMATRIX *pViewProj,  DirectX::XMMATRIX *pViewProjLightOut,
-                                    float screenWidth, float screenHeight)
+                                    float screenWidth, float screenHeight, bool singleHeadTransform)
 {
     SetSamplerStates(pd3dContext);
 
@@ -702,6 +704,8 @@ void TressFXRenderer::BeginHairFrame(ID3D11DeviceContext* pd3dContext,
     pcbPerFrame->m_iStrandCopies = m_hairParams.strandCopies;
 
     pcbPerFrame->m_mNumVerticesPerStrand = g_TressFXNumVerticesPerStrand;
+    pcbPerFrame->m_mNumFollowHairsPerGuideHair = m_pTressFXMesh->m_HairAsset.m_NumFollowHairsPerGuideHair;
+    pcbPerFrame->m_bSingleHeadTransform = singleHeadTransform;
 
     unsigned optionalSRVs = 0;
     if ((m_pTressFXMesh->m_pStrandTexCoordSRV) && (m_pTressFXMesh->m_pHairTextureSRV))
@@ -763,9 +767,10 @@ void TressFXRenderer::RenderHairGeometry( ID3D11DeviceContext* pd3dContext,
     pd3dContext->VSSetShader( pVS, NULL, 0 );
     pd3dContext->PSSetShader( pPS, NULL, 0 );
 
-    pd3dContext->PSSetShaderResources(IDSRV_NOISEMAP, 1, &m_pNoiseSRV);
-    pd3dContext->VSSetShaderResources(IDSRV_NOISEMAP, 1, &m_pNoiseSRV);
-    pd3dContext->VSSetShaderResources( IDSRV_HAIR_VERTEX_POSITIONS, 1, &m_pTressFXMesh->m_HairVertexPositionsSRV );
+    pd3dContext->PSSetShaderResources( IDSRV_NOISEMAP, 1, &m_pNoiseSRV );
+    pd3dContext->VSSetShaderResources( IDSRV_NOISEMAP, 1, &m_pNoiseSRV );
+    pd3dContext->VSSetShaderResources( IDSRV_HAIR_VERTEX_POSITIONS_RELATIVE, 1, &m_pTressFXMesh->m_HairVertexPositionsRelativeSRV );
+    pd3dContext->VSSetShaderResources( IDSRV_HAIR_TRANSFORMS, 1, &m_pTressFXMesh->m_HairTransformsSRV );
     pd3dContext->VSSetShaderResources( IDSRV_HAIR_TANGENTS, 1, &m_pTressFXMesh->m_HairVertexTangentsSRV );
 
     if (useLinePrimitives)
@@ -805,7 +810,8 @@ void TressFXRenderer::RenderHairGeometry( ID3D11DeviceContext* pd3dContext,
     }
 
     ID3D11ShaderResourceView* nullViews[] = { NULL };
-    pd3dContext->VSSetShaderResources( IDSRV_HAIR_VERTEX_POSITIONS, 1, nullViews );
+    pd3dContext->VSSetShaderResources( IDSRV_HAIR_VERTEX_POSITIONS_RELATIVE, 1, nullViews );
+    pd3dContext->VSSetShaderResources( IDSRV_HAIR_TRANSFORMS, 1, nullViews );
     pd3dContext->VSSetShaderResources( IDSRV_HAIR_TANGENTS, 1, nullViews );
 }
 

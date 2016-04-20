@@ -62,7 +62,7 @@
 // Name                                 Type  Format         Dim Slot Elements
 // ------------------------------ ---------- ------- ----------- ---- --------
 // g_HairVertexPositions                 UAV  struct         r/w    0        1
-// g_HairVertexPositionsPrev             UAV  struct         r/w    1        1
+// g_HairVertexPositionsPrev             UAV  struct         r/w    2        1
 // ConstBufferCS_Per_Frame           cbuffer      NA          NA    0        1
 //
 //
@@ -82,7 +82,7 @@ cs_5_0
 dcl_globalFlags refactoringAllowed
 dcl_constantbuffer cb0[10], immediateIndexed
 dcl_uav_structured u0, 16
-dcl_uav_structured u1, 16
+dcl_uav_structured u2, 16
 dcl_input vThreadIDInGroupFlattened
 dcl_input vThreadGroupID.x
 dcl_temps 2
@@ -102,7 +102,7 @@ loop
   iadd r0.z, r0.z, l(1)
   imad r0.w, r0.x, r0.z, r0.y
   ld_structured_indexable(structured_buffer, stride=16)(mixed,mixed,mixed,mixed) r1.xyz, r0.w, l(0), u0.xyzx
-  store_structured u1.xyz, r0.w, l(0), r1.xyzx
+  store_structured u2.xyz, r0.w, l(0), r1.xyzx
 endloop 
 ret 
 // Approximately 18 instruction slots used
@@ -110,10 +110,10 @@ ret
 
 const BYTE PrepareFollowHairBeforeTurningIntoGuide_Data[] =
 {
-     68,  88,  66,  67,   7, 254, 
-    144,  28, 194, 223, 203,  17, 
-    172,  81, 207,  30,  11,  21, 
-    177, 160,   1,   0,   0,   0, 
+     68,  88,  66,  67, 134,  29, 
+     84,  43,  56,  92, 200, 141, 
+     44, 130, 226,  96,  45,  12, 
+     70, 124,   1,   0,   0,   0, 
     176,  13,   0,   0,   5,   0, 
       0,   0,  52,   0,   0,   0, 
     160,  10,   0,   0, 176,  10, 
@@ -138,7 +138,7 @@ const BYTE PrepareFollowHairBeforeTurningIntoGuide_Data[] =
       0,   0, 178,   0,   0,   0, 
       6,   0,   0,   0,   6,   0, 
       0,   0,   1,   0,   0,   0, 
-     16,   0,   0,   0,   1,   0, 
+     16,   0,   0,   0,   2,   0, 
       0,   0,   1,   0,   0,   0, 
       1,   0,   0,   0, 204,   0, 
       0,   0,   0,   0,   0,   0, 
@@ -578,7 +578,7 @@ const BYTE PrepareFollowHairBeforeTurningIntoGuide_Data[] =
       0,   4,   0, 224,  17,   0, 
       0,   0,   0,   0,  16,   0, 
       0,   0, 158,   0,   0,   4, 
-      0, 224,  17,   0,   1,   0, 
+      0, 224,  17,   0,   2,   0, 
       0,   0,  16,   0,   0,   0, 
      95,   0,   0,   2,   0,  64, 
       2,   0,  95,   0,   0,   2, 
@@ -662,7 +662,7 @@ const BYTE PrepareFollowHairBeforeTurningIntoGuide_Data[] =
       0,   0,  70, 226,  17,   0, 
       0,   0,   0,   0, 168,   0, 
       0,   9, 114, 224,  17,   0, 
-      1,   0,   0,   0,  58,   0, 
+      2,   0,   0,   0,  58,   0, 
      16,   0,   0,   0,   0,   0, 
       1,  64,   0,   0,   0,   0, 
       0,   0,  70,   2,  16,   0, 

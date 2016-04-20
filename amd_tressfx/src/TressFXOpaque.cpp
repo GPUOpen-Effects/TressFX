@@ -115,7 +115,7 @@ namespace AMD
         tressFXRenderer.m_hairParams = desc.hairParams;
         tressFXRenderer.BeginHairFrame(desc.pd3dDeviceContext,
             desc.eyePoint, desc.lightPosition, &desc.modelTransformForHead, &desc.mViewProj, &desc.mViewProjLightFromLibrary,
-            (float)desc.backBufferWidth, (float)desc.backBufferHeight);
+            (float)desc.backBufferWidth, (float)desc.backBufferHeight, desc.bSingleHeadTransform);
         return true;
     }
 

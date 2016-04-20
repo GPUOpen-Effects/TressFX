@@ -148,7 +148,7 @@ public:
     HRESULT OnResizedSwapChain(ID3D11Device* pd3dDevice, int winWidth, int WinHeight);
     void BeginHairFrame(ID3D11DeviceContext* pd3dContext, DirectX::XMVECTOR eyePoint,
         DirectX::XMVECTOR lightPosition, DirectX::XMMATRIX *pModelTrasnsformForHead, DirectX::XMMATRIX *pViewProj, DirectX::XMMATRIX *pViewProjLightOut,
-        float screenWidth, float screenHeight);
+        float screenWidth, float screenHeight, bool singleHeadTransform);
     void GenerateShadowMap(ID3D11DeviceContext* pd3dContext, float density, float screenWidth, float screenHeight);
     void RenderHair(ID3D11DeviceContext* pd3dContext);
     void EndHairFrame(ID3D11DeviceContext* pd3dContext);

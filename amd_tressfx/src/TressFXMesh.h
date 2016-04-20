@@ -52,7 +52,11 @@ public:
     // vertex positions
     ID3D11Buffer* m_HairVertexPositionsUAB;
     ID3D11UnorderedAccessView* m_HairVertexPositionsUAV;
-    ID3D11ShaderResourceView* m_HairVertexPositionsSRV;
+
+    // relative vertex positions
+    ID3D11Buffer* m_HairVertexPositionsRelativeUAB;
+    ID3D11UnorderedAccessView* m_HairVertexPositionsRelativeUAV;
+    ID3D11ShaderResourceView* m_HairVertexPositionsRelativeSRV;
 
     ID3D11Buffer* m_HairVertexPositionsPrevUAB;
     ID3D11UnorderedAccessView* m_HairVertexPositionsPrevUAV;
@@ -96,6 +100,7 @@ public:
     // per-strand transformations for skinning
     ID3D11Buffer* m_HairTransformsBuffer;
     ID3D11UnorderedAccessView* m_HairTransformsUAV;
+    ID3D11ShaderResourceView* m_HairTransformsSRV;
 
     // per-strand texture coordinates
     ID3D11Buffer* m_pStrandTexCoordBuffer;
