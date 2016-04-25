@@ -422,8 +422,7 @@ HRESULT TressFXSimulation::Simulate(ID3D11DeviceContext* pd3dContext, float fEla
     pd3dContext->CSSetShaderResources( 0, 4, ppSRV);
 
     //Bind unordered access views
-    ID3D11UnorderedAccessView* ppUAV[D3D11_PS_CS_UAV_REGISTER_COUNT] = {
-                                            m_pTressFXMesh->m_HairVertexPositionsUAV,
+    ID3D11UnorderedAccessView* ppUAV[8] = { m_pTressFXMesh->m_HairVertexPositionsUAV,
                                             m_pTressFXMesh->m_HairVertexPositionsRelativeUAV,
                                             m_pTressFXMesh->m_HairVertexPositionsPrevUAV,
                                             m_pTressFXMesh->m_HairVertexTangentsUAV,
@@ -433,7 +432,7 @@ HRESULT TressFXSimulation::Simulate(ID3D11DeviceContext* pd3dContext, float fEla
                                             pSkinningTransforms
                                           };
 
-    pd3dContext->CSSetUnorderedAccessViews( 0, D3D11_PS_CS_UAV_REGISTER_COUNT, ppUAV, &initCounts );
+    pd3dContext->CSSetUnorderedAccessViews( 0, 8, ppUAV, &initCounts );
 
     //======= Run the compute shader =======
 
@@ -499,8 +498,8 @@ HRESULT TressFXSimulation::Simulate(ID3D11DeviceContext* pd3dContext, float fEla
     }
 
     // Unbind resources for CS
-    ID3D11UnorderedAccessView* ppUAViewNULL[D3D11_PS_CS_UAV_REGISTER_COUNT] = { 0 };
-    pd3dContext->CSSetUnorderedAccessViews( 0, D3D11_PS_CS_UAV_REGISTER_COUNT, ppUAViewNULL, &initCounts );
+    ID3D11UnorderedAccessView* ppUAViewNULL[8] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
+    pd3dContext->CSSetUnorderedAccessViews( 0, 8, ppUAViewNULL, &initCounts );
 
     ID3D11ShaderResourceView* ppSRVNULL[4] = { NULL, NULL, NULL, NULL};
     pd3dContext->CSSetShaderResources( 0, 4, ppSRVNULL );
