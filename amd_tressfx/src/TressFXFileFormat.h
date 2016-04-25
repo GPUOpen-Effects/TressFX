@@ -27,7 +27,7 @@
 //
 //  Header file that defines the .tfx binary file format. This is the format that will
 //  be exported by authoring tools, and is the standard file format for hair data. The game
-//  can either read this file directly, or further procsessing can be done offline to improve
+//  can either read this file directly, or further processing can be done offline to improve
 //  load times.
 //
 //-------------------------------------------------------------------------------------

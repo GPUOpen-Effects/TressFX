@@ -211,7 +211,7 @@ TFXProjectFile::TFXCapsule::TFXCapsule(float x0_, float y0_, float z0_, float x1
                 }
 
 
-                // section name for diplaying on GUI
+                // section name for displaying on GUI
                 if ( numFound > 4 )
                 {
                     tfx.sectionNameForGUI = sTokens[5];
@@ -330,7 +330,7 @@ TFXProjectFile::TFXCapsule::TFXCapsule(float x0_, float y0_, float z0_, float x1
         return true;
     }
 
-    // Helps with readability at the expense of estra copies.
+    // Helps with readability at the expense of extra copies.
     static std::wstring GetFilename(std::wstring path)
     {
         wchar_t drive[_MAX_DRIVE];

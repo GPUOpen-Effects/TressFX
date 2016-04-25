@@ -196,7 +196,7 @@ HRESULT TressFXSimulation::GenerateTransforms(ID3D11DeviceContext* pd3dContext, 
 {
     HRESULT hr = S_OK;
 
-    // update the constant bufferss
+    // update the constant buffers
     D3D11_MAPPED_SUBRESOURCE MappedResource;
 
     pd3dContext->Map(m_pCBCSPerFrame, 0, D3D11_MAP_WRITE_DISCARD, 0, &MappedResource);
@@ -254,7 +254,7 @@ const float MATH_PI2 = 3.14159265359f;
 //
 // Simulate
 //
-// Runs the hair simulation wich will animate the hair vertices. This function calls
+// Runs the hair simulation which will animate the hair vertices. This function calls
 // Dispatch to execute compute shaders that implement the simulation.
 //
 //--------------------------------------------------------------------------------------

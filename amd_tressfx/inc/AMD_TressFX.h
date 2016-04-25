@@ -96,7 +96,7 @@ struct TressFX_HairParams
 {
     float               Ka;                         // ambient
     float               Kd;                         // diffuse
-    float               Ks1;                        // speecular intensity 1
+    float               Ks1;                        // specular intensity 1
     float               Ex1;                        // specular exponent 1
     float               Ks2;                        // specular intensity 2
     float               Ex2;                        // specular exponent 2
@@ -162,7 +162,7 @@ struct TressFX_HairBlob
 
 struct TressFX_SceneMesh
 {
-    ID3D11ShaderResourceView*   pMeshVertices;     // un-transformed vertices
+    ID3D11ShaderResourceView*   pMeshVertices;     // untransformed vertices
     unsigned                    numMeshes;         // number of meshes
     unsigned*                   meshOffsets;       // offset to the start of each mesh
     ID3D11ShaderResourceView*   pTransformedVerts; // transformed vertices

@@ -107,7 +107,7 @@ TRESSFX_RETURN_CODE AMD_TRESSFX_DLL_API TressFX_LoadRawAsset(TressFX_Desc & desc
 // TressFX_LoadProcessedAsset
 //
 // Loads a processed hair asset. The data in pHairBlob was created by calling
-// TressFX_CreateProcessedAsset(). Since it's a pre-processed asset it loads faster
+// TressFX_CreateProcessedAsset(). Since it's a preprocessed asset it loads faster
 // than a raw asset.
 //
 //--------------------------------------------------------------------------------------
@@ -136,7 +136,7 @@ TRESSFX_RETURN_CODE AMD_TRESSFX_DLL_API TressFX_LoadProcessedAsset(TressFX_Desc 
 // TressFX_CreateProcessedAsset
 //
 // Creates a processed hair asset from previous loads of raw hair asset data.
-// A pointer to the processed hair asset is returned in pHairBlob. The calller of this
+// A pointer to the processed hair asset is returned in pHairBlob. The caller of this
 // function should copy the contents of pHairBlob instead of using it directly, since
 // the memory for it will be released when a new file is loaded.
 //

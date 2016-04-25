@@ -53,7 +53,7 @@ private:
     // VS for rendering the scene
     ID3D11VertexShader*         m_pVSSkinning;
     ID3D11VertexShader*         m_pVSScene;
-    // VS for generating un-transformed vertices
+    // VS for generating untransformed vertices
     ID3D11VertexShader*         m_pVSStreamOutVerts;
     // VS for generating transformed vertices
     ID3D11VertexShader*         m_pVSStreamOutSkinned;
@@ -123,16 +123,16 @@ private:
 
     ID3D11DeviceContext         *m_pd3dContext;
 
-    // animation status flag based on skinning animation file existance
+    // animation status flag based on skinning animation file existence
     bool m_bAnimation;
 
 public:
     unsigned                    m_numMeshes;            // number of meshes in the model
     unsigned*                   m_pMeshIndexCount;      // number of vertices in each mesh
-    ID3D11Buffer*               m_pMeshVertices;        // un-transformed non-indexed vertices (position only, flattened)
-    ID3D11ShaderResourceView*   m_pMeshVerticesSRV;     // un-transformed vertext SRV
+    ID3D11Buffer*               m_pMeshVertices;        // untransformed non-indexed vertices (position only, flattened)
+    ID3D11ShaderResourceView*   m_pMeshVerticesSRV;     // untransformed vertex SRV
     ID3D11Buffer*               m_pTransformedVerts;    // transformed non-indexed vertices (position only, flattened)
-    ID3D11ShaderResourceView*   m_pTransformedSRV;      // transformed vertext shader resource view
+    ID3D11ShaderResourceView*   m_pTransformedSRV;      // transformed vertex shader resource view
     DirectX::XMFLOAT3           m_MeshBBoxCenter;       // Bounding box center of the skinned mesh
     DirectX::XMFLOAT3           m_MeshBBoxExtent;       // Bounding box extent of the skinned mesh.
                                                         // Actually half of the bounding box edge,

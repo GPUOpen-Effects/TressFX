@@ -157,18 +157,18 @@ static COLORREF g_vCustHairColors[16] =
     RGB( 115,  84,  56 ),   //0 brown
     RGB( 98,  14,  4 ),     //1 natural red
     RGB(  59,  48,  36 ),   //2 darkest brown
-    RGB(  78,  67,  63 ),   //3 Med dark brown
+    RGB(  78,  67,  63 ),   //3 med dark brown
     RGB(  80,  68,  68 ),   //4 chestnut brown
-    RGB( 106,  78,  66 ),   //5 lt chestnut brown
+    RGB( 106,  78,  66 ),   //5 light chestnut brown
     RGB(  85,  72,  56 ),   //6 dark golden brown
     RGB( 167, 133, 106 ),   //7 light golden brown
-    RGB( 184, 151, 120 ),   //8 dark honey blonde
-    RGB( 220, 208, 186 ),   //9 bleached blonde
-    RGB( 222, 188, 153 ),   //10 light ash blonde
+    RGB( 184, 151, 120 ),   //8 dark honey blond
+    RGB( 220, 208, 186 ),   //9 bleached blond
+    RGB( 222, 188, 153 ),   //10 light ash blond
     RGB( 151, 121,  97 ),   //11 med ash brown
-    RGB( 230, 206, 168 ),   //12 lightest blonde
-    RGB( 229, 200, 168 ),   //13 pale golden blonde
-    RGB( 165, 107,  70 ),   //14 strawberry blonde
+    RGB( 230, 206, 168 ),   //12 lightest blond
+    RGB( 229, 200, 168 ),   //13 pale golden blond
+    RGB( 165, 107,  70 ),   //14 strawberry blond
     RGB( 41, 28, 22 ),      //15 Brownish fur color
 };
 
@@ -325,7 +325,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 #endif
 
     static wchar_t tfxProjectFilePath[_MAX_PATH] = L"";
-    wcscpy_s(tfxProjectFilePath, _MAX_PATH, lpCmdLine); // Assuming that arguement = path name.
+    wcscpy_s(tfxProjectFilePath, _MAX_PATH, lpCmdLine); // Assuming that argument = path name.
     tfxProjectFilePath[_MAX_PATH-1] = L'\0'; // making sure it is null terminated.
 
     // Set DXUT callbacks
@@ -1410,7 +1410,7 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
             break;
     }
 
-    // Call the MagnifyTool gui event handler
+    // Call the MagnifyTool GUI event handler
     g_MagnifyTool.OnGUIEvent( nEvent, nControlID, pControl, pUserContext );
 
 }
@@ -2008,7 +2008,7 @@ void CALLBACK OnD3D11FrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext*
 
             pSceneRender->UpdateSceneCB(pModel->m_TressFXParams);
 
-            // only need to save the mesh sizes and un-transformed vertices once
+            // only need to save the mesh sizes and untransformed vertices once
             if (pModel->m_SceneMesh.pMeshVertices == NULL)
             {
                 pSceneRender->StreamOutVertices(pd3dImmediateContext, false);

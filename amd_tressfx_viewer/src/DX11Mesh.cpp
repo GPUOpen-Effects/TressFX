@@ -61,7 +61,7 @@ CDX11Mesh::~CDX11Mesh(void)
 //
 // CreateMeshFromFile
 //
-// Reads a binary file containing the scene model mesh. Creates the DirectX asssets
+// Reads a binary file containing the scene model mesh. Creates the DirectX assets
 // necessary for rendering.
 //
 //--------------------------------------------------------------------------------------
@@ -250,7 +250,7 @@ bool CDX11Mesh::ReadBinaryFile(const WCHAR *filename)
 // Not including:
 // - Set viewport
 // - Set Shader
-// - Set input layout (as it require shader signiture)
+// - Set input layout (as it require shader signature)
 //--------------------------------------------------------------------------------------
 void CDX11Mesh::OnFrameRender(ID3D11DeviceContext* pd3dContext)
 {
@@ -309,7 +309,7 @@ void CDX11Mesh::OnDestroy()
 Material::Material()
 {
     // set the entire str buffer to zero, so that when materials are written out to binary files,
-    // you don't get unitialized memory values making the output non-determistic
+    // you don't get uninitialized memory values making the output non-deterministic
     memset( strName, '\0', sizeof( strName ) );
     memset( strTexture, '\0', sizeof( strTexture ) );
 

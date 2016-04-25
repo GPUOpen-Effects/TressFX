@@ -280,7 +280,7 @@ bool TressFXAssetLoader::LoadAppend(TressFX_HairBlob *pRawHairBlob, const TressF
     bool bothEndsImmovable = tfxFileObj.bothEndsImmovable != 0;
     m_HairAsset.m_NumOfVerticesInStrand = tfxFileObj.numVerticesPerStrand;
 
-    // Make sure number of vertices per strand is greater than two and less than or equal to thread group size (64). Also thread group size should be a mulitple of number of vertices per strand.
+    // Make sure number of vertices per strand is greater than two and less than or equal to thread group size (64). Also thread group size should be a multiple of number of vertices per strand.
     // So possible number is 4, 8, 16, 32 and 64.
     assert(m_HairAsset.m_NumOfVerticesInStrand > 2 && m_HairAsset.m_NumOfVerticesInStrand <= THREAD_GROUP_SIZE && THREAD_GROUP_SIZE % m_HairAsset.m_NumOfVerticesInStrand == 0);
 

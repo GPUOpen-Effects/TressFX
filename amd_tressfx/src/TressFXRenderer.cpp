@@ -108,7 +108,7 @@ struct PPLL_BUFFERS
     ID3D11ShaderResourceView*   pHeadPPLL_SRV;
     ID3D11UnorderedAccessView*  pHeadPPLL_UAV;
 
-    // Buffers for the per-pixelinked list (PPLL) data
+    // Buffers for the per-pixel linked list (PPLL) data
     ID3D11Buffer*               pPPLL_Buffer;
     ID3D11UnorderedAccessView*  pPPLL_UAV;
     ID3D11ShaderResourceView*   pPPLL_SRV;
@@ -176,7 +176,7 @@ HRESULT TressFXRenderer::CreateShaderAndLayout(ID3D11Device* pd3dDevice)
 //
 // CreateTextureAndViews
 //
-// Creates the textures and corrisponding views for hair rendering
+// Creates the textures and corresponding views for hair rendering
 //
 //--------------------------------------------------------------------------------------
 HRESULT TressFXRenderer::CreateTextureAndViews( ID3D11Device* pd3dDevice )
@@ -742,7 +742,7 @@ void TressFXRenderer::SetSamplerStates( ID3D11DeviceContext* pd3dContext )
     // Set vertex texture sampler states
     // If PER_STRAND_TEX_COORDS has not been specified, the linear wrap sampler will
     // not be actually used in vertex shader. However, the sampler slot will still
-    // exsist in the vertex shader, so we always set the linear wrap sampler to avoid
+    // exist in the vertex shader, so we always set the linear wrap sampler to avoid
     // SAMPLER_NOT_SET warning from d3d debug layer.
     ID3D11SamplerState* vSS[1];
     vSS[0] = m_pSamplerStateLinearWrap;
@@ -884,7 +884,7 @@ void TressFXRenderer::GenerateShadowMap(ID3D11DeviceContext* pd3dContext, float 
 // Renders the hair in two passes. The first pass fills an A-buffer by rendering the
 // hair geometry into a per-pixel linked list which keeps all of the overlapping fragments.
 // The second pass renders a full screen quad (using a stencil mask set in the first pass
-// to avoid unecssary pixels) which reads fragments from the per-pixel linked list
+// to avoid unnecessary pixels) which reads fragments from the per-pixel linked list
 // and blends the nearest k fragments (K-buffer) in back to front order.
 //
 //--------------------------------------------------------------------------------------

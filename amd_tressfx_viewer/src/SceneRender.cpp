@@ -216,7 +216,7 @@ void CSceneRender::CreateShaderAndLayout( ID3D11Device* pd3dDevice, AMD::ShaderC
     // Add shaders to the cache (do this only once)
 
     // vertex shaders
-    // Shader creation might be deferred in shader cache, so we have to assgin ID3D11InputLayout* pointer
+    // Shader creation might be deferred in shader cache, so we have to assign ID3D11InputLayout* pointer
     // for each VS shader to track the created ID3D11InputLayout object.
     pShaderCache->AddShader( (ID3D11DeviceChild**)&m_pVSStreamOutVerts, AMD::ShaderCache::SHADER_TYPE_VERTEX,
         L"vs_5_0", L"StreamOutVS", L"SceneRender.hlsl", 0, NULL, &m_pStreamOutLayout,
@@ -318,7 +318,7 @@ void CSceneRender::CreateShaderAndLayout( ID3D11Device* pd3dDevice, AMD::ShaderC
 //
 // CreateTextureAndViews
 //
-// Creates the textures and corrisponding views for scene rendering
+// Creates the textures and corresponding views for scene rendering
 //
 //--------------------------------------------------------------------------------------
 void CSceneRender::CreateTextureAndViews( ID3D11Device* pd3dDevice )
@@ -486,14 +486,14 @@ void CSceneRender::CreateVertexBuffers(ID3D11Device* pd3dDevice)
     bd.CPUAccessFlags = 0;
     bd.MiscFlags =      0;
 
-   // Create a buffer that will hold all of the un-transformed vertices
+   // Create a buffer that will hold all of the untransformed vertices
     hr = pd3dDevice->CreateBuffer( &bd, NULL, &m_pMeshVertices );
     if ( FAILED( hr ) )
     {
         ::MessageBoxA(0, "Failed to allocate untransformed vertex buffers", "d3d error", 0);
     }
 
-    // create an SRV for the un-transformed vertices
+    // create an SRV for the untransformed vertices
     D3D11_SHADER_RESOURCE_VIEW_DESC descSRV;
     descSRV.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
     descSRV.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
@@ -805,7 +805,7 @@ void CSceneRender::GenerateShadowMap(TressFX_Desc & desc)
     pd3dContext->RSSetViewports( 1, &viewportSMScene );
     // clear depth for early z
     pd3dContext->ClearDepthStencilView(m_pSMSceneDSV, D3D11_CLEAR_DEPTH|D3D10_CLEAR_STENCIL, 1.0, 0);
-    // make suure the scene shadow map texture is unbound
+    // make sure the scene shadow map texture is unbound
     ID3D11ShaderResourceView *pNull = NULL;
     pd3dContext->PSSetShaderResources(IDSRV_SCENESM, 1, &pNull);
     // set render target to shadow map texture
