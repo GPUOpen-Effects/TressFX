@@ -15,6 +15,7 @@ Highlights include the following:
 * Animation/skinning support
 * Maya plugin provided for authoring
 * Viewer provided for preview
+* PPLL and "ShortCut" OIT methods
 
 ### Prerequisites
 * AMD Radeon&trade; GCN-based GPU (HD 7000 series or newer)
@@ -33,6 +34,21 @@ Start with the TressFX viewer to see example content or to check out the code.
   * Or you can load a different model after start-up with the "(O)pen project" button.
 
 For authoring new content, documentation for the Maya exporter is available in the `amd_tressfx_tools\MayaPlugin\doc` directory.
+
+### ShortCut
+ShortCut is our new Order Independent Transparency (OIT) option. It is inspired by the method presented by Eidos-Montréal and Hybrid Transparency. Whereas our original method focused on the front k = 8 layers of hair, ShortCut is good for cases when you can get away with k = 2 or 3, and you’re more concerned about memory usage.
+
+It does require some forethought on how to build your models, however, as it comes with different performance characteristics, and a quality trade-off.  But between the simpler memory bounds and the potential for higher performance, we expect it to be a popular choice.
+
+The four main steps are outlined below:
+
+1. Render hair geometry, using a sequence of  InterlockedMin calls to update the list of k nearest fragments while computing an overall alpha.
+2. Screen space pass that puts the kth nearest depth in the depth buffer for early z culling in the next step.
+3. Render hair geometry again.  Shade the fragment and write or blend the color (depending on variant).   [earlydepthstencil]  focuses shading cost on the front k.
+4. Screen space pass that does the final blending.
+
+### Learn More
+* [TressFX 3.1 blog post on GPUOpen](http://gpuopen.com/tressfx-3-1/)
 
 ### Premake
 The Visual Studio solutions and projects in this repo were generated with Premake. If you need to regenerate the Visual Studio files, double-click on `gpuopen_tressfx_update_vs_files.bat` in the `premake` directory.
