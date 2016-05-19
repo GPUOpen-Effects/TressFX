@@ -36,6 +36,7 @@ REM TressFXRender Pixel Shaders
 REM TressFXSimulation Compute Shaders
 "%fxc_exe%" /nologo /T cs_5_0 /E IntegrationAndGlobalShapeConstraints /O1 /Fh ..\inc\IntegrationAndGlobalShapeConstraints.inc /Vn IntegrationAndGlobalShapeConstraints_Data  ..\TressFXSimulation.hlsl 
 "%fxc_exe%" /nologo /T cs_5_0 /E ApplyHairTransformGlobally /O1 /Fh ..\inc\ApplyHairTransformGlobally.inc /Vn ApplyHairTransformGlobally_Data  ..\TressFXSimulation.hlsl 
+"%fxc_exe%" /nologo /T cs_5_0 /E ComputeTangents /O1 /Fh ..\inc\ComputeTangents.inc /Vn ComputeTangents_Data  ..\TressFXSimulation.hlsl 
 "%fxc_exe%" /nologo /T cs_5_0 /E LocalShapeConstraints /O1 /Fh ..\inc\LocalShapeConstraints.inc /Vn LocalShapeConstraints_Data  ..\TressFXSimulation.hlsl 
 "%fxc_exe%" /nologo /T cs_5_0 /E LocalShapeConstraintsWithIteration /O1 /Fh ..\inc\LocalShapeConstraintsWithIteration.inc /Vn LocalShapeConstraintsWithIteration_Data  ..\TressFXSimulation.hlsl 
 "%fxc_exe%" /nologo /T cs_5_0 /E LengthConstriantsWindAndCollision /O1 /Fh ..\inc\LengthConstriantsWindAndCollision.inc /Vn LengthConstriantsWindAndCollision_Data  ..\TressFXSimulation.hlsl 

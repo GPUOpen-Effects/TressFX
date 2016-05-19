@@ -61,7 +61,7 @@ public:
     HRESULT GenerateTransforms(ID3D11DeviceContext* pd3dContext, TressFX_SceneMesh sceneMesh,
                                ID3D11UnorderedAccessView** ppSkinningTransformationsUAV,
                                DirectX::XMMATRIX *pModelTransformForHead);
-    HRESULT ApplyTransformGlobally(ID3D11DeviceContext* pd3dContext, ID3D11UnorderedAccessView* pSkinningTransforms, bool singleHeadTransform, DirectX::XMMATRIX *pModelTransformForHead);
+	HRESULT ApplyTransformGlobally(ID3D11DeviceContext* pd3dContext, ID3D11UnorderedAccessView* pSkinningTransforms, float density, bool singleHeadTransform, DirectX::XMMATRIX *pModelTransformForHead);
     void OnDestroy(bool destroyShaders);
     TressFXMesh*                m_pTressFXMesh;
     float                       m_elapsedTimeSinceLastSim;
@@ -76,6 +76,7 @@ private:
     //data for compute shaders
     ID3D11ComputeShader*        m_CSIntegrationAndGlobalShapeConstraints;
     ID3D11ComputeShader*        m_CSApplyHairTransformGlobally;
+	ID3D11ComputeShader*        m_CSComputeTangents;
     ID3D11ComputeShader*        m_CSLocalShapeConstraints;
     ID3D11ComputeShader*        m_CSLocalShapeConstraintsSingleDispatch;
     ID3D11ComputeShader*        m_CSLengthConstriantsWindAndCollision;

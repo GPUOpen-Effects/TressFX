@@ -32,7 +32,7 @@ dcl_input_ps_siv linear noperspective v0.xy, position
 dcl_output oDepth
 dcl_temps 1
 ftoi r0.xy, v0.xyxx
-mov r0.zw, l(0,0,1,0)
+mov r0.zw, l(0,0,2,0)
 ld_indexable(texture2darray)(uint,uint,uint,uint) r0.x, r0.xyzw, t13.xyzw
 mov oDepth, r0.x
 ret 
@@ -41,10 +41,10 @@ ret
 
 const BYTE PS_ResolveDepth_Hair_Data[] =
 {
-     68,  88,  66,  67, 156,  24, 
-    180, 116,  78,  99, 218,   3, 
-    228, 131, 223,  64, 211, 237, 
-    132, 240,   1,   0,   0,   0, 
+     68,  88,  66,  67, 175, 136, 
+     71, 103, 145, 103, 138,  57, 
+    156, 146,  47, 237, 184,  20, 
+      6, 103,   1,   0,   0,   0, 
     184,   2,   0,   0,   5,   0, 
       0,   0,  52,   0,   0,   0, 
     224,   0,   0,   0,  56,   1, 
@@ -120,7 +120,7 @@ const BYTE PS_ResolveDepth_Hair_Data[] =
     194,   0,  16,   0,   0,   0, 
       0,   0,   2,  64,   0,   0, 
       0,   0,   0,   0,   0,   0, 
-      0,   0,   1,   0,   0,   0, 
+      0,   0,   2,   0,   0,   0, 
       0,   0,   0,   0,  45,   0, 
       0, 137,   2,   2,   0, 128, 
       3,  17,  17,   0,  18,   0, 

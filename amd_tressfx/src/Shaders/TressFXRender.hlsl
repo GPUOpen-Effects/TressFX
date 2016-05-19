@@ -66,13 +66,13 @@
 #define SHORTCUT_INITIAL_DEPTH 0x3f800000
 
 // Number of depth layers to use.  2 or 3 supported.
-#define SHORTCUT_NUM_DEPTHS 2
+#define SHORTCUT_NUM_DEPTHS 3
 
 // Compute source color as weighted average of front fragments, vs blending in order.
 #define SHORTCUT_WEIGHTED_AVERAGE 1
 
 // Output color deterministically when fragments have the same depth.  Requires additional clear of colors resource.
-#define SHORTCUT_DETERMINISTIC 0
+#define SHORTCUT_DETERMINISTIC 1
 
 
 //--------------------------------------------------------------------------------------

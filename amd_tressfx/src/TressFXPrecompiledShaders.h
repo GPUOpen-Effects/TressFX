@@ -43,6 +43,7 @@
 // TressFXSimulation Compute Shaders
 #include "shaders\Inc\IntegrationAndGlobalShapeConstraints.inc"
 #include "shaders\Inc\ApplyHairTransformGlobally.inc"
+#include "shaders\Inc\ComputeTangents.inc"
 #include "shaders\Inc\LocalShapeConstraints.inc"
 #include "shaders\Inc\LocalShapeConstraintsWithIteration.inc"
 #include "shaders\Inc\LengthConstriantsWindAndCollision.inc"

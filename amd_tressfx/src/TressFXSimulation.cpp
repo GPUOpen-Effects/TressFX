@@ -112,6 +112,7 @@ TressFXSimulation::TressFXSimulation(void)
 {
     m_CSIntegrationAndGlobalShapeConstraints = NULL;
     m_CSApplyHairTransformGlobally = NULL;
+	m_CSComputeTangents = NULL;
     m_CSLocalShapeConstraints = NULL;
     m_CSLengthConstriantsWindAndCollision = NULL;
     m_CSUpdateFollowHairVertices = NULL;
@@ -159,6 +160,8 @@ HRESULT TressFXSimulation::OnCreateDevice(ID3D11Device* pd3dDevice, TressFX_Coll
         NULL, &m_CSIntegrationAndGlobalShapeConstraints));
     AMD_V_RETURN(pd3dDevice->CreateComputeShader(ApplyHairTransformGlobally_Data, sizeof(ApplyHairTransformGlobally_Data),
         NULL, &m_CSApplyHairTransformGlobally));
+	AMD_V_RETURN(pd3dDevice->CreateComputeShader(ComputeTangents_Data, sizeof(ComputeTangents_Data),
+		NULL, &m_CSComputeTangents));
     AMD_V_RETURN(pd3dDevice->CreateComputeShader(LocalShapeConstraints_Data, sizeof(LocalShapeConstraints_Data),
         NULL, &m_CSLocalShapeConstraints));
     AMD_V_RETURN(pd3dDevice->CreateComputeShader(LocalShapeConstraintsWithIteration_Data, sizeof(LocalShapeConstraintsWithIteration_Data),
@@ -250,7 +253,7 @@ HRESULT TressFXSimulation::GenerateTransforms(ID3D11DeviceContext* pd3dContext, 
 }
 
 // Applies skin transforms to all hair so that hair would do rigid transform
-HRESULT TressFXSimulation::ApplyTransformGlobally(ID3D11DeviceContext* pd3dContext, ID3D11UnorderedAccessView* pSkinningTransforms, bool singleHeadTransform, XMMATRIX *pModelTransformForHead)
+HRESULT TressFXSimulation::ApplyTransformGlobally(ID3D11DeviceContext* pd3dContext, ID3D11UnorderedAccessView* pSkinningTransforms, float density, bool singleHeadTransform, XMMATRIX *pModelTransformForHead)
 {
     int numOfStrandsPerThreadGroup = THREAD_GROUP_SIZE / m_pTressFXMesh->m_HairAsset.m_NumOfVerticesInStrand;
 
@@ -302,7 +305,7 @@ HRESULT TressFXSimulation::ApplyTransformGlobally(ID3D11DeviceContext* pd3dConte
 
     //======= Run the compute shader =======
     int numOfGroupsForCS_VertexLevel = (int)(((float)(m_bGuideFollowHairPrev ? m_pTressFXMesh->m_HairAsset.m_NumGuideHairVertices :
-        m_pTressFXMesh->m_HairAsset.m_NumTotalHairVertices) / (float)THREAD_GROUP_SIZE));
+		m_pTressFXMesh->m_HairAsset.m_NumTotalHairVertices) / (float)THREAD_GROUP_SIZE)*density);
 
     // One thread computes one vertex
     pd3dContext->CSSetShader(m_CSApplyHairTransformGlobally, NULL, 0);
@@ -315,6 +318,11 @@ HRESULT TressFXSimulation::ApplyTransformGlobally(ID3D11DeviceContext* pd3dConte
         pd3dContext->CSSetShader(m_CSUpdateFollowHairVertices, NULL, 0);
         pd3dContext->Dispatch(numOfGroupsForCS_VertexLevel, 1, 1);
     }
+
+	// Compute tangents for every vertex (guide + follow)
+	int numOfGroupsForCS_TotalVertexLevel = (int)(((float)(m_pTressFXMesh->m_HairAsset.m_NumTotalHairVertices) / (float)THREAD_GROUP_SIZE)*density);
+	pd3dContext->CSSetShader(m_CSComputeTangents, NULL, 0);
+	pd3dContext->Dispatch(numOfGroupsForCS_TotalVertexLevel, 1, 1);
 
     // Unbind resources for CS
     ID3D11UnorderedAccessView* ppUAViewNULL[8] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
@@ -630,6 +638,11 @@ HRESULT TressFXSimulation::Simulate(ID3D11DeviceContext* pd3dContext, float fEla
         pd3dContext->Dispatch(numOfGroupsForCS_VertexLevel, 1, 1);
     }
 
+	// Compute tangents for every vertex (guide + follow)
+	int numOfGroupsForCS_TotalVertexLevel = (int)(((float)(m_pTressFXMesh->m_HairAsset.m_NumTotalHairVertices) / (float)THREAD_GROUP_SIZE)*density);
+	pd3dContext->CSSetShader(m_CSComputeTangents, NULL, 0);
+	pd3dContext->Dispatch(numOfGroupsForCS_TotalVertexLevel, 1, 1);
+
     // Unbind resources for CS
     ID3D11UnorderedAccessView* ppUAViewNULL[8] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
     pd3dContext->CSSetUnorderedAccessViews( 0, 8, ppUAViewNULL, &initCounts );
@@ -707,6 +720,7 @@ void TressFXSimulation::OnDestroy(bool destroyShaders)
     {
         AMD_SAFE_RELEASE(m_CSIntegrationAndGlobalShapeConstraints);
         AMD_SAFE_RELEASE(m_CSApplyHairTransformGlobally);
+		AMD_SAFE_RELEASE(m_CSComputeTangents);
         AMD_SAFE_RELEASE(m_CSLocalShapeConstraints);
         AMD_SAFE_RELEASE(m_CSLocalShapeConstraintsSingleDispatch);
         AMD_SAFE_RELEASE(m_CSLengthConstriantsWindAndCollision);
