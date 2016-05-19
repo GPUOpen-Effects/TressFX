@@ -2,9 +2,13 @@
 
 ![AMD TressFX](http://gpuopen-effects.github.io/media/effects/tressfx_thumbnail.png)
 
-The TressFX library implements AMD's TressFX hair/fur rendering and simulation technology for DirectX 11. The TressFX technology uses the GPU to simulate and render high-quality, realistic hair and fur. TressFX makes use of the processing power of high-performance GPUs to do realistic rendering and utilizes DirectCompute to physically simulate each individual strand of hair.
+The TressFX library implements AMD's TressFX hair/fur rendering and simulation technology for DirectX 11. The TressFX technology uses the GPU to simulate and render high-quality, realistic hair and fur. TressFX makes use of the processing power of high-performance GPUs to perform realistic rendering and utilizes DirectCompute to physically simulate each individual strand of hair or fur.
 
-Highlights include the following:
+### Learn more
+* [Official AMD TressFX webpage](http://www.amd.com/en-us/innovations/software-technologies/technologies-gaming/tressfx)
+* [TressFX on Wikipedia](https://en.wikipedia.org/wiki/TressFX)
+
+### Highlights
 * GCN-optimized rendering and simulation
 * Full source code provided
 * Hair and fur support
