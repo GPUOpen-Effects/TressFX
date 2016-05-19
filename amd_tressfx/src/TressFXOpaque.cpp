@@ -30,7 +30,7 @@ namespace AMD
         {
             refCount = 0;
             tressFXSimulation.OnCreateDevice(desc.pd3dDevice, &desc.collisionCapsule);
-            tressFXRenderer.OnCreateDevice(desc.pd3dDevice, desc.backBufferWidth, desc.backBufferHeight);
+            tressFXRenderer.OnCreateDevice(desc.pd3dDevice, desc.backBufferWidth, desc.backBufferHeight, desc.bShortCutOn);
             initialized = true;
         }
         refCount++;
@@ -129,7 +129,14 @@ namespace AMD
 
     bool TressFX_OpaqueDesc::RenderHair(TressFX_Desc & desc)
     {
-        tressFXRenderer.RenderHair(desc.pd3dDeviceContext);
+        if (desc.bShortCutOn)
+        {
+            tressFXRenderer.RenderHairShortcut(desc.pd3dDeviceContext);
+        }
+        else
+        {
+            tressFXRenderer.RenderHair(desc.pd3dDeviceContext);
+        }
         return true;
     }
 
@@ -141,7 +148,7 @@ namespace AMD
 
     bool TressFX_OpaqueDesc::Resize(TressFX_Desc & desc)
     {
-        HRESULT hr = tressFXRenderer.OnResizedSwapChain(desc.pd3dDevice, desc.backBufferWidth, desc.backBufferHeight);
+        HRESULT hr = tressFXRenderer.OnResizedSwapChain(desc.pd3dDevice, desc.backBufferWidth, desc.backBufferHeight, desc.bShortCutOn);
         return (hr == S_OK);
     }
 
@@ -154,4 +161,14 @@ namespace AMD
             &desc.pSkinningTransformationsUAV, &desc.modelTransformForHead);
         return (hr == S_OK);
     }
+
+    bool TressFX_OpaqueDesc::ApplyRigidTransforms(TressFX_Desc & desc)
+    {
+        tressFXSimulation.m_pTressFXMesh = (TressFXMesh *)desc.pTressFXMesh;
+        desc.numTotalHairStrands = tressFXSimulation.m_pTressFXMesh->m_HairAsset.m_NumTotalHairStrands;
+        desc.numTotalHairVertices = tressFXSimulation.m_pTressFXMesh->m_HairAsset.m_NumTotalHairVertices;
+        HRESULT hr = tressFXSimulation.ApplyTransformGlobally(desc.pd3dDeviceContext, desc.pSkinningTransformationsUAV, desc.bSingleHeadTransform, &desc.modelTransformForHead);
+        return (hr == S_OK);
+    }
+
 } // namespace AMD

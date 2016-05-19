@@ -431,7 +431,7 @@ HRESULT TressFXRenderer::CreateRenderStateObjects(ID3D11Device* pd3dDevice)
 // Called when the device is created to create resources for hair rendering
 //
 //--------------------------------------------------------------------------------------
-HRESULT TressFXRenderer::OnCreateDevice(ID3D11Device* pd3dDevice, int winWidth, int winHeight)
+HRESULT TressFXRenderer::OnCreateDevice(ID3D11Device* pd3dDevice, int winWidth, int winHeight, bool bShortCutOn)
 {
     HRESULT hr;
 
@@ -440,7 +440,15 @@ HRESULT TressFXRenderer::OnCreateDevice(ID3D11Device* pd3dDevice, int winWidth, 
     AMD_V_RETURN(CreateConstantBuffer(pd3dDevice));
     AMD_V_RETURN(CreateVertexBuffers(pd3dDevice));
     AMD_V_RETURN(CreateRenderStateObjects(pd3dDevice));
-    AMD_V_RETURN(CreatePPLL(pd3dDevice, winWidth, winHeight, false));
+
+    if (bShortCutOn)
+    {
+        m_ShortCut.OnCreateDevice(pd3dDevice, winWidth, winHeight);
+    }
+    else
+    {
+        AMD_V_RETURN(CreatePPLL(pd3dDevice, winWidth, winHeight, false));
+    }
 
     return S_OK;
 }
@@ -563,6 +571,11 @@ HRESULT TressFXRenderer::CreatePPLL(ID3D11Device* pd3dDevice, int winWidth, int 
 //--------------------------------------------------------------------------------------
 void TressFXRenderer::DeletePPLL()
 {
+    if (g_PPLBuffers.refCount == 0)
+    {
+        return;
+    }
+
     g_PPLBuffers.refCount--;
 
     m_pHeadPPLL_Buffer = NULL;
@@ -580,9 +593,11 @@ void TressFXRenderer::DeletePPLL()
         AMD_SAFE_RELEASE(g_PPLBuffers.pPPLL_Buffer);
         AMD_SAFE_RELEASE(g_PPLBuffers.pPPLL_UAV);
         AMD_SAFE_RELEASE(g_PPLBuffers.pPPLL_SRV);
+
+        g_PPLBuffers.width = 0;
+        g_PPLBuffers.height = 0;
     }
 }
-
 
 //--------------------------------------------------------------------------------------
 //
@@ -592,10 +607,17 @@ void TressFXRenderer::DeletePPLL()
 // created at this time because they are dependent on the size of the frame buffer.
 //
 //--------------------------------------------------------------------------------------
-HRESULT TressFXRenderer::OnResizedSwapChain( ID3D11Device* pd3dDevice, int width, int height )
+HRESULT TressFXRenderer::OnResizedSwapChain( ID3D11Device* pd3dDevice, int width, int height, bool bShortCutOn )
 {
     HRESULT hr;
-    AMD_V_RETURN(CreatePPLL(pd3dDevice, width, height, true));
+    if (bShortCutOn)
+    {
+        AMD_V_RETURN(m_ShortCut.OnResizedSwapChain(pd3dDevice, width, height));
+    }
+    else
+    {
+        AMD_V_RETURN(CreatePPLL(pd3dDevice, width, height, true));
+    }
     return S_OK;
 }
 
@@ -769,7 +791,7 @@ void TressFXRenderer::RenderHairGeometry( ID3D11DeviceContext* pd3dContext,
 
     pd3dContext->PSSetShaderResources( IDSRV_NOISEMAP, 1, &m_pNoiseSRV );
     pd3dContext->VSSetShaderResources( IDSRV_NOISEMAP, 1, &m_pNoiseSRV );
-    pd3dContext->VSSetShaderResources( IDSRV_HAIR_VERTEX_POSITIONS_RELATIVE, 1, &m_pTressFXMesh->m_HairVertexPositionsRelativeSRV );
+    pd3dContext->VSSetShaderResources( IDSRV_HAIR_VERTEX_POSITIONS, 1, &m_pTressFXMesh->m_HairVertexPositionsSRV );
     pd3dContext->VSSetShaderResources( IDSRV_HAIR_TRANSFORMS, 1, &m_pTressFXMesh->m_HairTransformsSRV );
     pd3dContext->VSSetShaderResources( IDSRV_HAIR_TANGENTS, 1, &m_pTressFXMesh->m_HairVertexTangentsSRV );
 
@@ -810,7 +832,7 @@ void TressFXRenderer::RenderHairGeometry( ID3D11DeviceContext* pd3dContext,
     }
 
     ID3D11ShaderResourceView* nullViews[] = { NULL };
-    pd3dContext->VSSetShaderResources( IDSRV_HAIR_VERTEX_POSITIONS_RELATIVE, 1, nullViews );
+    pd3dContext->VSSetShaderResources( IDSRV_HAIR_VERTEX_POSITIONS, 1, nullViews );
     pd3dContext->VSSetShaderResources( IDSRV_HAIR_TRANSFORMS, 1, nullViews );
     pd3dContext->VSSetShaderResources( IDSRV_HAIR_TANGENTS, 1, nullViews );
 }
@@ -962,6 +984,83 @@ void TressFXRenderer::RenderHair(ID3D11DeviceContext* pd3dContext)
 }
 
 
+void TressFXRenderer::RenderHairShortcut(ID3D11DeviceContext* pd3dContext)
+{
+    // Get original render target and depth stencil view
+    ID3D11RenderTargetView* pRTV = NULL;
+    ID3D11DepthStencilView* pDSV = NULL;
+    pd3dContext->OMGetRenderTargets(1, &pRTV, &pDSV);
+
+    ID3D11PixelShader* pPS = m_ShortCut.SetupDepthPass(pd3dContext, pRTV, pDSV);
+
+    // DEPTH FILL
+    if (m_hairParams.bAntialias)
+    {
+        if (m_hairParams.strandCopies > 1)
+        {
+            RenderHairGeometry(pd3dContext, m_pVSRenderHairAAStrandCopies, pPS, m_hairParams.density, false, m_hairParams.strandCopies);
+        }
+        else
+        {
+            RenderHairGeometry(pd3dContext, m_pVSRenderHairAA, pPS, m_hairParams.density, false, 1);
+        }
+    }
+    else
+    {
+        if (m_hairParams.strandCopies > 1)
+        {
+            RenderHairGeometry(pd3dContext, m_pVSRenderHairStrandCopies, pPS, m_hairParams.density, false, m_hairParams.strandCopies);
+        }
+        else
+        {
+            RenderHairGeometry(pd3dContext, m_pVSRenderHair, pPS, m_hairParams.density, false, 1);
+        }
+    }
+
+    // DEPTH RESOLVE
+    pPS = m_ShortCut.SetupResolveDepth(pd3dContext, pRTV, pDSV);
+    RenderScreenQuad(pd3dContext, m_pVSScreenQuad, pPS);
+
+
+    // COLOR FILL
+    pPS = m_ShortCut.SetupShadePass(pd3dContext, pRTV, pDSV);
+
+    if (m_hairParams.bAntialias)
+    {
+        if (m_hairParams.strandCopies > 1)
+        {
+            RenderHairGeometry(pd3dContext, m_pVSRenderHairAAStrandCopies, pPS, m_hairParams.density, false, m_hairParams.strandCopies);
+        }
+        else
+        {
+            RenderHairGeometry(pd3dContext, m_pVSRenderHairAA, pPS, m_hairParams.density, false, 1);
+        }
+    }
+    else
+    {
+        if (m_hairParams.strandCopies > 1)
+        {
+            RenderHairGeometry(pd3dContext, m_pVSRenderHairStrandCopies, pPS, m_hairParams.density, false, m_hairParams.strandCopies);
+        }
+        else
+        {
+            RenderHairGeometry(pd3dContext, m_pVSRenderHair, pPS, m_hairParams.density, false, 1);
+        }
+    }
+
+    // COLOR RESOLVE
+    pPS = m_ShortCut.SetupResolveColor(pd3dContext, pRTV, pDSV);
+    RenderScreenQuad(pd3dContext, m_pVSScreenQuad, pPS);
+
+    m_ShortCut.PostResolveColor(pd3dContext);
+
+    pd3dContext->OMSetDepthStencilState(m_pDepthTestEnabledDSS, 0x00);
+    pd3dContext->OMSetRenderTargets(1, &pRTV, pDSV);
+    pd3dContext->OMSetBlendState(NULL, 0, 0xffffffff);
+    AMD_SAFE_RELEASE(pRTV);
+    AMD_SAFE_RELEASE(pDSV);
+}
+
 //--------------------------------------------------------------------------------------
 //
 // EndHairFrame
@@ -984,6 +1083,7 @@ void TressFXRenderer::EndHairFrame(ID3D11DeviceContext* pd3dContext)
 //--------------------------------------------------------------------------------------
 void TressFXRenderer::OnDestroy(bool destroyShaders)
 {
+    m_ShortCut.OnDestroy(destroyShaders);
 
     AMD_SAFE_RELEASE(m_pScreenQuadVB);
 

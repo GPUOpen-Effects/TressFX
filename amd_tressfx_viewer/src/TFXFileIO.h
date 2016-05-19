@@ -95,12 +95,15 @@ struct TFXProjectFile
     float density;
     float alpha;
     float shadowMapAlpha;
+    float Ka;
     float Kd;
     float Ks1;
     float Ex1;
     float Ks2;
     float Ex2;
     float hairColor[3];
+    bool customLightPos;
+    float lightPos[3];
 
     void SetHairParams(const AMD::TressFX_HairParams* params);
     void SetHairSimulationParams(const AMD::TressFX_SimulationParams* params);

@@ -59,6 +59,9 @@
     <ClInclude Include="..\src\TressFXRenderer.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\TressFXShortCut.h">
+      <Filter>src</Filter>
+    </ClInclude>
     <ClInclude Include="..\src\TressFXSimulation.h">
       <Filter>src</Filter>
     </ClInclude>
@@ -98,6 +101,9 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="..\src\TressFXRenderer.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\TressFXShortCut.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="..\src\TressFXSimulation.cpp">

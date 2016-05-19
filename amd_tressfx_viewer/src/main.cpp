@@ -135,6 +135,8 @@ static float g_maxLodDistance = 1500.0f;
 // Current meanings include: skinned, has animation, and possibly "turn on animation"
 static  bool g_animate = false;
 
+static bool g_shortCutOn = false;
+
 DemoModel g_DemoModel;
 TFXProjectFile g_TfxProject;  // Global because we need to keep track of last load so we can have a reasonable default for saving.
 
@@ -247,6 +249,7 @@ enum TRESSFX_VIEWER_IDC
     IDC_SLIDER_NUM_LOCAL_SHAPE_MATCHING_ITERATIONS,
     IDC_OPACITY,
     IDC_OPACITY_STATIC,
+    IDC_CHECKBOX_SHORTCUT,
     IDC_CHECKBOX_TRANSPARENCY,
     IDC_OPACITYSM,
     IDC_OPACITYSM_STATIC,
@@ -402,6 +405,9 @@ void InitApp()
 
     g_RenderHUD.m_GUI.AddCheckBox(IDC_CHECKBOX_ANIMATION, L"Animation", iX, iY += AMD::HUD::iElementDelta,
         AMD::HUD::iElementWidth, AMD::HUD::iElementHeight, true);
+
+    g_RenderHUD.m_GUI.AddCheckBox(IDC_CHECKBOX_SHORTCUT, L"ShortCut", iX, iY += AMD::HUD::iElementDelta, AMD::HUD::iElementWidth,
+        AMD::HUD::iElementHeight, g_shortCutOn);
 
     g_RenderHUD.m_GUI.AddCheckBox(IDC_CHECKBOX_USE_COVERAGE, L"Strand Antialiasing", iX, iY += AMD::HUD::iElementDelta,
         AMD::HUD::iElementWidth, AMD::HUD::iElementHeight, true);
@@ -1100,9 +1106,9 @@ void UpdateGUIForCurrentModel()
         g_SimulationHUD.m_GUI.GetSlider(IDC_SLIDER_NUM_LOCAL_SHAPE_MATCHING_ITERATIONS)->SetValue(pSimulationParams->numLocalShapeMatchingIterations);
     }
 
-    swprintf_s(szMessage, L" Wind magnitude:%.4f", pSimulationParams->windMag);
+    swprintf_s(szMessage, L" Wind magnitude:%.4f", g_TfxProject.windMag);
     g_SimulationHUD.m_GUI.GetStatic(IDC_WIND_MAGNITUDE_STATIC)->SetText(szMessage);
-    g_SimulationHUD.m_GUI.GetSlider(IDC_WIND_MAGNITUDE)->SetValue((int)(pSimulationParams->windMag));
+    g_SimulationHUD.m_GUI.GetSlider(IDC_WIND_MAGNITUDE)->SetValue((int)(g_TfxProject.windMag));
 
     g_RenderHUD.m_GUI.GetCheckBox( IDC_CHECKBOX_LOD )->SetChecked(pModel->m_bEnableLOD);
     g_RenderHUD.m_GUI.GetCheckBox( IDC_CHECKBOX_LOD )->SetEnabled(true);
@@ -1178,8 +1184,8 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 
         case IDC_WIND_MAGNITUDE:
             value = (float)(((CDXUTSlider*)pControl)->GetValue());
-            pSimulationParams->windMag = value;
-            swprintf_s(szMessage, L"Wind Magnitude: %.2f", pSimulationParams->windMag);
+            g_TfxProject.windMag = value;
+            swprintf_s(szMessage, L"Wind Magnitude: %.2f", g_TfxProject.windMag);
             g_SimulationHUD.m_GUI.GetStatic( IDC_WIND_MAGNITUDE_STATIC )->SetText( szMessage );
             break;
 
@@ -1316,6 +1322,12 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 
         case IDC_CHECKBOX_ANIMATION:
              g_bAdvanceTime = (((CDXUTCheckBox*)pControl)->GetChecked());
+            break;
+
+        case IDC_CHECKBOX_SHORTCUT:
+            g_shortCutOn = (((CDXUTCheckBox*)pControl)->GetChecked());
+            DestroyDemo(false);
+            CreateDemo(g_TfxProject, false);
             break;
 
         case IDC_CHECKBOX_LOD:
@@ -1459,6 +1471,7 @@ bool CreateDemo(const TFXProjectFile& tfxproject, bool createShaders)
 
     g_animate = tfxproject.HasAnimation();
     pModel->m_TressFXParams.bSingleHeadTransform = !g_animate;
+    pModel->m_TressFXParams.bShortCutOn = g_shortCutOn;
 
      // load the scene mesh
     bodyFile = tfxproject.mMeshFile.c_str();
@@ -1486,9 +1499,16 @@ bool CreateDemo(const TFXProjectFile& tfxproject, bool createShaders)
     g_defaultLookAt = XMVectorSet(pSceneRender->m_MeshBBoxCenter.x, pSceneRender->m_MeshBBoxCenter.y, pSceneRender->m_MeshBBoxCenter.z, 1.0f);
     g_Camera.SetViewParams(g_defaultEyePt, g_defaultLookAt);
 
-    g_lightEyePt = XMVectorSet(pSceneRender->m_MeshBBoxCenter.x+boundBoxDiagLength*1.0f,
-                               pSceneRender->m_MeshBBoxCenter.y+boundBoxDiagLength*3.0f,
-                               pSceneRender->m_MeshBBoxCenter.z-boundBoxDiagLength*3.0f, 1.0f);
+    if (tfxproject.customLightPos)
+    {
+        g_lightEyePt = XMVectorSet(tfxproject.lightPos[0], tfxproject.lightPos[1], tfxproject.lightPos[2], 1.0f);
+    }
+    else
+    {
+        g_lightEyePt = XMVectorSet(pSceneRender->m_MeshBBoxCenter.x + boundBoxDiagLength*1.0f,
+                                   pSceneRender->m_MeshBBoxCenter.y + boundBoxDiagLength*3.0f,
+                                   pSceneRender->m_MeshBBoxCenter.z - boundBoxDiagLength*3.0f, 1.0f);
+    }
 
     // Set near and far plane for this geometry
     g_nearPlane = 0.1f * boundBoxDiagLength;
@@ -1640,7 +1660,7 @@ bool CreateDemo(const TFXProjectFile& tfxproject, bool createShaders)
     pHairParams->color.x = tfxproject.hairColor[0];
     pHairParams->color.y = tfxproject.hairColor[1];
     pHairParams->color.z = tfxproject.hairColor[2];
-    pHairParams->Ka = pSceneRender->m_MeshAmbient;
+    pHairParams->Ka = tfxproject.Ka >= 0 ? tfxproject.Ka : pSceneRender->m_MeshAmbient;
     pHairParams->Kd = tfxproject.Kd;
     pHairParams->Ks1 = tfxproject.Ks1;
     pHairParams->Ex1 = tfxproject.Ex1;
@@ -2020,18 +2040,26 @@ void CALLBACK OnD3D11FrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext*
             {
                 pSceneRender->StreamOutVertices(pd3dImmediateContext, true);
             }
-            pModel->m_SceneMesh.pTransformedVerts = pSceneRender->m_pTransformedSRV;
 
+            pModel->m_SceneMesh.pTransformedVerts = pSceneRender->m_pTransformedSRV;
             TressFX_GenerateTransforms(pModel->m_TressFXParams, pModel->m_SceneMesh);
 
-            TIMER_Begin( 0, L"Simulation" );
-            if ( pHairParams->bSimulation )
+            if (pHairParams->bSimulation)
             {
                 pModel->m_TressFXParams.targetFrameRate = g_targetFrameRateForSimulation;
+                pModel->m_TressFXParams.simulationParams.windMag = g_TfxProject.windMag;
+
+                TIMER_Begin(0, L"Simulation");
                 TressFX_Simulate(pModel->m_TressFXParams, fElapsedTime);
+                TIMER_End(); // Simulation
+
                 pModel->m_TressFXParams.bWarp = false; // only needed for 1 frame
             }
-            TIMER_End(); // Simulation
+            else
+            {
+                TressFX_ApplyRigidTransforms(pModel->m_TressFXParams);
+            }
+
 
             TIMER_Begin( 0, L"GenerateShadow" );
             if ( pHairParams->shadowTechnique != NONE_SHADOW_INDEX)

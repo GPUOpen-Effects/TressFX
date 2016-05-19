@@ -47,6 +47,7 @@ public:
     bool RenderHair(TressFX_Desc & desc);
     bool Simulate(TressFX_Desc & desc, float elapsedTime);
     bool GenerateTransforms(TressFX_Desc & desc, TressFX_SceneMesh &sceneMesh);
+    bool ApplyRigidTransforms(TressFX_Desc & desc);
     bool Resize(TressFX_Desc & desc);
 
 private:

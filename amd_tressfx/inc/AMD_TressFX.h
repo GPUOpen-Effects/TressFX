@@ -27,8 +27,8 @@
 #include <DirectXMath.h>
 
 #define AMD_TRESSFX_VERSION_MAJOR                    3
-#define AMD_TRESSFX_VERSION_MINOR                    0
-#define AMD_TRESSFX_VERSION_PATCH                    1
+#define AMD_TRESSFX_VERSION_MINOR                    1
+#define AMD_TRESSFX_VERSION_PATCH                    0
 
 // default to static lib
 #ifndef AMD_TRESSFX_COMPILE_DYNAMIC_LIB
@@ -63,12 +63,17 @@
 #define IDSRV_HAIR_COLOR_TEXTURE                4
 #define IDSRV_NOISEMAP                          5
 #define IDSRV_HAIR_THICKNESSES                  6
-#define IDSRV_HAIR_VERTEX_POSITIONS_RELATIVE    7
+#define IDSRV_HAIR_VERTEX_POSITIONS             7
 #define IDSRV_HAIR_TANGENTS                     8
 #define IDSRV_HAIR_TRANSFORMS                   9
 #define IDSRV_HAIR_STRAND_TEX_COORDS            10
 #define IDSRV_HAIR_VERTEX_TEX_COORDS            11
 #define IDSRV_HAIR_VERTEX_COLORS                12
+
+// Shortcut resources.
+#define IDSRV_HAIR_FRAGMENT_DEPTHS              13
+#define IDSRV_HAIR_FRAGMENT_COLORS              14
+#define IDSRV_HAIR_ACCUM_INV_ALPHA              15
 
 
 #if defined(DEBUG) || defined(_DEBUG)
@@ -218,6 +223,7 @@ struct TressFX_Desc
     int                             numTotalHairVertices;
     bool                            bEnableSkinning;
     bool                            bSingleHeadTransform;
+    bool                            bShortCutOn;
 
     // Buffer of transformations (one transform per strand) for hair skinning
     // This UAV is used as a structured buffer where each element is a TressFX_HairTransform.
@@ -243,6 +249,7 @@ extern "C"
     AMD_TRESSFX_DLL_API TRESSFX_RETURN_CODE TressFX_Begin(TressFX_Desc & desc);
     AMD_TRESSFX_DLL_API TRESSFX_RETURN_CODE TressFX_End(TressFX_Desc & desc);
     AMD_TRESSFX_DLL_API TRESSFX_RETURN_CODE TressFX_GenerateTransforms(TressFX_Desc & desc, TressFX_SceneMesh &sceneMesh);
+    AMD_TRESSFX_DLL_API TRESSFX_RETURN_CODE TressFX_ApplyRigidTransforms(TressFX_Desc & desc);
     AMD_TRESSFX_DLL_API TRESSFX_RETURN_CODE TressFX_Simulate(TressFX_Desc & desc, float elapsedTime);
     AMD_TRESSFX_DLL_API TRESSFX_RETURN_CODE TressFX_RenderShadowMap(TressFX_Desc & desc);
     AMD_TRESSFX_DLL_API TRESSFX_RETURN_CODE TressFX_Render(TressFX_Desc & desc);

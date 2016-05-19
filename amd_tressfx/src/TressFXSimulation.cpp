@@ -94,7 +94,6 @@ struct ConstBufferCS_Per_Frame
 struct ConstBufferCS_HeadTransform
 {
     XMMATRIX ModelTransformForHead;
-    XMMATRIX InvModelTransformForHead;
     XMVECTOR ModelRotateForHead; // quaternion
     int bSingleHeadTransform;
     float padding[3];
@@ -112,6 +111,7 @@ namespace AMD
 TressFXSimulation::TressFXSimulation(void)
 {
     m_CSIntegrationAndGlobalShapeConstraints = NULL;
+    m_CSApplyHairTransformGlobally = NULL;
     m_CSLocalShapeConstraints = NULL;
     m_CSLengthConstriantsWindAndCollision = NULL;
     m_CSUpdateFollowHairVertices = NULL;
@@ -157,6 +157,8 @@ HRESULT TressFXSimulation::OnCreateDevice(ID3D11Device* pd3dDevice, TressFX_Coll
 
     AMD_V_RETURN(pd3dDevice->CreateComputeShader(IntegrationAndGlobalShapeConstraints_Data, sizeof(IntegrationAndGlobalShapeConstraints_Data),
         NULL, &m_CSIntegrationAndGlobalShapeConstraints));
+    AMD_V_RETURN(pd3dDevice->CreateComputeShader(ApplyHairTransformGlobally_Data, sizeof(ApplyHairTransformGlobally_Data),
+        NULL, &m_CSApplyHairTransformGlobally));
     AMD_V_RETURN(pd3dDevice->CreateComputeShader(LocalShapeConstraints_Data, sizeof(LocalShapeConstraints_Data),
         NULL, &m_CSLocalShapeConstraints));
     AMD_V_RETURN(pd3dDevice->CreateComputeShader(LocalShapeConstraintsWithIteration_Data, sizeof(LocalShapeConstraintsWithIteration_Data),
@@ -225,7 +227,7 @@ HRESULT TressFXSimulation::GenerateTransforms(ID3D11DeviceContext* pd3dContext, 
 
     //Bind unordered access views
     ID3D11UnorderedAccessView* ppUAV[4] = {m_pTressFXMesh->m_InitialHairPositionsUAV, 0, 0, m_pTressFXMesh->m_HairTransformsUAV};
-    pd3dContext->CSSetUnorderedAccessViews( 4, 4, ppUAV, NULL );
+    pd3dContext->CSSetUnorderedAccessViews( 3, 4, ppUAV, NULL );
 
     // execute the shader
     int numOfGroupsForCS_StrandLevel = (m_bGuideFollowHairPrev ? m_pTressFXMesh->m_HairAsset.m_NumGuideHairStrands : m_pTressFXMesh->m_HairAsset.m_NumTotalHairStrands);
@@ -242,13 +244,167 @@ HRESULT TressFXSimulation::GenerateTransforms(ID3D11DeviceContext* pd3dContext, 
     pd3dContext->CSSetShaderResources( 4, 3, ppSRV);
 
     ID3D11UnorderedAccessView* ppUAVNULL[4] = {NULL, NULL, NULL, NULL};
-    pd3dContext->CSSetUnorderedAccessViews( 4, 4, ppUAVNULL, NULL );
+    pd3dContext->CSSetUnorderedAccessViews( 3, 4, ppUAVNULL, NULL );
 
     return hr;
 }
 
+// Applies skin transforms to all hair so that hair would do rigid transform
+HRESULT TressFXSimulation::ApplyTransformGlobally(ID3D11DeviceContext* pd3dContext, ID3D11UnorderedAccessView* pSkinningTransforms, bool singleHeadTransform, XMMATRIX *pModelTransformForHead)
+{
+    int numOfStrandsPerThreadGroup = THREAD_GROUP_SIZE / m_pTressFXMesh->m_HairAsset.m_NumOfVerticesInStrand;
+
+    // ConstBufferCS_Per_Frame
+    D3D11_MAPPED_SUBRESOURCE MappedResource;
+
+    pd3dContext->Map(m_pCBCSPerFrame, 0, D3D11_MAP_WRITE_DISCARD, 0, &MappedResource);
+    {
+        ConstBufferCS_Per_Frame* pCSPerFrame = (ConstBufferCS_Per_Frame*)MappedResource.pData;
+        pCSPerFrame->NumOfStrandsPerThreadGroup = numOfStrandsPerThreadGroup;
+        pCSPerFrame->NumFollowHairsPerGuideHair = (m_bGuideFollowHairPrev ? m_pTressFXMesh->m_HairAsset.m_NumFollowHairsPerGuideHair : 0);
+        pCSPerFrame->TipSeparationFactor = m_pTressFXMesh->m_HairAsset.m_TipSeparationFactor;
+        pCSPerFrame->NumVerticesPerStrand = g_TressFXNumVerticesPerStrand;
+    }
+    pd3dContext->Unmap(m_pCBCSPerFrame, 0);
+
+    // ConstBufferCS_HeadTransform
+    pd3dContext->Map(m_pCBHeadTransforms, 0, D3D11_MAP_WRITE_DISCARD, 0, &MappedResource);
+    {
+        ConstBufferCS_HeadTransform* pCSHeadTransform = (ConstBufferCS_HeadTransform*)MappedResource.pData;
+        pCSHeadTransform->bSingleHeadTransform = singleHeadTransform;
+        pCSHeadTransform->ModelRotateForHead = XMQuaternionRotationMatrix(*pModelTransformForHead);
+        pCSHeadTransform->ModelTransformForHead = *pModelTransformForHead;
+    }
+    pd3dContext->Unmap(m_pCBHeadTransforms, 0);
+
+    // set const buffers
+    pd3dContext->CSSetConstantBuffers(0, 1, &m_pCBCSPerFrame);
+    pd3dContext->CSSetConstantBuffers(5, 1, &m_pCBHeadTransforms);
+
+    //Set the shader resources
+    ID3D11ShaderResourceView* ppSRV[4] = { NULL, NULL, NULL, m_pTressFXMesh->m_FollowHairRootOffsetSRV };
+    pd3dContext->CSSetShaderResources(0, 4, ppSRV);
+
+    //Bind unordered access views
+    ID3D11UnorderedAccessView* ppUAV[8] =
+    {
+        m_pTressFXMesh->m_HairVertexPositionsUAV,
+        m_pTressFXMesh->m_HairVertexPositionsPrevUAV,
+        m_pTressFXMesh->m_HairVertexTangentsUAV,
+        m_pTressFXMesh->m_InitialHairPositionsUAV,
+        m_pTressFXMesh->m_GlobalRotationsUAV,
+        m_pTressFXMesh->m_LocalRotationsUAV,
+        pSkinningTransforms
+    };
+
+    UINT initCounts = 0;
+    pd3dContext->CSSetUnorderedAccessViews(0, 8, ppUAV, &initCounts);
+
+    //======= Run the compute shader =======
+    int numOfGroupsForCS_VertexLevel = (int)(((float)(m_bGuideFollowHairPrev ? m_pTressFXMesh->m_HairAsset.m_NumGuideHairVertices :
+        m_pTressFXMesh->m_HairAsset.m_NumTotalHairVertices) / (float)THREAD_GROUP_SIZE));
+
+    // One thread computes one vertex
+    pd3dContext->CSSetShader(m_CSApplyHairTransformGlobally, NULL, 0);
+    pd3dContext->Dispatch(numOfGroupsForCS_VertexLevel, 1, 1);
+
+    // Update follow hair vertices
+    // One thread computes one vertex
+    if (m_bGuideFollowHairPrev)
+    {
+        pd3dContext->CSSetShader(m_CSUpdateFollowHairVertices, NULL, 0);
+        pd3dContext->Dispatch(numOfGroupsForCS_VertexLevel, 1, 1);
+    }
+
+    // Unbind resources for CS
+    ID3D11UnorderedAccessView* ppUAViewNULL[8] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
+    pd3dContext->CSSetUnorderedAccessViews(0, 8, ppUAViewNULL, &initCounts);
+
+    ID3D11ShaderResourceView* ppSRVNULL[4] = { NULL, NULL, NULL, NULL };
+    pd3dContext->CSSetShaderResources(0, 4, ppSRVNULL);
+
+    return S_OK;
+}
+
 const float MATH_PI2 = 3.14159265359f;
 #define DEG_TO_RAD2(d) (d * MATH_PI2 / 180)
+
+//--------------------------------------------------------------------------------------
+//
+// ComputeWindPyramid
+//
+// Wind noise is generated using blends of four vectors.  The four vectors are
+// generated from some angle around winDir.  This code generates the four vectors.
+// Shader code generates the per-strand noise from these vectors.
+//
+// This function currently has some hard coded constants, including a hard-coded
+// sin function for magnitude based on frame count.  This will be changed in the next
+// major update, but we maintain it in 3.1 for compatibility.
+//
+//--------------------------------------------------------------------------------------
+void ComputeWindPyramid(float4& wind, float4& wind1, float4& wind2, float4& wind3, const float windMag, const tressfx_vec3& windDir)
+{
+    static int frame = 0;
+
+    float wM = windMag * (pow(sin(frame*0.05f), 2.0f) + 0.5f);
+
+    tressfx_vec3 windDirN(windDir);
+    windDirN.Normalize();
+
+    tressfx_vec3 XAxis(1.0f, 0, 0);
+    tressfx_vec3 xCrossW = XAxis.Cross(windDirN);
+
+    tressfx_quat rotFromXAxisToWindDir;
+    rotFromXAxisToWindDir.SetIdentity();
+
+    float angle = asin(xCrossW.Length());
+
+    if (angle > 0.001)
+    {
+        rotFromXAxisToWindDir.SetRotation(xCrossW.Normalize(), angle);
+    }
+
+    float angleToWideWindCone = DEG_TO_RAD2(40.f);
+
+    {
+        tressfx_vec3 rotAxis(0, 1.0f, 0);
+
+        tressfx_quat rot(rotAxis, angleToWideWindCone);
+        tressfx_vec3 windVec = rotFromXAxisToWindDir * rot * XAxis * wM;
+        wind = float4(windVec.x, windVec.y, windVec.z, (float)frame);
+    }
+
+    {
+        tressfx_vec3 rotAxis(0, -1.0f, 0);
+        tressfx_quat rot(rotAxis, angleToWideWindCone);
+        tressfx_vec3 windVec = rotFromXAxisToWindDir * rot * XAxis * wM;
+        wind1 = float4(windVec.x, windVec.y, windVec.z, (float)frame);
+    }
+
+    {
+        tressfx_vec3 rotAxis(0, 0, 1.0f);
+        tressfx_quat rot(rotAxis, angleToWideWindCone);
+        tressfx_vec3 windVec = rotFromXAxisToWindDir * rot * XAxis * wM;
+        wind2 = float4(windVec.x, windVec.y, windVec.z, (float)frame);
+    }
+
+    {
+        tressfx_vec3 rotAxis(0, 0, -1.0f);
+        tressfx_quat rot(rotAxis, angleToWideWindCone);
+        tressfx_vec3 windVec = rotFromXAxisToWindDir * rot * XAxis * wM;
+        wind3 = float4(windVec.x, windVec.y, windVec.z, (float)frame);
+    }
+
+    frame++;
+}
+
+// scale the stiffness value based on current and target frames rates and minimum stiffness value.
+float getScaledStiffness(float s0, float s_min_scale, float h, float h0)
+{
+    float s_min = s0 * s_min_scale;
+    float s = ((s0 - s_min) / h0) * h + s_min;
+    return s;
+}
 
 //--------------------------------------------------------------------------------------
 //
@@ -259,19 +415,23 @@ const float MATH_PI2 = 3.14159265359f;
 //
 //--------------------------------------------------------------------------------------
 HRESULT TressFXSimulation::Simulate(ID3D11DeviceContext* pd3dContext, float fElapsedTime, float density,
-    tressfx_vec3 & windDir, float windMag, XMMATRIX *pModelTransformForHead,
-    ID3D11UnorderedAccessView *pSkinningTransforms, float targetFrameRate/* = 1.0f/60.0f*/, bool singleHeadTransform, bool warp)
+                                    tressfx_vec3 & windDir, float windMag, XMMATRIX *pModelTransformForHead,
+                                    ID3D11UnorderedAccessView *pSkinningTransforms, float targetFrameRate/* = 1.0f/60.0f*/, bool singleHeadTransform, bool warp)
 {
     m_elapsedTimeSinceLastSim += fElapsedTime;
+    bool bFullSimulate = true;
 
-    // Simulation is sensitive to frame rate. So, we set the target frame rate (defaulted to 1/60) and skip the simulation if the current elapsed time
-    // since the last simulation is too early.
+    // Simulation is sensitive to frame rate. So, we set the target frame rate (defaulted to 1/60)
+    // and if the current elapsed time since the last simulation is too early,
+    // we run the simulation with lower iterations and stiffness values.
     if ((m_elapsedTimeSinceLastSim < targetFrameRate) && !warp)
     {
-        return S_OK;
+        bFullSimulate = false;
     }
-
-    m_elapsedTimeSinceLastSim = 0;
+    else
+    {
+        m_elapsedTimeSinceLastSim = 0;
+    }
 
     HRESULT hr = S_OK;
     UINT initCounts = 0;
@@ -287,7 +447,15 @@ HRESULT TressFXSimulation::Simulate(ID3D11DeviceContext* pd3dContext, float fEla
 
         pCSPerFrame->bWarp = warp;
 
-        pCSPerFrame->NumLengthConstraintIterations = m_simParams.numLengthConstraintIterations;
+        if (bFullSimulate)
+        {
+            pCSPerFrame->NumLengthConstraintIterations = m_simParams.numLengthConstraintIterations;
+        }
+        else
+        {
+            pCSPerFrame->NumLengthConstraintIterations = 1;
+        }
+
         pCSPerFrame->bCollision = (m_simParams.bCollision == true) ? 1 : 0;
 
         pCSPerFrame->GravityMagnitude = m_simParams.gravityMagnitude;
@@ -298,58 +466,7 @@ HRESULT TressFXSimulation::Simulate(ID3D11DeviceContext* pd3dContext, float fEla
         pCSPerFrame->NumFollowHairsPerGuideHair = (m_bGuideFollowHairPrev ? m_pTressFXMesh->m_HairAsset.m_NumFollowHairsPerGuideHair : 0);
         pCSPerFrame->TipSeparationFactor = m_pTressFXMesh->m_HairAsset.m_TipSeparationFactor;
 
-        static int frame = 0;
-
-        float wM = windMag * (pow(sin(frame*0.05f), 2.0f) + 0.5f);
-
-        tressfx_vec3 windDirN(windDir);
-        windDirN.Normalize();
-
-        tressfx_vec3 XAxis(1.0f, 0, 0);
-        tressfx_vec3 xCrossW = XAxis.Cross(windDirN);
-
-        tressfx_quat rotFromXAxisToWindDir;
-        rotFromXAxisToWindDir.SetIdentity();
-
-        float angle = asin(xCrossW.Length());
-
-        if (angle > 0.001)
-        {
-            rotFromXAxisToWindDir.SetRotation(xCrossW.Normalize(), angle);
-        }
-
-        float angleToWideWindCone = DEG_TO_RAD2(40.f);
-
-        {
-            tressfx_vec3 rotAxis(0, 1.0f, 0);
-
-            tressfx_quat rot(rotAxis, angleToWideWindCone);
-            tressfx_vec3 newWindDir = rotFromXAxisToWindDir * rot * XAxis;
-            pCSPerFrame->Wind = float4(newWindDir.x * wM, newWindDir.y * wM, newWindDir.z * wM, (float)frame);
-        }
-
-        {
-            tressfx_vec3 rotAxis(0, -1.0f, 0);
-            tressfx_quat rot(rotAxis, angleToWideWindCone);
-            tressfx_vec3 newWindDir = rotFromXAxisToWindDir * rot * XAxis;
-            pCSPerFrame->Wind1 = float4(newWindDir.x * wM, newWindDir.y * wM, newWindDir.z * wM, (float)frame);
-        }
-
-        {
-            tressfx_vec3 rotAxis(0, 0, 1.0f);
-            tressfx_quat rot(rotAxis, angleToWideWindCone);
-            tressfx_vec3 newWindDir = rotFromXAxisToWindDir * rot * XAxis;
-            pCSPerFrame->Wind2 = float4(newWindDir.x * wM, newWindDir.y * wM, newWindDir.z * wM, (float)frame);
-        }
-
-        {
-            tressfx_vec3 rotAxis(0, 0, -1.0f);
-            tressfx_quat rot(rotAxis, angleToWideWindCone);
-            tressfx_vec3 newWindDir = rotFromXAxisToWindDir * rot * XAxis;
-            pCSPerFrame->Wind3 = float4(newWindDir.x * wM, newWindDir.y * wM, newWindDir.z * wM, (float)frame);
-        }
-
-        frame++;
+        ComputeWindPyramid(pCSPerFrame->Wind, pCSPerFrame->Wind1, pCSPerFrame->Wind2, pCSPerFrame->Wind3, windMag, windDir);
 
         int numSections = m_simParams.numHairSections;
 
@@ -389,7 +506,27 @@ HRESULT TressFXSimulation::Simulate(ID3D11DeviceContext* pd3dContext, float fEla
             pCSPerFrame->GlobalShapeMatchingEffectiveRange3 = m_simParams.perSectionShapeParams[3].globalShapeMatchingEffectiveRange;
         }
 
-        pCSPerFrame->NumLocalShapeMatchingIterations = m_simParams.numLocalShapeMatchingIterations;
+        if (!bFullSimulate)
+        {
+            float h = fElapsedTime;
+            float h0 = targetFrameRate;
+            float s_min_scale = 0.3f; // minimum stiffness = s_min_scale * current stiffness
+
+            pCSPerFrame->StiffnessForLocalShapeMatching0 = getScaledStiffness(m_simParams.perSectionShapeParams[0].stiffnessForLocalShapeMatching, s_min_scale, h, h0);
+            pCSPerFrame->StiffnessForLocalShapeMatching1 = getScaledStiffness(m_simParams.perSectionShapeParams[1].stiffnessForLocalShapeMatching, s_min_scale, h, h0);
+            pCSPerFrame->StiffnessForLocalShapeMatching2 = getScaledStiffness(m_simParams.perSectionShapeParams[2].stiffnessForLocalShapeMatching, s_min_scale, h, h0);
+            pCSPerFrame->StiffnessForLocalShapeMatching3 = getScaledStiffness(m_simParams.perSectionShapeParams[3].stiffnessForLocalShapeMatching, s_min_scale, h, h0);
+        }
+
+        if (bFullSimulate)
+        {
+            pCSPerFrame->NumLocalShapeMatchingIterations = m_simParams.numLocalShapeMatchingIterations;
+        }
+        else
+        {
+            pCSPerFrame->NumLocalShapeMatchingIterations = 1;
+        }
+
         pCSPerFrame->NumVerticesPerStrand = g_TressFXNumVerticesPerStrand;
     }
     pd3dContext->Unmap(m_pCBCSPerFrame, 0);
@@ -401,9 +538,6 @@ HRESULT TressFXSimulation::Simulate(ID3D11DeviceContext* pd3dContext, float fEla
         pCSHeadTransform->bSingleHeadTransform = singleHeadTransform;
         pCSHeadTransform->ModelRotateForHead = XMQuaternionRotationMatrix(*pModelTransformForHead);
         pCSHeadTransform->ModelTransformForHead = *pModelTransformForHead;
-        pCSHeadTransform->InvModelTransformForHead = DirectX::XMMatrixInverse(NULL, pCSHeadTransform->ModelTransformForHead);
-
-        //pCSHeadTransform->ModelTransformForHead = XMMatrixSet(1,0,0,0, 0,1,0,0, 0,0,1,0, -26,36,-58,1);
     }
     pd3dContext->Unmap(m_pCBHeadTransforms, 0);
 
@@ -423,7 +557,6 @@ HRESULT TressFXSimulation::Simulate(ID3D11DeviceContext* pd3dContext, float fEla
 
     //Bind unordered access views
     ID3D11UnorderedAccessView* ppUAV[8] = { m_pTressFXMesh->m_HairVertexPositionsUAV,
-                                            m_pTressFXMesh->m_HairVertexPositionsRelativeUAV,
                                             m_pTressFXMesh->m_HairVertexPositionsPrevUAV,
                                             m_pTressFXMesh->m_HairVertexTangentsUAV,
                                             m_pTressFXMesh->m_InitialHairPositionsUAV,
@@ -573,6 +706,7 @@ void TressFXSimulation::OnDestroy(bool destroyShaders)
     if (destroyShaders)
     {
         AMD_SAFE_RELEASE(m_CSIntegrationAndGlobalShapeConstraints);
+        AMD_SAFE_RELEASE(m_CSApplyHairTransformGlobally);
         AMD_SAFE_RELEASE(m_CSLocalShapeConstraints);
         AMD_SAFE_RELEASE(m_CSLocalShapeConstraintsSingleDispatch);
         AMD_SAFE_RELEASE(m_CSLengthConstriantsWindAndCollision);

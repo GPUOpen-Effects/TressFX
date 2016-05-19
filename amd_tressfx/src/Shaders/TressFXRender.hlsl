@@ -57,6 +57,24 @@
 #define ALU_INDEXING            // avoids using an indexed array for better performance
 #endif
 
+
+#define SHORTCUT_MIN_ALPHA 0.02
+
+// Constants must match in TressFXShortCut.cpp
+
+// Clear value for depths resource
+#define SHORTCUT_INITIAL_DEPTH 0x3f800000
+
+// Number of depth layers to use.  2 or 3 supported.
+#define SHORTCUT_NUM_DEPTHS 2
+
+// Compute source color as weighted average of front fragments, vs blending in order.
+#define SHORTCUT_WEIGHTED_AVERAGE 1
+
+// Output color deterministically when fragments have the same depth.  Requires additional clear of colors resource.
+#define SHORTCUT_DETERMINISTIC 0
+
+
 //--------------------------------------------------------------------------------------
 // TressFX Structures
 //--------------------------------------------------------------------------------------
@@ -174,11 +192,37 @@ StructuredBuffer<Transforms>            g_Transforms                : register( 
 
 StructuredBuffer<float2>                g_txHairStrandTexCd         : register( t10 );
 
+Texture2DArray<uint>                    FragmentDepthsTexture       : register( t13 );
+#if SHORTCUT_DETERMINISTIC && SHORTCUT_WEIGHTED_AVERAGE
+Texture2D<float4>                       FragmentColors              : register( t14 );
+#else
+#if SHORTCUT_NUM_DEPTHS == 3
+StructuredBuffer<uint3>                 FragmentColors              : register( t14 );
+#else
+StructuredBuffer<uint2>                 FragmentColors              : register( t14 );
+#endif
+#endif
+Texture2D<float>                        tAccumInvAlpha              : register( t15 );
+
+
+
 //--------------------------------------------------------------------------------------
 // Unordered Access
 //--------------------------------------------------------------------------------------
+//#if SHORTCUT_LAYERS == 0
 RWTexture2D<uint>                       LinkedListHeadUAV           : register(u1);
 RWStructuredBuffer<PPLL_STRUCT>         LinkedListUAV               : register(u2); // store fragment linked list
+
+RWTexture2DArray<uint>                  RWFragmentDepthsTexture     : register(u1);
+#if SHORTCUT_DETERMINISTIC && SHORTCUT_WEIGHTED_AVERAGE
+RWStructuredBuffer<uint2>               RWFragmentColors             : register(u0);
+#else
+#if SHORTCUT_NUM_DEPTHS == 3
+RWStructuredBuffer<uint3>               RWFragmentColors             : register(u0);
+#else
+RWStructuredBuffer<uint2>               RWFragmentColors             : register(u0);
+#endif
+#endif
 
 //--------------------------------------------------------------------------------------
 // Samplers
@@ -238,14 +282,9 @@ VS_OUTPUT_SCREENQUAD VS_ScreenQuad(VS_INPUT_SCREENQUAD input)
 //      GetVertex
 //
 //--------------------------------------------------------------------------------------
-inline float4 GetVertex(int index) {
-    if (g_bSingleHeadTransform) {
-        return mul(g_HairVertexPositions[index], g_mWorld);
-    } else {
-        uint stride = g_NumFollowHairsPerGuideHair + 1;
-        uint globalStrandIndex = (uint)index / (uint)g_NumVerticesPerStrand / stride * stride;
-        return mul(g_HairVertexPositions[index], g_Transforms[globalStrandIndex].tfm);
-    }
+inline float4 GetVertex(int index) 
+{
+    return g_HairVertexPositions[index];
 }
 
 //--------------------------------------------------------------------------------------
@@ -1116,3 +1155,294 @@ float4 PS_KBuffer_Hair(VS_OUTPUT_SCREENQUAD In): SV_Target
 
     return fcolor;
 }
+
+//--------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------
+
+// Convert 2D address to 1D address
+uint GetAddress(int2 vAddress)
+{
+    int nAddress = vAddress.y * (int) g_WinSize.x + vAddress.x;
+    return nAddress;
+}
+
+
+
+
+
+
+[earlydepthstencil]
+float PS_Depth_Hair(PS_INPUT_HAIR In) : SV_Target
+{
+    // Render AA Line, calculate pixel coverage
+    float4 proj_pos = float4(2 * In.Position.x*g_WinSize.z - 1.0,  // g_WinSize.z = 1.0/g_WinSize.x
+    1 - 2 * In.Position.y*g_WinSize.w,    // g_WinSize.w = 1.0/g_WinSize.y
+        In.Position.z,
+        1);
+
+    float curve_scale = 1;
+    if (g_bThinTip > 0)
+        curve_scale = In.Tangent.w;
+    
+    float fiber_radius = curve_scale * g_FiberRadius;
+    
+    float coverage = 1.f;
+    if (g_bUseCoverage)
+    {
+        coverage = ComputeCoverage(In.p0p1.xy, In.p0p1.zw, proj_pos.xy);
+    }
+    
+    float alpha = coverage * g_FiberAlpha;
+    
+    if (alpha < g_alphaThreshold)
+        return 1.0;
+    
+    int2 vScreenAddress = int2(In.Position.xy);
+
+    uint uDepth = asuint(In.Position.z);
+    uint uDepth0Prev, uDepth1Prev;
+    
+    // Min of depth 0 and input depth
+    // Original value is uDepth0Prev
+    InterlockedMin(RWFragmentDepthsTexture[uint3(vScreenAddress, 0)], uDepth, uDepth0Prev);
+
+    // Min of depth 1 and greater of the last compare
+    // If fragment opaque, always use input depth (don't need greater depths)
+    uDepth = (alpha > 0.98) ? uDepth : max(uDepth, uDepth0Prev);
+    
+    InterlockedMin(RWFragmentDepthsTexture[uint3(vScreenAddress, 1)], uDepth, uDepth1Prev);
+
+#if SHORTCUT_NUM_DEPTHS == 3
+    uint uDepth2Prev;
+    
+    // Min of depth 2 and greater of the last compare
+    // If fragment opaque, always use input depth (don't need greater depths)
+    uDepth = (alpha > 0.98) ? uDepth : max(uDepth, uDepth1Prev);
+    
+    InterlockedMin(RWFragmentDepthsTexture[uint3(vScreenAddress, 2)], uDepth, uDepth2Prev);
+#endif
+    
+    return 1.0 - alpha;
+}
+
+
+
+[earlydepthstencil]
+#if SHORTCUT_DETERMINISTIC && SHORTCUT_WEIGHTED_AVERAGE
+float4 PS_FillColors_Hair(PS_INPUT_HAIR In) : SV_Target
+#else
+void PS_FillColors_Hair(PS_INPUT_HAIR In)
+#endif
+{
+    // Render AA Line, calculate pixel coverage
+    float4 proj_pos = float4(2 * In.Position.x*g_WinSize.z - 1.0,  // g_WinSize.z = 1.0/g_WinSize.x
+    1 - 2 * In.Position.y*g_WinSize.w,    // g_WinSize.w = 1.0/g_WinSize.y
+        In.Position.z,
+        1);
+
+    float4 world_pos = mul(proj_pos, g_mInvViewProj);
+    world_pos.xyz = world_pos.xyz / world_pos.w;
+    world_pos.w = 1.0;
+    
+    float curve_scale = 1;
+    if (g_bThinTip > 0)
+    curve_scale = In.Tangent.w;
+    
+    float fiber_radius = curve_scale * g_FiberRadius;
+    
+    float coverage = 1.f;
+    if (g_bUseCoverage)
+    {
+        coverage = ComputeCoverage(In.p0p1.xy, In.p0p1.zw, proj_pos.xy);
+    }
+    
+    float alpha = coverage * g_FiberAlpha;
+    
+    if (alpha < g_alphaThreshold)
+#if SHORTCUT_DETERMINISTIC && SHORTCUT_WEIGHTED_AVERAGE
+        return float4(0, 0, 0, 0);
+#else
+        return;
+#endif
+
+    int2 vScreenAddress = int2(In.Position.xy);
+    uint fragmentIndex = GetAddress(vScreenAddress);
+    
+    uint uDepth = asuint(In.Position.z);
+
+    uint uDepth0 = FragmentDepthsTexture[uint3(vScreenAddress, 0)];
+    uint uDepth1 = FragmentDepthsTexture[uint3(vScreenAddress, 1)];
+#if SHORTCUT_NUM_DEPTHS == 3
+    uint uDepth2 = FragmentDepthsTexture[uint3(vScreenAddress, 2)];
+#endif
+
+    // Shade regardless of depth, since ResolveDepth pass writes one of the near depths
+
+    float amountLight = ComputeShadow(world_pos.xyz, g_HairShadowAlpha, g_iTechSM);
+    float3 color = ComputeHairShading(world_pos.xyz, In.Tangent.xyz, float4(0, 0, 0, 0), amountLight, In.strandColor.xyz);
+    uint uColor = PackFloat4IntoUint(float4(color, alpha));
+
+#if SHORTCUT_DETERMINISTIC  // deterministic result when fragments match in depth, with added cost
+
+#if SHORTCUT_WEIGHTED_AVERAGE
+    return float4(color * alpha, alpha);
+#else
+    // For fragments of equal depth, keep colors with greatest uint value
+    if (uDepth == uDepth0)
+    {
+        uint uColorPrev;
+        InterlockedMax(RWFragmentColors[fragmentIndex].x, uColor, uColorPrev);
+        uColor = min(uColor, uColorPrev);
+    }
+    if (uDepth == uDepth1)
+    {
+        uint uColorPrev;
+        InterlockedMax(RWFragmentColors[fragmentIndex].y, uColor, uColorPrev);
+        uColor = min(uColor, uColorPrev);
+    }
+#if SHORTCUT_NUM_DEPTHS == 3
+    if (uDepth == uDepth2)
+    {
+        uint uColorPrev;
+        InterlockedMax(RWFragmentColors[fragmentIndex].z, uColor, uColorPrev);
+        uColor = min(uColor, uColorPrev);
+    }
+#endif
+#endif
+
+#else // !SHORTCUT_DETERMINISTIC
+
+    if (uDepth == uDepth0)
+    {
+        RWFragmentColors[fragmentIndex].x = uColor;
+        uColor = 0;
+    }
+    if (uDepth == uDepth1)
+    {
+        RWFragmentColors[fragmentIndex].y = uColor;
+        uColor = 0;
+    }
+#if SHORTCUT_NUM_DEPTHS == 3
+    if (uDepth == uDepth2)
+    {
+        RWFragmentColors[fragmentIndex].z = uColor;
+    }
+#endif
+
+#endif
+}
+
+
+float PS_ResolveDepth_Hair(VS_OUTPUT_SCREENQUAD In) : SV_DEPTH
+{
+        int2 vScreenAddress = int2(In.vPosition.xy);
+
+        uint uDepth = 0;
+
+        // NOTE: A bug in FXC in the Win 8.x SDKs prevents
+        // this shader from compiling if depth is read from a 
+        // structured buffer.  A texture array is used instead.
+
+#if SHORTCUT_NUM_DEPTHS == 3
+        uDepth = FragmentDepthsTexture[uint3(vScreenAddress, 2)];
+#else
+        uDepth = FragmentDepthsTexture[uint3(vScreenAddress, 1)];
+#endif
+
+        return asfloat(uDepth);
+}
+
+
+[earlydepthstencil]
+float4 PS_ResolveColor_Hair(VS_OUTPUT_SCREENQUAD In) : SV_TARGET
+{
+    int2 vScreenAddress = int2(In.vPosition.xy);
+    uint fragmentIndex = GetAddress(vScreenAddress);
+
+    float fInvAlpha = tAccumInvAlpha[vScreenAddress];
+    float fAlpha = 1.0 - fInvAlpha;
+
+    if (fAlpha < SHORTCUT_MIN_ALPHA)
+        return float4(0, 0, 0, 1);
+
+#if SHORTCUT_DETERMINISTIC && SHORTCUT_WEIGHTED_AVERAGE
+    float4 fcolor;
+    float colorSumX = FragmentColors[vScreenAddress].x;
+    float colorSumY = FragmentColors[vScreenAddress].y;
+    float colorSumZ = FragmentColors[vScreenAddress].z;
+    float colorSumW = FragmentColors[vScreenAddress].w;
+    fcolor.x = colorSumX / colorSumW;
+    fcolor.y = colorSumY / colorSumW;
+    fcolor.z = colorSumZ / colorSumW;
+    fcolor.xyz *= fAlpha;
+#else
+    uint uDepth0 = FragmentDepthsTexture[uint3(vScreenAddress, 0)];
+    uint uDepth1 = FragmentDepthsTexture[uint3(vScreenAddress, 1)];
+    uint uColor0 = FragmentColors[fragmentIndex].x;
+    uint uColor1 = FragmentColors[fragmentIndex].y;
+
+    float4 color0 = UnpackUintIntoFloat4(uColor0);
+    float alpha0 = color0.w;
+    float invAlpha0 = 1.0 - alpha0;
+
+    float4 color1 = (uDepth1 == SHORTCUT_INITIAL_DEPTH) ? float4(0, 0, 0, 0) : UnpackUintIntoFloat4(uColor1);
+    float alpha1 = color1.w;
+    float invAlpha1 = 1.0 - alpha1;
+
+#if SHORTCUT_NUM_DEPTHS == 3
+    uint uDepth2 = FragmentDepthsTexture[uint3(vScreenAddress, 2)];
+    uint uColor2 = FragmentColors[fragmentIndex].z;
+
+    float4 color2 = (uDepth2 == SHORTCUT_INITIAL_DEPTH) ? float4(0, 0, 0, 0) : UnpackUintIntoFloat4(uColor2);
+    float alpha2 = color2.w;
+#endif
+
+    float4 fcolor;
+
+#if SHORTCUT_WEIGHTED_AVERAGE
+#if SHORTCUT_NUM_DEPTHS == 3
+    fcolor.xyz = fAlpha * (color0.xyz * alpha0 + color1.xyz * alpha1 + color2.xyz * alpha2) / (alpha0 + alpha1 + alpha2);
+#else
+    fcolor.xyz = fAlpha * (color0.xyz * alpha0 + color1.xyz * alpha1) / (alpha0 + alpha1);
+#endif
+#else
+#if SHORTCUT_NUM_DEPTHS == 3
+    float invAlpha01 = invAlpha0 * invAlpha1;
+
+    // Get cumulative alpha for all fragments after front two; apply to back fragment
+    float fInvAlphaBack = invAlpha01 < 0.0001 ? fInvAlpha : fInvAlpha / invAlpha01;
+    float fAlphaBack = 1.0 - fInvAlphaBack;
+
+    float3 backColor = (uColor2 == 0) ? ((uColor1 == 0) ? color0.xyz : color1.xyz) : color2.xyz;
+
+    // Blend is:
+    // alpha0 * color0 + (1 - alpha0) * (alpha1 * color1 + (1 - alpha1) * (fAlphaBack * backColor + fInvAlphaBack * dstcolor))
+    fcolor.xyz = color0.xyz * alpha0 + color1.xyz * (1 - alpha0) * alpha1 + backColor.xyz * (1 - alpha0) * (1 - alpha1) * fAlphaBack;
+#else
+    // Get cumulative alpha for all fragments after front; apply to back fragment
+    float fInvAlphaBack = invAlpha0 < 0.0001 ? fInvAlpha : fInvAlpha / invAlpha0;
+    float fAlphaBack = 1.0 - fInvAlphaBack;
+
+    float3 backColor = (uColor1 == 0) ? color0.xyz : color1.xyz;
+
+    // Blend is:
+    // alpha0 * color0 + (1 - alpha0) * (fAlphaBack * backColor + fInvAlphaBack * dstcolor))
+    fcolor.xyz = color0.xyz * alpha0 + backColor * (1 - alpha0) * fAlphaBack;
+#endif
+#endif
+
+#endif
+
+    fcolor.w = fInvAlpha;
+    return fcolor;
+
+}
+
+
+
+
+
+
+
+

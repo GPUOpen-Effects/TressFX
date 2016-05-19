@@ -268,4 +268,18 @@ TRESSFX_RETURN_CODE AMD_TRESSFX_DLL_API TressFX_GenerateTransforms(TressFX_Desc 
     return (success ? TRESSFX_RETURN_CODE_SUCCESS : TRESSFX_RETURN_CODE_FAIL);
 }
 
+//--------------------------------------------------------------------------------------
+//
+// TressFX_ApplyRigidTransforms
+//
+// Apply skin transforms to all hair vertices so that hair would be transformed in a rigid motion.
+// Used for fur skinning.
+//
+//--------------------------------------------------------------------------------------
+TRESSFX_RETURN_CODE AMD_TRESSFX_DLL_API TressFX_ApplyRigidTransforms(TressFX_Desc & desc)
+{
+    bool success = desc.pOpaque->ApplyRigidTransforms(desc);
+    return (success ? TRESSFX_RETURN_CODE_SUCCESS : TRESSFX_RETURN_CODE_FAIL);
+}
+
 } // namespace AMD

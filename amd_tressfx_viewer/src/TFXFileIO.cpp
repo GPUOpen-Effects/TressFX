@@ -273,6 +273,10 @@ TFXProjectFile::TFXCapsule::TFXCapsule(float x0_, float y0_, float z0_, float x1
             {
                 shadowMapAlpha =  (float)_wtof(sTokens[1].c_str());
             }
+            else if (token.find(L"Ka") != std::string::npos)
+            {
+                Ka = (float)_wtof(sTokens[1].c_str());
+            }
             else if ( token.find(L"Kd") != std::string::npos )
             {
                 Kd =  (float)_wtof(sTokens[1].c_str());
@@ -298,6 +302,13 @@ TFXProjectFile::TFXCapsule::TFXCapsule(float x0_, float y0_, float z0_, float x1
                 hairColor[0] = (float)_wtof(sTokens[1].c_str());
                 hairColor[1] = (float)_wtof(sTokens[2].c_str());
                 hairColor[2] = (float)_wtof(sTokens[3].c_str());
+            }
+            else if (token.find(L"lightPos") != std::string::npos)
+            {
+                customLightPos = true;
+                lightPos[0] = (float)_wtof(sTokens[1].c_str());
+                lightPos[1] = (float)_wtof(sTokens[2].c_str());
+                lightPos[2] = (float)_wtof(sTokens[3].c_str());
             }
             else if (token.find(L"collision_sphere") != std::string::npos)
             {
@@ -403,12 +414,22 @@ TFXProjectFile::TFXCapsule::TFXCapsule(float x0_, float y0_, float z0_, float x1
         outFile << L"alpha " << alpha << L"\n";
         outFile << L"shadowMapAlpha " << shadowMapAlpha << L"\n\n";
 
+        if (Ka >= 0.0f)
+        {
+            outFile << L"Ka " << Ka << L"\n";
+        }
+
         outFile << L"Kd " << Kd << L"\n";
         outFile << L"Ks1 " << Ks1 << L"\n";
         outFile << L"Ex1 " << Ex1 << L"\n";
         outFile << L"Ks2 " << Ks2 << L"\n";
         outFile << L"Ex2 " << Ex2 << L"\n";
         outFile << L"hairColor " << hairColor[0] << L" " << hairColor[1] << L" " << hairColor[2] << L"\n";
+
+        if (customLightPos)
+        {
+            outFile << L"lightPos " << lightPos[0] << L" " << lightPos[1] << L" " << lightPos[2] << L"\n";
+        }
 
         if (!mTFXTexFile.empty())
         {
@@ -452,7 +473,6 @@ void TFXProjectFile::SetHairSimulationParams(const AMD::TressFX_SimulationParams
 {
     lengthConstraintIterations = params->numLengthConstraintIterations;
     localShapeMatchingIterations = params->numLocalShapeMatchingIterations;
-    windMag = params->windMag;
 }
 
 void TFXProjectFile::Defaults()
@@ -467,6 +487,7 @@ void TFXProjectFile::Defaults()
         thickness = 0.15f;
         density = 1.0f;
 
+        Ka = -1.0f; // negative number means derive from mesh.
         Kd = 0.4f;
         Ks1 = 0.04f;
         Ex1 = 80.0f;
@@ -476,6 +497,11 @@ void TFXProjectFile::Defaults()
         hairColor[0] = 115.f / 255.f;
         hairColor[1] = 84.f / 255.f;
         hairColor[2] = 56.f / 255.f;
+
+        customLightPos = false;
+        lightPos[0] = 0;
+        lightPos[1] = 0;
+        lightPos[2] = 0;
 
         mTFXFile.clear();
         mTFXSimFile.clear();

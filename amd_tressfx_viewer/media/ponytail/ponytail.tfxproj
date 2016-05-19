@@ -22,3 +22,12 @@ collision_sphere -0.095 92.000 9.899 26.5
 collision_sphere -0.405 93.707 -5.111 24.113
 collision_sphere -0.072 68.548 -10.561 25.500
 
+hairColor 0.647 0.420 0.275
+Ka 0
+Ks1 0.14
+Ex1 80
+Ks2 0.500
+Ex2 8
+
+#lightPos -421.25043f 606.7890949f -43.22232f
+lightPos -300 300 -130

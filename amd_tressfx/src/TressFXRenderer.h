@@ -28,6 +28,7 @@
 
 #pragma once
 #include "TressFXMesh.h"
+#include "TressFXShortCut.h"
 #include "AMD_TressFX.h"
 #include "Math\Vector3D.h"
 
@@ -107,6 +108,8 @@ private:
     ID3D11BlendState            *m_pBlendStateBlendToBg;
     ID3D11BlendState            *m_pColorWritesOff;
 
+    TressFXShortCut              m_ShortCut;
+
 public:
     // hair rendering params
     TressFX_HairParams          m_hairParams;
@@ -122,6 +125,7 @@ private:
     HRESULT CreateRenderStateObjects(ID3D11Device* pd3dDevice);
     HRESULT CreatePPLL(ID3D11Device* pd3dDevice, int winWidth, int winHeight, bool resize);
     void DeletePPLL();
+    HRESULT CreateShortCutLayers(ID3D11Device* pd3dDevice, int winWidth, int winHeight, bool resize);
 
     void SetConstantBuffer(ID3D11DeviceContext* pd3dContext,
         DirectX::XMVECTOR eyePoint, DirectX::XMVECTOR lightPosition,
@@ -144,13 +148,14 @@ public:
     ~TressFXRenderer(void) {};
 
     ID3D11ShaderResourceView* GetShadowMapSRV() { return m_pSMHairSRV;};
-    HRESULT OnCreateDevice(ID3D11Device* pd3dDevice, int winWidth, int winHeight);
-    HRESULT OnResizedSwapChain(ID3D11Device* pd3dDevice, int winWidth, int WinHeight);
+    HRESULT OnCreateDevice(ID3D11Device* pd3dDevice, int winWidth, int winHeight, bool bShortCutOn);
+    HRESULT OnResizedSwapChain(ID3D11Device* pd3dDevice, int winWidth, int WinHeight, bool bShortCutOn);
     void BeginHairFrame(ID3D11DeviceContext* pd3dContext, DirectX::XMVECTOR eyePoint,
         DirectX::XMVECTOR lightPosition, DirectX::XMMATRIX *pModelTrasnsformForHead, DirectX::XMMATRIX *pViewProj, DirectX::XMMATRIX *pViewProjLightOut,
         float screenWidth, float screenHeight, bool singleHeadTransform);
     void GenerateShadowMap(ID3D11DeviceContext* pd3dContext, float density, float screenWidth, float screenHeight);
     void RenderHair(ID3D11DeviceContext* pd3dContext);
+    void RenderHairShortcut(ID3D11DeviceContext* pd3dContext);
     void EndHairFrame(ID3D11DeviceContext* pd3dContext);
     void OnDestroy(bool destroyShaders);
 };

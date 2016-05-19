@@ -28,9 +28,14 @@ REM TressFXRender Vertex Shaders
 REM TressFXRender Pixel Shaders
 "%fxc_exe%" /nologo /T ps_5_0 /E PS_ABuffer_Hair /O1 /Fh ..\inc\PS_ABuffer_Hair.inc /Vn PS_ABuffer_Hair_Data  ..\TressFXRender.hlsl 
 "%fxc_exe%" /nologo /T ps_5_0 /E PS_KBuffer_Hair /O1 /Fh ..\inc\PS_KBuffer_Hair.inc /Vn PS_KBuffer_Hair_Data  ..\TressFXRender.hlsl 
+"%fxc_exe%" /nologo /T ps_5_0 /E PS_Depth_Hair /O1 /Fh ..\inc\PS_Depth_Hair.inc /Vn PS_Depth_Hair_Data  ..\TressFXRender.hlsl 
+"%fxc_exe%" /nologo /T ps_5_0 /E PS_FillColors_Hair /O1 /Fh ..\inc\PS_FillColors_Hair.inc /Vn PS_FillColors_Hair_Data  ..\TressFXRender.hlsl 
+"%fxc_exe%" /nologo /T ps_5_0 /E PS_ResolveDepth_Hair /O1 /Fh ..\inc\PS_ResolveDepth_Hair.inc /Vn PS_ResolveDepth_Hair_Data  ..\TressFXRender.hlsl
+"%fxc_exe%" /nologo /T ps_5_0 /E PS_ResolveColor_Hair /O1 /Fh ..\inc\PS_ResolveColor_Hair.inc /Vn PS_ResolveColor_Hair_Data  ..\TressFXRender.hlsl 
 
 REM TressFXSimulation Compute Shaders
 "%fxc_exe%" /nologo /T cs_5_0 /E IntegrationAndGlobalShapeConstraints /O1 /Fh ..\inc\IntegrationAndGlobalShapeConstraints.inc /Vn IntegrationAndGlobalShapeConstraints_Data  ..\TressFXSimulation.hlsl 
+"%fxc_exe%" /nologo /T cs_5_0 /E ApplyHairTransformGlobally /O1 /Fh ..\inc\ApplyHairTransformGlobally.inc /Vn ApplyHairTransformGlobally_Data  ..\TressFXSimulation.hlsl 
 "%fxc_exe%" /nologo /T cs_5_0 /E LocalShapeConstraints /O1 /Fh ..\inc\LocalShapeConstraints.inc /Vn LocalShapeConstraints_Data  ..\TressFXSimulation.hlsl 
 "%fxc_exe%" /nologo /T cs_5_0 /E LocalShapeConstraintsWithIteration /O1 /Fh ..\inc\LocalShapeConstraintsWithIteration.inc /Vn LocalShapeConstraintsWithIteration_Data  ..\TressFXSimulation.hlsl 
 "%fxc_exe%" /nologo /T cs_5_0 /E LengthConstriantsWindAndCollision /O1 /Fh ..\inc\LengthConstriantsWindAndCollision.inc /Vn LengthConstriantsWindAndCollision_Data  ..\TressFXSimulation.hlsl 

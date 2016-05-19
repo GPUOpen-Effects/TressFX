@@ -496,6 +496,7 @@ xcopy "..\lib\VS2015\x64\DLL_Release_MT\$(TargetName).lib"  "..\lib" /H /R /Y &g
     <ClInclude Include="..\src\TressFXOpaque.h" />
     <ClInclude Include="..\src\TressFXPrecompiledShaders.h" />
     <ClInclude Include="..\src\TressFXRenderer.h" />
+    <ClInclude Include="..\src\TressFXShortCut.h" />
     <ClInclude Include="..\src\TressFXSimulation.h" />
     <ClInclude Include="..\src\TressFXSkinFormat.h" />
     <ClInclude Include="..\src\Util.h" />
@@ -511,6 +512,7 @@ xcopy "..\lib\VS2015\x64\DLL_Release_MT\$(TargetName).lib"  "..\lib" /H /R /Y &g
     <ClCompile Include="..\src\TressFXMesh.cpp" />
     <ClCompile Include="..\src\TressFXOpaque.cpp" />
     <ClCompile Include="..\src\TressFXRenderer.cpp" />
+    <ClCompile Include="..\src\TressFXShortCut.cpp" />
     <ClCompile Include="..\src\TressFXSimulation.cpp" />
     <ClCompile Include="..\src\Util.cpp" />
   </ItemGroup>

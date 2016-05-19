@@ -35,8 +35,14 @@
 #include "shaders\Inc\PS_ABuffer_Hair.inc"
 #include "shaders\Inc\PS_KBuffer_Hair.inc"
 
+#include "shaders\Inc\PS_Depth_Hair.inc"
+#include "shaders\Inc\PS_FillColors_Hair.inc"
+#include "shaders\Inc\PS_ResolveDepth_Hair.inc"
+#include "shaders\Inc\PS_ResolveColor_Hair.inc"
+
 // TressFXSimulation Compute Shaders
 #include "shaders\Inc\IntegrationAndGlobalShapeConstraints.inc"
+#include "shaders\Inc\ApplyHairTransformGlobally.inc"
 #include "shaders\Inc\LocalShapeConstraints.inc"
 #include "shaders\Inc\LocalShapeConstraintsWithIteration.inc"
 #include "shaders\Inc\LengthConstriantsWindAndCollision.inc"

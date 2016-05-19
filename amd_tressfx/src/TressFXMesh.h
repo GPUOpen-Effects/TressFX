@@ -52,11 +52,7 @@ public:
     // vertex positions
     ID3D11Buffer* m_HairVertexPositionsUAB;
     ID3D11UnorderedAccessView* m_HairVertexPositionsUAV;
-
-    // relative vertex positions
-    ID3D11Buffer* m_HairVertexPositionsRelativeUAB;
-    ID3D11UnorderedAccessView* m_HairVertexPositionsRelativeUAV;
-    ID3D11ShaderResourceView* m_HairVertexPositionsRelativeSRV;
+    ID3D11ShaderResourceView* m_HairVertexPositionsSRV;
 
     ID3D11Buffer* m_HairVertexPositionsPrevUAB;
     ID3D11UnorderedAccessView* m_HairVertexPositionsPrevUAV;
