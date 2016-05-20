@@ -1,0 +1,29 @@
+#version 450
+
+#include "SimulationConfig.glsl"
+
+layout (local_size_x = THREAD_GROUP_SIZE, local_size_y = 1, local_size_z = 1) in;
+layout(std430, set = 1, binding = IDSRV_HAIR_PREVIOUS_VERTEX_POSITIONS) buffer writeablePositionPrev
+{
+  vec4 g_HairVertexPositionsPrev[];
+};
+layout(set = 1, binding = IDSRV_HAIR_VERTEX_POSITIONS) uniform samplerBuffer g_HairVertexPositions;
+
+#include "IndicesComputations.glsl"
+
+// One thread computes one vertex.
+void main()
+{
+  uint globalStrandIndex, localStrandIndex, localVertexIndex, numVerticesInTheStrand, indexForSharedMem, strandType;
+  int globalVertexIndex;
+  CalcIndicesInVertexLevelMaster(gl_LocalInvocationID.x, gl_WorkGroupID.x, globalStrandIndex, localStrandIndex, globalVertexIndex, localVertexIndex, numVerticesInTheStrand, indexForSharedMem, strandType);
+
+  for (int i = 0; i < g_NumFollowHairsPerGuideHair; i++)
+  {
+    int globalFollowVertexIndex = globalVertexIndex + int(numVerticesInTheStrand) * (i + 1);
+    vec4 hairPos = texelFetch(g_HairVertexPositions, globalFollowVertexIndex).xyzw;
+    g_HairVertexPositionsPrev[globalFollowVertexIndex] = hairPos;
+  }
+
+  return;
+}

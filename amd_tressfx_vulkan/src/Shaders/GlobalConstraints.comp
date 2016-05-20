@@ -1,0 +1,143 @@
+#version 450
+
+#include "SimulationConfig.glsl"
+
+
+layout (local_size_x = THREAD_GROUP_SIZE, local_size_y = 1, local_size_z = 1) in;
+
+layout(std430, set = 1, binding = IDSRV_HAIR_VERTEX_POSITIONS) buffer writeablePositions
+{
+	vec4 g_HairVertexPositions[];
+};
+layout(std430, set = 1, binding = IDSRV_HAIR_PREVIOUS_VERTEX_POSITIONS) buffer writeablePrevPositions
+{
+	vec4 g_HairVertexPositionsPrev[];
+};
+layout(set = 1, binding = IDSRV_HAIR_VERTEX_INITIAL_POSITIONS) uniform samplerBuffer g_InitialHairPositions;
+
+#include "IndicesComputations.glsl"
+
+//--------------------------------------------------------------------------------------
+//
+//  Integrate
+//
+//  Uses Verlet integration to calculate the new position for the current time step
+//
+//--------------------------------------------------------------------------------------
+vec4 Integrate(vec4 curPosition, vec4 oldPosition, vec4 initialPos, vec4 force, uint globalVertexIndex, uint localVertexIndex, uint numVerticesInTheStrand, float dampingCoeff)
+{
+  vec4 outputPos = curPosition;
+
+  force.xyz += g_GravityMagnitude * vec3(0, -1.0f, 0);
+  outputPos.xyz = curPosition.xyz + (1.0 - dampingCoeff)*(curPosition.xyz - oldPosition.xyz) + force.xyz*g_TimeStep*g_TimeStep;
+
+  return outputPos;
+}
+
+//--------------------------------------------------------------------------------------
+//
+//  UpdateFinalVertexPositions
+//
+//  Updates the  hair vertex positions based on the physics simulation
+//
+//--------------------------------------------------------------------------------------
+void UpdateFinalVertexPositions(vec4 oldPosition, vec4 newPosition, uint globalVertexIndex, uint localVertexIndex, uint numVerticesInTheStrand)
+{
+    g_HairVertexPositionsPrev[int(globalVertexIndex)] = oldPosition;
+    g_HairVertexPositions[int(globalVertexIndex)] = newPosition;
+}
+
+//--------------------------------------------------------------------------------------
+//
+//  IntegrationAndGlobalShapeConstraints
+//
+//  Compute shader to simulate the gravitational force with integration and to maintain the
+//  global shape constraints.
+//
+// One thread computes one vertex.
+//
+//--------------------------------------------------------------------------------------
+void main()
+{
+  uint globalStrandIndex, localStrandIndex, localVertexIndex, numVerticesInTheStrand, indexForSharedMem, strandType;
+  int globalVertexIndex;
+  CalcIndicesInVertexLevelMaster(gl_LocalInvocationID.x, gl_WorkGroupID.x, globalStrandIndex, localStrandIndex, globalVertexIndex, localVertexIndex, numVerticesInTheStrand, indexForSharedMem, strandType);
+
+  vec4 currentPos = vec4(0, 0, 0, 0); // position when this step starts. In other words, a position from the last step.
+  vec4 initialPos = vec4(0, 0, 0, 0); // rest position
+
+  vec4 tmpPos;
+
+  // Copy data into shared memory
+  initialPos = texelFetch(g_InitialHairPositions, globalVertexIndex);
+  initialPos.xyz = (g_ModelTransformForHead * vec4(initialPos.xyz, 1)).xyz;
+  if (g_bWarp != 0)
+    currentPos = initialPos;
+  else
+    currentPos = tmpPos = g_HairVertexPositions[globalVertexIndex];
+
+  // Integrate
+  float dampingCoeff = 0.03f;
+
+  if ( strandType == 0 )
+    dampingCoeff = g_Damping0;
+  else if ( strandType == 1 )
+    dampingCoeff = g_Damping1;
+  else if ( strandType == 2 )
+    dampingCoeff = g_Damping2;
+  else if ( strandType == 3 )
+    dampingCoeff = g_Damping3;
+
+  vec4 oldPos;
+  if (g_bWarp != 0)
+    oldPos = currentPos;
+  else
+    oldPos = g_HairVertexPositionsPrev[globalVertexIndex];
+  vec4 force = vec4(0, 0, 0, 0);
+
+  if ( IsMovable(currentPos) )
+    tmpPos = Integrate(currentPos, oldPos, initialPos, force, globalVertexIndex, localVertexIndex, numVerticesInTheStrand, dampingCoeff);
+  else
+    tmpPos = initialPos;
+
+  // Global Shape Constraints
+  float stiffnessForGlobalShapeMatching = 0;
+  float globalShapeMatchingEffectiveRange = 0;
+
+  if ( strandType == 0 )
+  {
+    stiffnessForGlobalShapeMatching = g_StiffnessForGlobalShapeMatching0;
+    globalShapeMatchingEffectiveRange = g_GlobalShapeMatchingEffectiveRange0;
+  }
+  else if ( strandType == 1 )
+  {
+    stiffnessForGlobalShapeMatching = g_StiffnessForGlobalShapeMatching1;
+    globalShapeMatchingEffectiveRange = g_GlobalShapeMatchingEffectiveRange1;
+  }
+  else if ( strandType == 2 )
+  {
+    stiffnessForGlobalShapeMatching = g_StiffnessForGlobalShapeMatching2;
+    globalShapeMatchingEffectiveRange = g_GlobalShapeMatchingEffectiveRange2;
+  }
+  else if ( strandType == 3 )
+  {
+    stiffnessForGlobalShapeMatching = g_StiffnessForGlobalShapeMatching3;
+    globalShapeMatchingEffectiveRange = g_GlobalShapeMatchingEffectiveRange3;
+  }
+
+  if ( stiffnessForGlobalShapeMatching > 0 && globalShapeMatchingEffectiveRange != 0.)
+  {
+    if (IsMovable(tmpPos))
+    {
+      if (float(localVertexIndex) < globalShapeMatchingEffectiveRange * float(numVerticesInTheStrand))
+      {
+        float factor = stiffnessForGlobalShapeMatching;
+        vec3 del = factor * (initialPos - tmpPos).xyz;
+        tmpPos.xyz += del;
+      }
+    }
+  }
+
+  // update global position buffers
+  UpdateFinalVertexPositions(currentPos, tmpPos, globalVertexIndex, localVertexIndex, numVerticesInTheStrand);
+}

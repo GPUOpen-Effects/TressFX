@@ -1,0 +1,173 @@
+#version 450
+
+#include "SimulationConfig.glsl"
+
+layout (local_size_x = THREAD_GROUP_SIZE, local_size_y = 1, local_size_z = 1) in;
+
+layout(std430, set = 1, binding = IDSRV_HAIR_VERTEX_POSITIONS) buffer writeablePositions
+{
+  vec4 g_HairVertexPositions[];
+};
+layout(set = 1, binding = IDSRV_HAIR_GLOBAL_ROTATION) uniform samplerBuffer g_GlobalRotations;
+layout(set = 1, binding = IDSRV_HAIR_LOCAL_REF_VEC) uniform samplerBuffer g_HairRefVecsInLocalFrame;
+
+#include "IndicesComputations.glsl"
+
+vec4 MultQuaternionAndQuaternion(vec4 qA, vec4 qB)
+{
+  vec4 q;
+
+  q.w = qA.w * qB.w - qA.x * qB.x - qA.y * qB.y - qA.z * qB.z;
+  q.x = qA.w * qB.x + qA.x * qB.w + qA.y * qB.z - qA.z * qB.y;
+  q.y = qA.w * qB.y + qA.y * qB.w + qA.z * qB.x - qA.x * qB.z;
+  q.z = qA.w * qB.z + qA.z * qB.w + qA.x * qB.y - qA.y * qB.x;
+
+  return q;
+}
+
+vec3 MultQuaternionAndVector(vec4 q, vec3 v)
+{
+  vec3 uv, uuv;
+  vec3 qvec = vec3(q.x, q.y, q.z);
+  uv = cross(qvec, v);
+  uuv = cross(qvec, uv);
+  uv *= (2.0f * q.w);
+  uuv *= 2.0f;
+
+  return v + uv + uuv;
+}
+
+vec4 MakeQuaternion(float angle_radian, vec3 axis)
+{
+  // create quaternion using angle and rotation axis
+  vec4 quaternion;
+  float halfAngle = 0.5f * angle_radian;
+  float sinHalf = sin(halfAngle);
+
+  quaternion.w = cos(halfAngle);
+  quaternion.xyz = sinHalf * axis.xyz;
+
+  return quaternion;
+}
+
+vec4 InverseQuaternion(vec4 q)
+{
+  float lengthSqr = q.x*q.x + q.y*q.y + q.z*q.z + q.w*q.w;
+
+  if ( lengthSqr < 0.001 )
+    return vec4(0, 0, 0, 1.0f);
+
+  q.x = -q.x / lengthSqr;
+  q.y = -q.y / lengthSqr;
+  q.z = -q.z / lengthSqr;
+  q.w = q.w / lengthSqr;
+
+  return q;
+}
+
+
+//--------------------------------------------------------------------------------------
+//
+//  LocalShapeConstraintsWithIteration
+//
+//  Compute shader to maintain the local shape constraints. This is the same as
+//  the LocalShapeConstraints shader, except the iterations are done on the GPU
+//  instead of multiple dispatch calls on the CPU, for better performance
+//
+//--------------------------------------------------------------------------------------
+
+void main()
+{
+  int globalStrandIndex, globalRootVertexIndex;
+  uint numVerticesInTheStrand, strandType;
+  CalcIndicesInStrandLevelMaster(int(gl_LocalInvocationID.x), int(gl_WorkGroupID.x), globalStrandIndex, numVerticesInTheStrand, globalRootVertexIndex, strandType);
+
+  // stiffness for local shape constraints
+  float stiffnessForLocalShapeMatching = 0.4;
+
+  if ( strandType == 2)
+    stiffnessForLocalShapeMatching = g_StiffnessForLocalShapeMatching2;
+  else if ( strandType == 3 )
+    stiffnessForLocalShapeMatching = g_StiffnessForLocalShapeMatching3;
+  else if ( strandType == 1 )
+    stiffnessForLocalShapeMatching = g_StiffnessForLocalShapeMatching1;
+  else if ( strandType == 0 )
+    stiffnessForLocalShapeMatching = g_StiffnessForLocalShapeMatching0;
+
+  //1.0 for stiffness makes things unstable sometimes.
+  stiffnessForLocalShapeMatching = 0.5 * min(stiffnessForLocalShapeMatching, 0.95);
+
+  //------------------------------
+  // Copy strand data into registers, for faster iteration
+  //------------------------------
+  int globalVertexIndex = 0;
+  vec4 sharedStrandPos[MAX_VERTS_PER_STRAND];
+  for (int localVertexIndex = 0; localVertexIndex < numVerticesInTheStrand; localVertexIndex++)
+  {
+    globalVertexIndex = globalRootVertexIndex + localVertexIndex;
+    sharedStrandPos[localVertexIndex] = g_HairVertexPositions[globalVertexIndex];
+  }
+
+  //--------------------------------------------
+  // Local shape constraint for bending/twisting
+  //--------------------------------------------
+  for (int iterations = 0; iterations < g_NumLocalShapeMatchingIterations; iterations++)
+  {
+    vec4 pos = sharedStrandPos[1];
+    vec4 rotGlobal = texelFetch(g_GlobalRotations, globalRootVertexIndex);
+
+    for (int localVertexIndex = 1; localVertexIndex < numVerticesInTheStrand - 1; localVertexIndex++)
+    {
+      globalVertexIndex = globalRootVertexIndex + localVertexIndex;
+      vec4 pos_plus_one = sharedStrandPos[localVertexIndex+1];
+
+      //--------------------------------
+      // Update position i and i_plus_1
+      //--------------------------------
+      vec4 rotGlobalWorld = MultQuaternionAndQuaternion(g_ModelRotateForHead, rotGlobal);
+
+      vec3 orgPos_i_plus_1_InLocalFrame_i = texelFetch(g_HairRefVecsInLocalFrame, globalVertexIndex + 1).xyz;
+      vec3 orgPos_i_plus_1_InGlobalFrame = MultQuaternionAndVector(rotGlobalWorld, orgPos_i_plus_1_InLocalFrame_i) + pos.xyz;
+
+      vec3 del = stiffnessForLocalShapeMatching * (orgPos_i_plus_1_InGlobalFrame - pos_plus_one.xyz).xyz;
+
+      if (IsMovable(pos))
+        pos.xyz -= del.xyz;
+
+      if (IsMovable(pos_plus_one))
+        pos_plus_one.xyz += del.xyz;
+
+      //---------------------------
+      // Update local/global frames
+      //---------------------------
+      vec4 invRotGlobalWorld = InverseQuaternion(rotGlobalWorld);
+      vec3 vec = normalize(pos_plus_one.xyz - pos.xyz);
+
+      vec3 x_i_plus_1_frame_i = normalize(MultQuaternionAndVector(invRotGlobalWorld, vec));
+      vec3 e = vec3(1., 0, 0);
+      vec3 rotAxis = cross(e, x_i_plus_1_frame_i);
+
+      if ( length(rotAxis) > 0.001 )
+      {
+        float angle_radian = acos(dot(e, x_i_plus_1_frame_i));
+        rotAxis = normalize(rotAxis);
+
+        vec4 localRot = MakeQuaternion(angle_radian, rotAxis);
+        rotGlobal = MultQuaternionAndQuaternion(rotGlobal, localRot);
+      }
+
+      sharedStrandPos[localVertexIndex].xyz = pos.xyz;
+      sharedStrandPos[localVertexIndex+1].xyz = pos_plus_one.xyz;
+
+      pos = pos_plus_one;
+    }
+  }
+
+  for (int localVertexIndex = 0; localVertexIndex < numVerticesInTheStrand; localVertexIndex++)
+  {
+    globalVertexIndex = globalRootVertexIndex + localVertexIndex;
+    g_HairVertexPositions[globalVertexIndex] = sharedStrandPos[localVertexIndex];
+  }
+
+  return;
+}

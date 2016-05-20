@@ -25,6 +25,16 @@ externalproject ("AMD_" .. _AMD_LIBRARY_NAME)
       ["Debug"] = "DLL_Debug",
       ["Release"] = "DLL_Release" }
 
+externalproject ("AMD_" .. _AMD_LIBRARY_NAME .. "_Vulkan")
+   kind "SharedLib"
+   language "C++"
+   location "../../AMD_%{_AMD_LIBRARY_NAME}_Vulkan/build"
+   filename ("AMD_" .. _AMD_LIBRARY_NAME .. "_Vulkan" .. _AMD_VS_SUFFIX)
+   uuid "9B729252-7D58-4B28-882F-DFB4EF44A485"
+   configmap {
+      ["Debug"] = "DLL_Debug",
+      ["Release"] = "DLL_Release" }
+
 externalproject "AMD_LIB_Minimal"
    kind "StaticLib"
    language "C++"

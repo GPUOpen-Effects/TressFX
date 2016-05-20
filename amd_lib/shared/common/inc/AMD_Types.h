@@ -156,7 +156,11 @@ namespace AMD
 #define AMD_SAFE_DELETE_ARRAY(p)  { delete [] (p);   (p) = nullptr; }
 #endif
 #ifndef AMD_SAFE_RELEASE
+#ifndef VULKAN
 #define AMD_SAFE_RELEASE(p)       { if (p) { (p)->Release(); } (p) = nullptr; }
+#else
+#define AMD_SAFE_RELEASE(object, releaseFunction, device) if (object != nullptr) releaseFunction(device, object, nullptr);
+#endif
 #endif
 
 #define AMD_FUNCTION_WIDEN2(x)    L ## x

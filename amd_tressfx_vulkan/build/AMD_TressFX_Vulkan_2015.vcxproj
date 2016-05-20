@@ -1,0 +1,559 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="DLL_Debug|Win32">
+      <Configuration>DLL_Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="DLL_Debug|x64">
+      <Configuration>DLL_Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="DLL_Release|Win32">
+      <Configuration>DLL_Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="DLL_Release|x64">
+      <Configuration>DLL_Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Lib_Debug|Win32">
+      <Configuration>Lib_Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Lib_Debug|x64">
+      <Configuration>Lib_Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Lib_Release|Win32">
+      <Configuration>Lib_Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Lib_Release|x64">
+      <Configuration>Lib_Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="DLL_Release_MT|Win32">
+      <Configuration>DLL_Release_MT</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="DLL_Release_MT|x64">
+      <Configuration>DLL_Release_MT</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{9B729252-7D58-4B28-882F-DFB4EF44A485}</ProjectGuid>
+    <IgnoreWarnCompileDuplicatedFilename>true</IgnoreWarnCompileDuplicatedFilename>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>AMD_TressFX_Vulkan</RootNamespace>
+    <ProjectName>AMD_TressFX_Vulkan</ProjectName>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DLL_Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DLL_Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DLL_Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DLL_Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Lib_Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Lib_Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Lib_Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Lib_Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DLL_Release_MT|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DLL_Release_MT|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='DLL_Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='DLL_Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='DLL_Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='DLL_Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Lib_Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Lib_Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Lib_Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Lib_Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='DLL_Release_MT|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='DLL_Release_MT|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DLL_Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>..\lib\VS2015\Win32\DLL_Debug\</OutDir>
+    <IntDir>VS2015\Win32\DLL_Debug\</IntDir>
+    <TargetName>GPUOpen_TressFX_x86d</TargetName>
+    <TargetExt>.dll</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DLL_Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>..\lib\VS2015\x64\DLL_Debug\</OutDir>
+    <IntDir>VS2015\x64\DLL_Debug\</IntDir>
+    <TargetName>GPUOpen_TressFX_x64d</TargetName>
+    <TargetExt>.dll</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DLL_Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>..\lib\VS2015\Win32\DLL_Release\</OutDir>
+    <IntDir>VS2015\Win32\DLL_Release\</IntDir>
+    <TargetName>GPUOpen_TressFX_x86</TargetName>
+    <TargetExt>.dll</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DLL_Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>..\lib\VS2015\x64\DLL_Release\</OutDir>
+    <IntDir>VS2015\x64\DLL_Release\</IntDir>
+    <TargetName>GPUOpen_TressFX_x64</TargetName>
+    <TargetExt>.dll</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Lib_Debug|Win32'">
+    <OutDir>..\lib\VS2015\Win32\Lib_Debug\</OutDir>
+    <IntDir>VS2015\Win32\Lib_Debug\</IntDir>
+    <TargetName>GPUOpen_TressFX_x86d</TargetName>
+    <TargetExt>.lib</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Lib_Debug|x64'">
+    <OutDir>..\lib\VS2015\x64\Lib_Debug\</OutDir>
+    <IntDir>VS2015\x64\Lib_Debug\</IntDir>
+    <TargetName>GPUOpen_TressFX_x64d</TargetName>
+    <TargetExt>.lib</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Lib_Release|Win32'">
+    <OutDir>..\lib\VS2015\Win32\Lib_Release\</OutDir>
+    <IntDir>VS2015\Win32\Lib_Release\</IntDir>
+    <TargetName>GPUOpen_TressFX_x86</TargetName>
+    <TargetExt>.lib</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Lib_Release|x64'">
+    <OutDir>..\lib\VS2015\x64\Lib_Release\</OutDir>
+    <IntDir>VS2015\x64\Lib_Release\</IntDir>
+    <TargetName>GPUOpen_TressFX_x64</TargetName>
+    <TargetExt>.lib</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DLL_Release_MT|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>..\lib\VS2015\Win32\DLL_Release_MT\</OutDir>
+    <IntDir>VS2015\Win32\DLL_Release_MT\</IntDir>
+    <TargetName>GPUOpen_TressFX_x86</TargetName>
+    <TargetExt>.dll</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DLL_Release_MT|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>..\lib\VS2015\x64\DLL_Release_MT\</OutDir>
+    <IntDir>VS2015\x64\DLL_Release_MT\</IntDir>
+    <TargetName>GPUOpen_TressFX_x64</TargetName>
+    <TargetExt>.dll</TargetExt>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DLL_Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level4</WarningLevel>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <PreprocessorDefinitions>VULKAN;_USRDLL;AMD_TRESSFX_COMPILE_DYNAMIC_LIB=1;WIN32;_DEBUG;_WINDOWS;_WIN32_WINNT=0x0601;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\inc;..\..\amd_lib\shared\common\inc;..\..\amd_tressfx\inc;..\..\amd_tressfx\src;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <Optimization>Disabled</Optimization>
+      <ExceptionHandling>false</ExceptionHandling>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <AdditionalOptions>/EHsc %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(VULKAN_SDK)\Bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ImportLibrary>..\lib\VS2015\Win32\DLL_Debug\GPUOpen_TressFX_x86d.lib</ImportLibrary>
+      <TreatLinkerWarningAsErrors>true</TreatLinkerWarningAsErrors>
+    </Link>
+    <PostBuildEvent>
+      <Command>copy /b "..\lib\VS2015\Win32\DLL_Debug\$(TargetName).lib" +,, "..\lib\VS2015\Win32\DLL_Debug\" &gt; nul
+xcopy "..\lib\VS2015\Win32\DLL_Debug\$(TargetName).dll"  "..\lib" /H /R /Y &gt; nul
+xcopy "..\lib\VS2015\Win32\DLL_Debug\$(TargetName).lib"  "..\lib" /H /R /Y &gt; nul</Command>
+      <Message>Copying build output to lib directory...</Message>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DLL_Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level4</WarningLevel>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <PreprocessorDefinitions>VULKAN;_USRDLL;AMD_TRESSFX_COMPILE_DYNAMIC_LIB=1;WIN32;_DEBUG;_WINDOWS;_WIN32_WINNT=0x0601;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\inc;..\..\amd_lib\shared\common\inc;..\..\amd_tressfx\inc;..\..\amd_tressfx\src;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <Optimization>Disabled</Optimization>
+      <ExceptionHandling>false</ExceptionHandling>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <AdditionalOptions>/EHsc %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(VULKAN_SDK)\Bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ImportLibrary>..\lib\VS2015\x64\DLL_Debug\GPUOpen_TressFX_x64d.lib</ImportLibrary>
+      <TreatLinkerWarningAsErrors>true</TreatLinkerWarningAsErrors>
+    </Link>
+    <PostBuildEvent>
+      <Command>copy /b "..\lib\VS2015\x64\DLL_Debug\$(TargetName).lib" +,, "..\lib\VS2015\x64\DLL_Debug\" &gt; nul
+xcopy "..\lib\VS2015\x64\DLL_Debug\$(TargetName).dll"  "..\lib" /H /R /Y &gt; nul
+xcopy "..\lib\VS2015\x64\DLL_Debug\$(TargetName).lib"  "..\lib" /H /R /Y &gt; nul</Command>
+      <Message>Copying build output to lib directory...</Message>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DLL_Release|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level4</WarningLevel>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <PreprocessorDefinitions>VULKAN;_USRDLL;AMD_TRESSFX_COMPILE_DYNAMIC_LIB=1;WIN32;NDEBUG;_WINDOWS;_WIN32_WINNT=0x0601;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\inc;..\..\amd_lib\shared\common\inc;..\..\amd_tressfx\inc;..\..\amd_tressfx\src;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <Optimization>Full</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <StringPooling>true</StringPooling>
+      <ExceptionHandling>false</ExceptionHandling>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <AdditionalOptions>/EHsc %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(VULKAN_SDK)\Bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ImportLibrary>..\lib\VS2015\Win32\DLL_Release\GPUOpen_TressFX_x86.lib</ImportLibrary>
+      <TreatLinkerWarningAsErrors>true</TreatLinkerWarningAsErrors>
+    </Link>
+    <PostBuildEvent>
+      <Command>copy /b "..\lib\VS2015\Win32\DLL_Release\$(TargetName).lib" +,, "..\lib\VS2015\Win32\DLL_Release\" &gt; nul
+xcopy "..\lib\VS2015\Win32\DLL_Release\$(TargetName).dll"  "..\lib" /H /R /Y &gt; nul
+xcopy "..\lib\VS2015\Win32\DLL_Release\$(TargetName).lib"  "..\lib" /H /R /Y &gt; nul</Command>
+      <Message>Copying build output to lib directory...</Message>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DLL_Release|x64'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level4</WarningLevel>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <PreprocessorDefinitions>VULKAN;_USRDLL;AMD_TRESSFX_COMPILE_DYNAMIC_LIB=1;WIN32;NDEBUG;_WINDOWS;_WIN32_WINNT=0x0601;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\inc;..\..\amd_lib\shared\common\inc;..\..\amd_tressfx\inc;..\..\amd_tressfx\src;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <Optimization>Full</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <StringPooling>true</StringPooling>
+      <ExceptionHandling>false</ExceptionHandling>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <AdditionalOptions>/EHsc %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(VULKAN_SDK)\Bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ImportLibrary>..\lib\VS2015\x64\DLL_Release\GPUOpen_TressFX_x64.lib</ImportLibrary>
+      <TreatLinkerWarningAsErrors>true</TreatLinkerWarningAsErrors>
+    </Link>
+    <PostBuildEvent>
+      <Command>copy /b "..\lib\VS2015\x64\DLL_Release\$(TargetName).lib" +,, "..\lib\VS2015\x64\DLL_Release\" &gt; nul
+xcopy "..\lib\VS2015\x64\DLL_Release\$(TargetName).dll"  "..\lib" /H /R /Y &gt; nul
+xcopy "..\lib\VS2015\x64\DLL_Release\$(TargetName).lib"  "..\lib" /H /R /Y &gt; nul</Command>
+      <Message>Copying build output to lib directory...</Message>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Lib_Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level4</WarningLevel>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <PreprocessorDefinitions>VULKAN;_LIB;AMD_TRESSFX_COMPILE_DYNAMIC_LIB=0;WIN32;_DEBUG;_WINDOWS;_WIN32_WINNT=0x0601;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\inc;..\..\amd_lib\shared\common\inc;..\..\amd_tressfx\inc;..\..\amd_tressfx\src;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <Optimization>Disabled</Optimization>
+      <ExceptionHandling>false</ExceptionHandling>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <AdditionalOptions>/EHsc %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+    <Lib>
+      <TreatLibWarningAsErrors>true</TreatLibWarningAsErrors>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Lib_Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level4</WarningLevel>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <PreprocessorDefinitions>VULKAN;_LIB;AMD_TRESSFX_COMPILE_DYNAMIC_LIB=0;WIN32;_DEBUG;_WINDOWS;_WIN32_WINNT=0x0601;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\inc;..\..\amd_lib\shared\common\inc;..\..\amd_tressfx\inc;..\..\amd_tressfx\src;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <Optimization>Disabled</Optimization>
+      <ExceptionHandling>false</ExceptionHandling>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <AdditionalOptions>/EHsc %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+    <Lib>
+      <TreatLibWarningAsErrors>true</TreatLibWarningAsErrors>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Lib_Release|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level4</WarningLevel>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <PreprocessorDefinitions>VULKAN;_LIB;AMD_TRESSFX_COMPILE_DYNAMIC_LIB=0;WIN32;NDEBUG;_WINDOWS;_WIN32_WINNT=0x0601;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\inc;..\..\amd_lib\shared\common\inc;..\..\amd_tressfx\inc;..\..\amd_tressfx\src;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <Optimization>Full</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <StringPooling>true</StringPooling>
+      <ExceptionHandling>false</ExceptionHandling>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <AdditionalOptions>/EHsc %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+    <Lib>
+      <TreatLibWarningAsErrors>true</TreatLibWarningAsErrors>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Lib_Release|x64'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level4</WarningLevel>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <PreprocessorDefinitions>VULKAN;_LIB;AMD_TRESSFX_COMPILE_DYNAMIC_LIB=0;WIN32;NDEBUG;_WINDOWS;_WIN32_WINNT=0x0601;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\inc;..\..\amd_lib\shared\common\inc;..\..\amd_tressfx\inc;..\..\amd_tressfx\src;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <Optimization>Full</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <StringPooling>true</StringPooling>
+      <ExceptionHandling>false</ExceptionHandling>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <AdditionalOptions>/EHsc %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+    <Lib>
+      <TreatLibWarningAsErrors>true</TreatLibWarningAsErrors>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DLL_Release_MT|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level4</WarningLevel>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <PreprocessorDefinitions>VULKAN;_USRDLL;AMD_TRESSFX_COMPILE_DYNAMIC_LIB=1;WIN32;NDEBUG;_WINDOWS;_WIN32_WINNT=0x0601;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\inc;..\..\amd_lib\shared\common\inc;..\..\amd_tressfx\inc;..\..\amd_tressfx\src;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <Optimization>Full</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <ExceptionHandling>false</ExceptionHandling>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <AdditionalOptions>/EHsc %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(VULKAN_SDK)\Bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ImportLibrary>..\lib\VS2015\Win32\DLL_Release_MT\GPUOpen_TressFX_x86.lib</ImportLibrary>
+      <TreatLinkerWarningAsErrors>true</TreatLinkerWarningAsErrors>
+    </Link>
+    <PostBuildEvent>
+      <Command>copy /b "..\lib\VS2015\Win32\DLL_Release_MT\$(TargetName).lib" +,, "..\lib\VS2015\Win32\DLL_Release_MT\" &gt; nul
+xcopy "..\lib\VS2015\Win32\DLL_Release_MT\$(TargetName).dll"  "..\lib" /H /R /Y &gt; nul
+xcopy "..\lib\VS2015\Win32\DLL_Release_MT\$(TargetName).lib"  "..\lib" /H /R /Y &gt; nul</Command>
+      <Message>Copying build output to lib directory...</Message>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DLL_Release_MT|x64'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level4</WarningLevel>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <PreprocessorDefinitions>VULKAN;_USRDLL;AMD_TRESSFX_COMPILE_DYNAMIC_LIB=1;WIN32;NDEBUG;_WINDOWS;_WIN32_WINNT=0x0601;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\inc;..\..\amd_lib\shared\common\inc;..\..\amd_tressfx\inc;..\..\amd_tressfx\src;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <Optimization>Full</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <ExceptionHandling>false</ExceptionHandling>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <AdditionalOptions>/EHsc %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(VULKAN_SDK)\Bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ImportLibrary>..\lib\VS2015\x64\DLL_Release_MT\GPUOpen_TressFX_x64.lib</ImportLibrary>
+      <TreatLinkerWarningAsErrors>true</TreatLinkerWarningAsErrors>
+    </Link>
+    <PostBuildEvent>
+      <Command>copy /b "..\lib\VS2015\x64\DLL_Release_MT\$(TargetName).lib" +,, "..\lib\VS2015\x64\DLL_Release_MT\" &gt; nul
+xcopy "..\lib\VS2015\x64\DLL_Release_MT\$(TargetName).dll"  "..\lib" /H /R /Y &gt; nul
+xcopy "..\lib\VS2015\x64\DLL_Release_MT\$(TargetName).lib"  "..\lib" /H /R /Y &gt; nul</Command>
+      <Message>Copying build output to lib directory...</Message>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\TressFXMeshVulkan.h" />
+    <ClInclude Include="..\src\TressFXOpaqueVulkan.h" />
+    <ClInclude Include="..\src\TressFXPrecompiledShadersVulkan.h" />
+    <ClInclude Include="..\src\TressFXRendererVulkan.h" />
+    <ClInclude Include="..\src\TressFXShortCutVulkan.h" />
+    <ClInclude Include="..\src\TressFXSimulationVulkan.h" />
+    <ClInclude Include="..\src\UtilVulkan.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\amd_tressfx\src\Math\Matrix33.cpp" />
+    <ClCompile Include="..\..\amd_tressfx\src\Math\Matrix44.cpp" />
+    <ClCompile Include="..\..\amd_tressfx\src\Math\Quaternion.cpp" />
+    <ClCompile Include="..\..\amd_tressfx\src\Math\Transform.cpp" />
+    <ClCompile Include="..\..\amd_tressfx\src\Math\Vector3D.cpp" />
+    <ClCompile Include="..\..\amd_tressfx\src\TressFXAsset.cpp" />
+    <ClCompile Include="..\..\amd_tressfx\src\Util.cpp" />
+    <ClCompile Include="..\src\TressFXMeshVulkan.cpp" />
+    <ClCompile Include="..\src\TressFXOpaqueVulkan.cpp" />
+    <ClCompile Include="..\src\TressFXRendererVulkan.cpp" />
+    <ClCompile Include="..\src\TressFXShortCutVulkan.cpp" />
+    <ClCompile Include="..\src\TressFXSimulationVulkan.cpp" />
+    <ClCompile Include="..\src\TressFXVulkan.cpp" />
+    <ClCompile Include="..\src\UtilVulkan.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\src\Shaders\ComputeCoverage.glsl" />
+    <None Include="..\src\Shaders\ComputeHairShading.glsl" />
+    <None Include="..\src\Shaders\ComputeShadow.glsl" />
+    <None Include="..\src\Shaders\ComputeTangents.comp" />
+    <None Include="..\src\Shaders\FS_Depth_Hair_Data.frag" />
+    <None Include="..\src\Shaders\FS_FillColors_Hair_Data.frag" />
+    <None Include="..\src\Shaders\FS_ResolveColor_Hair_Data.frag" />
+    <None Include="..\src\Shaders\FS_ResolveDepth_Hair_Data.frag" />
+    <None Include="..\src\Shaders\GlobalConstraints.comp" />
+    <None Include="..\src\Shaders\HairShadowMap.frag" />
+    <None Include="..\src\Shaders\HairShadowMap.vert" />
+    <None Include="..\src\Shaders\IndicesComputations.glsl" />
+    <None Include="..\src\Shaders\LengthWindCollision.comp" />
+    <None Include="..\src\Shaders\LocalConstraints.comp" />
+    <None Include="..\src\Shaders\PackUnpack.glsl" />
+    <None Include="..\src\Shaders\PrepareFollowHair.comp" />
+    <None Include="..\src\Shaders\RenderConfig.glsl" />
+    <None Include="..\src\Shaders\RenderHair.vert" />
+    <None Include="..\src\Shaders\RenderHairAA.vert" />
+    <None Include="..\src\Shaders\RenderHairAAStrandCopies.vert" />
+    <None Include="..\src\Shaders\RenderHairStrandCopies.vert" />
+    <None Include="..\src\Shaders\SimulationConfig.glsl" />
+    <None Include="..\src\Shaders\TressFXRender_pass2.frag" />
+    <None Include="..\src\Shaders\TressFXRender_pass2.vert" />
+    <None Include="..\src\Shaders\TressFxRender.frag" />
+    <None Include="..\src\Shaders\UpdateFollowHair.comp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\amd_lib\shared\d3d11\build\AMD_LIB_Minimal_2015.vcxproj">
+      <Project>{0D2AEA47-7909-69E3-8221-F4B9EE7FCF44}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

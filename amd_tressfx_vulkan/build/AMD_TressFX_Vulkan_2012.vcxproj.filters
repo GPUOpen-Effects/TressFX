@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="amd_tressfx">
+      <UniqueIdentifier>{E5B4C84B-516A-4141-DA5E-3B1846133845}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="amd_tressfx\src">
+      <UniqueIdentifier>{7C5D4EB9-E8E8-BB7D-F1F9-3E725D04187E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="amd_tressfx\src\Math">
+      <UniqueIdentifier>{D58F8ECE-C11E-1898-6A3D-2C9356AB283E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src">
+      <UniqueIdentifier>{2DAB880B-99B4-887C-2230-9F7C8E38947C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Shaders">
+      <UniqueIdentifier>{06ADC7FB-7262-40F1-FB56-3AC8670B37F5}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\src\Shaders\ComputeCoverage.glsl">
+      <Filter>src\Shaders</Filter>
+    </None>
+    <None Include="..\src\Shaders\ComputeHairShading.glsl">
+      <Filter>src\Shaders</Filter>
+    </None>
+    <None Include="..\src\Shaders\ComputeShadow.glsl">
+      <Filter>src\Shaders</Filter>
+    </None>
+    <None Include="..\src\Shaders\ComputeTangents.comp">
+      <Filter>src\Shaders</Filter>
+    </None>
+    <None Include="..\src\Shaders\FS_Depth_Hair_Data.frag">
+      <Filter>src\Shaders</Filter>
+    </None>
+    <None Include="..\src\Shaders\FS_FillColors_Hair_Data.frag">
+      <Filter>src\Shaders</Filter>
+    </None>
+    <None Include="..\src\Shaders\FS_ResolveColor_Hair_Data.frag">
+      <Filter>src\Shaders</Filter>
+    </None>
+    <None Include="..\src\Shaders\FS_ResolveDepth_Hair_Data.frag">
+      <Filter>src\Shaders</Filter>
+    </None>
+    <None Include="..\src\Shaders\GlobalConstraints.comp">
+      <Filter>src\Shaders</Filter>
+    </None>
+    <None Include="..\src\Shaders\HairShadowMap.frag">
+      <Filter>src\Shaders</Filter>
+    </None>
+    <None Include="..\src\Shaders\HairShadowMap.vert">
+      <Filter>src\Shaders</Filter>
+    </None>
+    <None Include="..\src\Shaders\IndicesComputations.glsl">
+      <Filter>src\Shaders</Filter>
+    </None>
+    <None Include="..\src\Shaders\LengthWindCollision.comp">
+      <Filter>src\Shaders</Filter>
+    </None>
+    <None Include="..\src\Shaders\LocalConstraints.comp">
+      <Filter>src\Shaders</Filter>
+    </None>
+    <None Include="..\src\Shaders\PackUnpack.glsl">
+      <Filter>src\Shaders</Filter>
+    </None>
+    <None Include="..\src\Shaders\PrepareFollowHair.comp">
+      <Filter>src\Shaders</Filter>
+    </None>
+    <None Include="..\src\Shaders\RenderConfig.glsl">
+      <Filter>src\Shaders</Filter>
+    </None>
+    <None Include="..\src\Shaders\RenderHair.vert">
+      <Filter>src\Shaders</Filter>
+    </None>
+    <None Include="..\src\Shaders\RenderHairAA.vert">
+      <Filter>src\Shaders</Filter>
+    </None>
+    <None Include="..\src\Shaders\RenderHairAAStrandCopies.vert">
+      <Filter>src\Shaders</Filter>
+    </None>
+    <None Include="..\src\Shaders\RenderHairStrandCopies.vert">
+      <Filter>src\Shaders</Filter>
+    </None>
+    <None Include="..\src\Shaders\SimulationConfig.glsl">
+      <Filter>src\Shaders</Filter>
+    </None>
+    <None Include="..\src\Shaders\TressFXRender_pass2.frag">
+      <Filter>src\Shaders</Filter>
+    </None>
+    <None Include="..\src\Shaders\TressFXRender_pass2.vert">
+      <Filter>src\Shaders</Filter>
+    </None>
+    <None Include="..\src\Shaders\TressFxRender.frag">
+      <Filter>src\Shaders</Filter>
+    </None>
+    <None Include="..\src\Shaders\UpdateFollowHair.comp">
+      <Filter>src\Shaders</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\TressFXMeshVulkan.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\TressFXOpaqueVulkan.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\TressFXPrecompiledShadersVulkan.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\TressFXRendererVulkan.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\TressFXShortCutVulkan.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\TressFXSimulationVulkan.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\UtilVulkan.h">
+      <Filter>src</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\amd_tressfx\src\Math\Matrix33.cpp">
+      <Filter>amd_tressfx\src\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\amd_tressfx\src\Math\Matrix44.cpp">
+      <Filter>amd_tressfx\src\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\amd_tressfx\src\Math\Quaternion.cpp">
+      <Filter>amd_tressfx\src\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\amd_tressfx\src\Math\Transform.cpp">
+      <Filter>amd_tressfx\src\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\amd_tressfx\src\Math\Vector3D.cpp">
+      <Filter>amd_tressfx\src\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\amd_tressfx\src\TressFXAsset.cpp">
+      <Filter>amd_tressfx\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\amd_tressfx\src\Util.cpp">
+      <Filter>amd_tressfx\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\TressFXMeshVulkan.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\TressFXOpaqueVulkan.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\TressFXRendererVulkan.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\TressFXShortCutVulkan.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\TressFXSimulationVulkan.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\TressFXVulkan.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\UtilVulkan.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

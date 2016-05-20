@@ -288,7 +288,6 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\ags_lib\inc\amd_ags.h" />
     <ClInclude Include="..\..\common\inc\AMD_Types.h" />
     <ClInclude Include="..\inc\AMD_LIB.h" />
     <ClInclude Include="..\src\AMD_Buffer.h" />
