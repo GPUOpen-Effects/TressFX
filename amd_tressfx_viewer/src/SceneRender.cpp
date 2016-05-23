@@ -393,8 +393,8 @@ void CSceneRender::CreateTextureAndViews( ID3D11Device* pd3dDevice )
     D3D11_SHADER_RESOURCE_VIEW_DESC srDesc;
     srDesc.Format = DXGI_FORMAT_R8_UNORM;
     srDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-    srDesc.Texture1D.MostDetailedMip = 0;
-    srDesc.Texture1D.MipLevels = 0xffffffff;
+    srDesc.Texture2D.MostDetailedMip = 0;
+    srDesc.Texture2D.MipLevels = (UINT)(-1);
     pd3dDevice->CreateShaderResourceView(m_pSceneShadowTexture, &srDesc, &m_pSceneShadowSRV);
     pd3dDevice->CreateShaderResourceView(m_pSceneShadowTexture_temp, &srDesc, &m_pSceneShadowSRV_temp);
 

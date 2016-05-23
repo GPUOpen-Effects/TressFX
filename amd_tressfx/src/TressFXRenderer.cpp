@@ -248,8 +248,8 @@ HRESULT TressFXRenderer::CreateTextureAndViews( ID3D11Device* pd3dDevice )
     D3D11_SHADER_RESOURCE_VIEW_DESC srDesc;
     srDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
     srDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-    srDesc.Texture1D.MipLevels = 0xffffffff;
-    srDesc.Texture1D.MostDetailedMip = 0;
+    srDesc.Texture2D.MipLevels = (UINT)(-1);
+    srDesc.Texture2D.MostDetailedMip = 0;
 
     AMD_V_RETURN(pd3dDevice->CreateShaderResourceView(m_pNoiseTexture2D, &srDesc, &m_pNoiseSRV));
 
