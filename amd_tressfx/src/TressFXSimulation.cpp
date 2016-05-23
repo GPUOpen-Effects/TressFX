@@ -114,7 +114,7 @@ TressFXSimulation::TressFXSimulation(void)
     m_CSApplyHairTransformGlobally = NULL;
 	m_CSComputeTangents = NULL;
     m_CSLocalShapeConstraints = NULL;
-    m_CSLengthConstriantsWindAndCollision = NULL;
+    m_CSLengthConstraintsWindAndCollision = NULL;
     m_CSUpdateFollowHairVertices = NULL;
     m_CSPrepareFollowHairBeforeTurningIntoGuide = NULL;
     m_pCBCSPerFrame = NULL;
@@ -166,8 +166,8 @@ HRESULT TressFXSimulation::OnCreateDevice(ID3D11Device* pd3dDevice, TressFX_Coll
         NULL, &m_CSLocalShapeConstraints));
     AMD_V_RETURN(pd3dDevice->CreateComputeShader(LocalShapeConstraintsWithIteration_Data, sizeof(LocalShapeConstraintsWithIteration_Data),
         NULL, &m_CSLocalShapeConstraintsSingleDispatch));
-    AMD_V_RETURN(pd3dDevice->CreateComputeShader(LengthConstriantsWindAndCollision_Data, sizeof(LengthConstriantsWindAndCollision_Data),
-        NULL, &m_CSLengthConstriantsWindAndCollision));
+    AMD_V_RETURN(pd3dDevice->CreateComputeShader(LengthConstraintsWindAndCollision_Data, sizeof(LengthConstraintsWindAndCollision_Data),
+        NULL, &m_CSLengthConstraintsWindAndCollision));
     AMD_V_RETURN(pd3dDevice->CreateComputeShader(UpdateFollowHairVertices_Data, sizeof(UpdateFollowHairVertices_Data),
         NULL, &m_CSUpdateFollowHairVertices));
     AMD_V_RETURN(pd3dDevice->CreateComputeShader(PrepareFollowHairBeforeTurningIntoGuide_Data, sizeof(PrepareFollowHairBeforeTurningIntoGuide_Data),
@@ -627,7 +627,7 @@ HRESULT TressFXSimulation::Simulate(ID3D11DeviceContext* pd3dContext, float fEla
 
     // Edge length constraints, wind and collisions
     // One thread computes one vertex
-    pd3dContext->CSSetShader(m_CSLengthConstriantsWindAndCollision, NULL, 0 );
+    pd3dContext->CSSetShader(m_CSLengthConstraintsWindAndCollision, NULL, 0 );
     pd3dContext->Dispatch(numOfGroupsForCS_VertexLevel, 1, 1);
 
     // Update follow hair vertices
@@ -723,7 +723,7 @@ void TressFXSimulation::OnDestroy(bool destroyShaders)
 		AMD_SAFE_RELEASE(m_CSComputeTangents);
         AMD_SAFE_RELEASE(m_CSLocalShapeConstraints);
         AMD_SAFE_RELEASE(m_CSLocalShapeConstraintsSingleDispatch);
-        AMD_SAFE_RELEASE(m_CSLengthConstriantsWindAndCollision);
+        AMD_SAFE_RELEASE(m_CSLengthConstraintsWindAndCollision);
         AMD_SAFE_RELEASE(m_CSUpdateFollowHairVertices);
         AMD_SAFE_RELEASE(m_CSPrepareFollowHairBeforeTurningIntoGuide);
         AMD_SAFE_RELEASE(m_CSGenerateTransforms);

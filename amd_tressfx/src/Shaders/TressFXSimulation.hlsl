@@ -716,7 +716,7 @@ void LocalShapeConstraintsWithIteration(uint GIndex : SV_GroupIndex,
 
 //--------------------------------------------------------------------------------------
 //
-//  LengthConstriantsWindAndCollision
+//  LengthConstraintsWindAndCollision
 //
 //  Compute shader to move the vertex position based on wind, maintain the lenght constraints
 //  and handles collisions.
@@ -725,7 +725,7 @@ void LocalShapeConstraintsWithIteration(uint GIndex : SV_GroupIndex,
 //
 //--------------------------------------------------------------------------------------
 [numthreads(THREAD_GROUP_SIZE, 1, 1)]
-void LengthConstriantsWindAndCollision(uint GIndex : SV_GroupIndex,
+void LengthConstraintsWindAndCollision(uint GIndex : SV_GroupIndex,
 									   uint3 GId : SV_GroupID,
 									   uint3 DTid : SV_DispatchThreadID)
 {

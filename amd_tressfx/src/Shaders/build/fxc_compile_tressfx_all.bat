@@ -39,7 +39,7 @@ REM TressFXSimulation Compute Shaders
 "%fxc_exe%" /nologo /T cs_5_0 /E ComputeTangents /O1 /Fh ..\inc\ComputeTangents.inc /Vn ComputeTangents_Data  ..\TressFXSimulation.hlsl 
 "%fxc_exe%" /nologo /T cs_5_0 /E LocalShapeConstraints /O1 /Fh ..\inc\LocalShapeConstraints.inc /Vn LocalShapeConstraints_Data  ..\TressFXSimulation.hlsl 
 "%fxc_exe%" /nologo /T cs_5_0 /E LocalShapeConstraintsWithIteration /O1 /Fh ..\inc\LocalShapeConstraintsWithIteration.inc /Vn LocalShapeConstraintsWithIteration_Data  ..\TressFXSimulation.hlsl 
-"%fxc_exe%" /nologo /T cs_5_0 /E LengthConstriantsWindAndCollision /O1 /Fh ..\inc\LengthConstriantsWindAndCollision.inc /Vn LengthConstriantsWindAndCollision_Data  ..\TressFXSimulation.hlsl 
+"%fxc_exe%" /nologo /T cs_5_0 /E LengthConstraintsWindAndCollision /O1 /Fh ..\inc\LengthConstraintsWindAndCollision.inc /Vn LengthConstraintsWindAndCollision_Data  ..\TressFXSimulation.hlsl 
 "%fxc_exe%" /nologo /T cs_5_0 /E UpdateFollowHairVertices /O1 /Fh ..\inc\UpdateFollowHairVertices.inc /Vn UpdateFollowHairVertices_Data  ..\TressFXSimulation.hlsl 
 "%fxc_exe%" /nologo /T cs_5_0 /E PrepareFollowHairBeforeTurningIntoGuide /O1 /Fh ..\inc\PrepareFollowHairBeforeTurningIntoGuide.inc /Vn PrepareFollowHairBeforeTurningIntoGuide_Data  ..\TressFXSimulation.hlsl 
 "%fxc_exe%" /nologo /T cs_5_0 /E GenerateTransforms /O1 /Fh ..\inc\GenerateTransforms.inc /Vn GenerateTransforms_Data  ..\TressFXSimulation.hlsl 

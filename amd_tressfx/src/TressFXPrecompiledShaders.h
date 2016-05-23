@@ -46,7 +46,7 @@
 #include "shaders\Inc\ComputeTangents.inc"
 #include "shaders\Inc\LocalShapeConstraints.inc"
 #include "shaders\Inc\LocalShapeConstraintsWithIteration.inc"
-#include "shaders\Inc\LengthConstriantsWindAndCollision.inc"
+#include "shaders\Inc\LengthConstraintsWindAndCollision.inc"
 #include "shaders\Inc\UpdateFollowHairVertices.inc"
 #include "shaders\Inc\PrepareFollowHairBeforeTurningIntoGuide.inc"
 #include "shaders\Inc\GenerateTransforms.inc"

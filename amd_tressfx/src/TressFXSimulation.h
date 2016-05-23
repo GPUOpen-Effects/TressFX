@@ -79,7 +79,7 @@ private:
 	ID3D11ComputeShader*        m_CSComputeTangents;
     ID3D11ComputeShader*        m_CSLocalShapeConstraints;
     ID3D11ComputeShader*        m_CSLocalShapeConstraintsSingleDispatch;
-    ID3D11ComputeShader*        m_CSLengthConstriantsWindAndCollision;
+    ID3D11ComputeShader*        m_CSLengthConstraintsWindAndCollision;
     ID3D11ComputeShader*        m_CSUpdateFollowHairVertices;
     ID3D11ComputeShader*        m_CSPrepareFollowHairBeforeTurningIntoGuide;
     ID3D11ComputeShader*        m_CSGenerateTransforms;

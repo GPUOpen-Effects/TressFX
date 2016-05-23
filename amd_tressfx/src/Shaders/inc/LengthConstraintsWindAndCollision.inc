@@ -504,7 +504,7 @@ ret
 // Approximately 369 instruction slots used
 #endif
 
-const BYTE LengthConstriantsWindAndCollision_Data[] =
+const BYTE LengthConstraintsWindAndCollision_Data[] =
 {
      68,  88,  66,  67, 102, 229, 
      93, 223, 130, 138, 150, 252, 
