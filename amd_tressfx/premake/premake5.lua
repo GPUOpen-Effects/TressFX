@@ -22,7 +22,7 @@ workspace ("AMD_" .. _AMD_LIBRARY_NAME)
 externalproject "AMD_LIB_Minimal"
    kind "StaticLib"
    language "C++"
-   location "../../AMD_LIB/build"
+   location "../../amd_lib/shared/d3d11/build"
    filename ("AMD_LIB_Minimal" .. _AMD_VS_SUFFIX)
    uuid "0D2AEA47-7909-69E3-8221-F4B9EE7FCF44"
    configmap {
@@ -47,7 +47,7 @@ project ("AMD_" .. _AMD_LIBRARY_NAME)
    windowstarget (_AMD_WIN_SDK_VERSION)
 
    files { "../inc/**.h", "../src/**.h", "../src/**.cpp", "../src/Shaders/**.hlsl" }
-   includedirs { "../inc", "../../AMD_LIB/inc" }
+   includedirs { "../inc", "../../amd_lib/shared/common/inc", "../../amd_lib/shared/d3d11/inc" }
    links { "AMD_LIB_Minimal" }
 
    filter "configurations:DLL_*"

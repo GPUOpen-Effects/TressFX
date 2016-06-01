@@ -63,14 +63,14 @@
       <WarningLevel>Level4</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
       <PreprocessorDefinitions>AMD_TRESSFX_COMPILE_DYNAMIC_LIB=1;WIN32;_DEBUG;DEBUG;PROFILE;_WINDOWS;_WIN32_WINNT=0x0601;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\src\ResourceFiles;..\..\AMD_TressFX\inc;..\..\AMD_LIB\inc;..\..\AMD_SDK\inc;..\..\DXUT\Core;..\..\DXUT\Optional;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src\ResourceFiles;..\..\AMD_TressFX\inc;..\..\amd_lib\shared\common\inc;..\..\amd_lib\shared\d3d11\inc;..\..\framework\d3d11\amd_sdk\inc;..\..\framework\d3d11\dxut\Core;..\..\framework\d3d11\dxut\Optional;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <FloatingPointModel>Fast</FloatingPointModel>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>AMD_TRESSFX_COMPILE_DYNAMIC_LIB=1;WIN32;_DEBUG;DEBUG;PROFILE;_WINDOWS;_WIN32_WINNT=0x0601;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\src\ResourceFiles;..\..\AMD_TressFX\inc;..\..\AMD_LIB\inc;..\..\AMD_SDK\inc;..\..\DXUT\Core;..\..\DXUT\Optional;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src\ResourceFiles;..\..\AMD_TressFX\inc;..\..\amd_lib\shared\common\inc;..\..\amd_lib\shared\d3d11\inc;..\..\framework\d3d11\amd_sdk\inc;..\..\framework\d3d11\dxut\Core;..\..\framework\d3d11\dxut\Optional;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -94,7 +94,7 @@ if exist "..\..\AMD_TressFX\lib\GPUOpen_TressFX_x64.dll"  xcopy "..\..\AMD_Tress
       <WarningLevel>Level4</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
       <PreprocessorDefinitions>AMD_TRESSFX_COMPILE_DYNAMIC_LIB=1;WIN32;NDEBUG;PROFILE;_WINDOWS;_WIN32_WINNT=0x0601;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\src\ResourceFiles;..\..\AMD_TressFX\inc;..\..\AMD_LIB\inc;..\..\AMD_SDK\inc;..\..\DXUT\Core;..\..\DXUT\Optional;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src\ResourceFiles;..\..\AMD_TressFX\inc;..\..\amd_lib\shared\common\inc;..\..\amd_lib\shared\d3d11\inc;..\..\framework\d3d11\amd_sdk\inc;..\..\framework\d3d11\dxut\Core;..\..\framework\d3d11\dxut\Optional;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -105,7 +105,7 @@ if exist "..\..\AMD_TressFX\lib\GPUOpen_TressFX_x64.dll"  xcopy "..\..\AMD_Tress
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>AMD_TRESSFX_COMPILE_DYNAMIC_LIB=1;WIN32;NDEBUG;PROFILE;_WINDOWS;_WIN32_WINNT=0x0601;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\src\ResourceFiles;..\..\AMD_TressFX\inc;..\..\AMD_LIB\inc;..\..\AMD_SDK\inc;..\..\DXUT\Core;..\..\DXUT\Optional;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src\ResourceFiles;..\..\AMD_TressFX\inc;..\..\amd_lib\shared\common\inc;..\..\amd_lib\shared\d3d11\inc;..\..\framework\d3d11\amd_sdk\inc;..\..\framework\d3d11\dxut\Core;..\..\framework\d3d11\dxut\Optional;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -149,19 +149,19 @@ if exist "..\..\AMD_TressFX\lib\GPUOpen_TressFX_x64.dll"  xcopy "..\..\AMD_Tress
     <ResourceCompile Include="..\src\ResourceFiles\TressFXViewer.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\AMD_LIB\build\AMD_LIB_Minimal_2013.vcxproj">
+    <ProjectReference Include="..\..\amd_lib\shared\d3d11\build\AMD_LIB_Minimal_2013.vcxproj">
       <Project>{0D2AEA47-7909-69E3-8221-F4B9EE7FCF44}</Project>
     </ProjectReference>
     <ProjectReference Include="..\..\AMD_TressFX\build\AMD_TressFX_2013.vcxproj">
       <Project>{252C0AF0-91E1-82E5-1AD6-7CBC868A79E9}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\DXUT\Optional\DXUTOpt_2013.vcxproj">
+    <ProjectReference Include="..\..\framework\d3d11\dxut\Optional\DXUTOpt_2013.vcxproj">
       <Project>{61B333C2-C4F7-4CC1-A9BF-83F6D95588EB}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\DXUT\Core\DXUT_2013.vcxproj">
+    <ProjectReference Include="..\..\framework\d3d11\dxut\Core\DXUT_2013.vcxproj">
       <Project>{85344B7F-5AA0-4E12-A065-D1333D11F6CA}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\AMD_SDK\build\AMD_SDK_Minimal_2013.vcxproj">
+    <ProjectReference Include="..\..\framework\d3d11\amd_sdk\build\AMD_SDK_Minimal_2013.vcxproj">
       <Project>{EBB939DC-98E4-49DF-B1F1-D2E80A11F60A}</Project>
     </ProjectReference>
   </ItemGroup>

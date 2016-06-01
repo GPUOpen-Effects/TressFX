@@ -3,15 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TressFX_Viewer", "TressFX_Viewer_2015.vcxproj", "{332B098E-9F8C-E69B-28FA-2C4E945A1D5B}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AMD_LIB_Minimal", "..\..\AMD_LIB\build\AMD_LIB_Minimal_2015.vcxproj", "{0D2AEA47-7909-69E3-8221-F4B9EE7FCF44}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AMD_LIB_Minimal", "..\..\amd_lib\shared\d3d11\build\AMD_LIB_Minimal_2015.vcxproj", "{0D2AEA47-7909-69E3-8221-F4B9EE7FCF44}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AMD_SDK_Minimal", "..\..\AMD_SDK\build\AMD_SDK_Minimal_2015.vcxproj", "{EBB939DC-98E4-49DF-B1F1-D2E80A11F60A}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AMD_SDK_Minimal", "..\..\framework\d3d11\amd_sdk\build\AMD_SDK_Minimal_2015.vcxproj", "{EBB939DC-98E4-49DF-B1F1-D2E80A11F60A}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AMD_TressFX", "..\..\AMD_TressFX\build\AMD_TressFX_2015.vcxproj", "{252C0AF0-91E1-82E5-1AD6-7CBC868A79E9}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DXUT", "..\..\DXUT\Core\DXUT_2015.vcxproj", "{85344B7F-5AA0-4E12-A065-D1333D11F6CA}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DXUT", "..\..\framework\d3d11\dxut\Core\DXUT_2015.vcxproj", "{85344B7F-5AA0-4E12-A065-D1333D11F6CA}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DXUTOpt", "..\..\DXUT\Optional\DXUTOpt_2015.vcxproj", "{61B333C2-C4F7-4CC1-A9BF-83F6D95588EB}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DXUTOpt", "..\..\framework\d3d11\dxut\Optional\DXUTOpt_2015.vcxproj", "{61B333C2-C4F7-4CC1-A9BF-83F6D95588EB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

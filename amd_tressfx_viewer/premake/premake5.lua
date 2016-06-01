@@ -28,28 +28,28 @@ externalproject ("AMD_" .. _AMD_LIBRARY_NAME)
 externalproject "AMD_LIB_Minimal"
    kind "StaticLib"
    language "C++"
-   location "../../AMD_LIB/build"
+   location "../../amd_lib/shared/d3d11/build"
    filename ("AMD_LIB_Minimal" .. _AMD_VS_SUFFIX)
    uuid "0D2AEA47-7909-69E3-8221-F4B9EE7FCF44"
 
 externalproject "AMD_SDK_Minimal"
    kind "StaticLib"
    language "C++"
-   location "../../AMD_SDK/build"
+   location "../../framework/d3d11/amd_sdk/build"
    filename ("AMD_SDK_Minimal" .. _AMD_VS_SUFFIX)
    uuid "EBB939DC-98E4-49DF-B1F1-D2E80A11F60A"
 
 externalproject "DXUT"
    kind "StaticLib"
    language "C++"
-   location "../../DXUT/Core"
+   location "../../framework/d3d11/dxut/Core"
    filename ("DXUT" .. _AMD_VS_SUFFIX)
    uuid "85344B7F-5AA0-4E12-A065-D1333D11F6CA"
 
 externalproject "DXUTOpt"
    kind "StaticLib"
    language "C++"
-   location "../../DXUT/Optional"
+   location "../../framework/d3d11/dxut/Optional"
    filename ("DXUTOpt" .. _AMD_VS_SUFFIX)
    uuid "61B333C2-C4F7-4CC1-A9BF-83F6D95588EB"
 
@@ -72,7 +72,7 @@ project (_AMD_LIBRARY_NAME .. "_Viewer")
    postbuildmessage "Copying dependencies..."
 
    files { "../src/**.h", "../src/**.cpp", "../src/**.rc", "../src/**.manifest", "../src/**.hlsl" }
-   includedirs { "../src/ResourceFiles", "../../AMD_%{_AMD_LIBRARY_NAME}/inc", "../../AMD_LIB/inc", "../../AMD_SDK/inc", "../../DXUT/Core", "../../DXUT/Optional" }
+   includedirs { "../src/ResourceFiles", "../../AMD_%{_AMD_LIBRARY_NAME}/inc", "../../amd_lib/shared/common/inc", "../../amd_lib/shared/d3d11/inc", "../../framework/d3d11/amd_sdk/inc", "../../framework/d3d11/dxut/Core", "../../framework/d3d11/dxut/Optional" }
    links { "AMD_%{_AMD_LIBRARY_NAME}", "AMD_LIB_Minimal", "AMD_SDK_Minimal", "DXUT", "DXUTOpt", "d3dcompiler", "dxguid", "winmm", "comctl32", "Usp10", "Shlwapi" }
    defines { "AMD_%{_AMD_LIBRARY_NAME_ALL_CAPS}_COMPILE_DYNAMIC_LIB=1" }
 

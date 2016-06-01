@@ -226,7 +226,7 @@
       <WarningLevel>Level4</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
       <PreprocessorDefinitions>_USRDLL;AMD_TRESSFX_COMPILE_DYNAMIC_LIB=1;WIN32;_DEBUG;_WINDOWS;_WIN32_WINNT=0x0601;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\inc;..\..\AMD_LIB\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\inc;..\..\amd_lib\shared\common\inc;..\..\amd_lib\shared\d3d11\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <ExceptionHandling>false</ExceptionHandling>
@@ -252,7 +252,7 @@ xcopy "..\lib\VS2013\Win32\DLL_Debug\$(TargetName).lib"  "..\lib" /H /R /Y &gt; 
       <WarningLevel>Level4</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
       <PreprocessorDefinitions>_USRDLL;AMD_TRESSFX_COMPILE_DYNAMIC_LIB=1;WIN32;_DEBUG;_WINDOWS;_WIN32_WINNT=0x0601;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\inc;..\..\AMD_LIB\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\inc;..\..\amd_lib\shared\common\inc;..\..\amd_lib\shared\d3d11\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <ExceptionHandling>false</ExceptionHandling>
@@ -278,7 +278,7 @@ xcopy "..\lib\VS2013\x64\DLL_Debug\$(TargetName).lib"  "..\lib" /H /R /Y &gt; nu
       <WarningLevel>Level4</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
       <PreprocessorDefinitions>_USRDLL;AMD_TRESSFX_COMPILE_DYNAMIC_LIB=1;WIN32;NDEBUG;_WINDOWS;_WIN32_WINNT=0x0601;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\inc;..\..\AMD_LIB\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\inc;..\..\amd_lib\shared\common\inc;..\..\amd_lib\shared\d3d11\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -309,7 +309,7 @@ xcopy "..\lib\VS2013\Win32\DLL_Release\$(TargetName).lib"  "..\lib" /H /R /Y &gt
       <WarningLevel>Level4</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
       <PreprocessorDefinitions>_USRDLL;AMD_TRESSFX_COMPILE_DYNAMIC_LIB=1;WIN32;NDEBUG;_WINDOWS;_WIN32_WINNT=0x0601;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\inc;..\..\AMD_LIB\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\inc;..\..\amd_lib\shared\common\inc;..\..\amd_lib\shared\d3d11\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -340,7 +340,7 @@ xcopy "..\lib\VS2013\x64\DLL_Release\$(TargetName).lib"  "..\lib" /H /R /Y &gt; 
       <WarningLevel>Level4</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
       <PreprocessorDefinitions>_LIB;AMD_TRESSFX_COMPILE_DYNAMIC_LIB=0;WIN32;_DEBUG;_WINDOWS;_WIN32_WINNT=0x0601;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\inc;..\..\AMD_LIB\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\inc;..\..\amd_lib\shared\common\inc;..\..\amd_lib\shared\d3d11\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <ExceptionHandling>false</ExceptionHandling>
@@ -361,7 +361,7 @@ xcopy "..\lib\VS2013\x64\DLL_Release\$(TargetName).lib"  "..\lib" /H /R /Y &gt; 
       <WarningLevel>Level4</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
       <PreprocessorDefinitions>_LIB;AMD_TRESSFX_COMPILE_DYNAMIC_LIB=0;WIN32;_DEBUG;_WINDOWS;_WIN32_WINNT=0x0601;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\inc;..\..\AMD_LIB\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\inc;..\..\amd_lib\shared\common\inc;..\..\amd_lib\shared\d3d11\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <ExceptionHandling>false</ExceptionHandling>
@@ -382,7 +382,7 @@ xcopy "..\lib\VS2013\x64\DLL_Release\$(TargetName).lib"  "..\lib" /H /R /Y &gt; 
       <WarningLevel>Level4</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
       <PreprocessorDefinitions>_LIB;AMD_TRESSFX_COMPILE_DYNAMIC_LIB=0;WIN32;NDEBUG;_WINDOWS;_WIN32_WINNT=0x0601;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\inc;..\..\AMD_LIB\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\inc;..\..\amd_lib\shared\common\inc;..\..\amd_lib\shared\d3d11\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -408,7 +408,7 @@ xcopy "..\lib\VS2013\x64\DLL_Release\$(TargetName).lib"  "..\lib" /H /R /Y &gt; 
       <WarningLevel>Level4</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
       <PreprocessorDefinitions>_LIB;AMD_TRESSFX_COMPILE_DYNAMIC_LIB=0;WIN32;NDEBUG;_WINDOWS;_WIN32_WINNT=0x0601;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\inc;..\..\AMD_LIB\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\inc;..\..\amd_lib\shared\common\inc;..\..\amd_lib\shared\d3d11\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -434,7 +434,7 @@ xcopy "..\lib\VS2013\x64\DLL_Release\$(TargetName).lib"  "..\lib" /H /R /Y &gt; 
       <WarningLevel>Level4</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
       <PreprocessorDefinitions>_USRDLL;AMD_TRESSFX_COMPILE_DYNAMIC_LIB=1;WIN32;NDEBUG;_WINDOWS;_WIN32_WINNT=0x0601;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\inc;..\..\AMD_LIB\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\inc;..\..\amd_lib\shared\common\inc;..\..\amd_lib\shared\d3d11\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -466,7 +466,7 @@ xcopy "..\lib\VS2013\Win32\DLL_Release_MT\$(TargetName).lib"  "..\lib" /H /R /Y 
       <WarningLevel>Level4</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
       <PreprocessorDefinitions>_USRDLL;AMD_TRESSFX_COMPILE_DYNAMIC_LIB=1;WIN32;NDEBUG;_WINDOWS;_WIN32_WINNT=0x0601;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\inc;..\..\AMD_LIB\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\inc;..\..\amd_lib\shared\common\inc;..\..\amd_lib\shared\d3d11\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -530,7 +530,7 @@ xcopy "..\lib\VS2013\x64\DLL_Release_MT\$(TargetName).lib"  "..\lib" /H /R /Y &g
     <None Include="..\src\Shaders\TressFXSimulation.hlsl" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\AMD_LIB\build\AMD_LIB_Minimal_2013.vcxproj">
+    <ProjectReference Include="..\..\amd_lib\shared\d3d11\build\AMD_LIB_Minimal_2013.vcxproj">
       <Project>{0D2AEA47-7909-69E3-8221-F4B9EE7FCF44}</Project>
     </ProjectReference>
   </ItemGroup>
