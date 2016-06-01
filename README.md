@@ -60,7 +60,7 @@ The default SDK for a particular version of Visual Studio (for 2012 or higher) i
 For Visual Studio 2015, this version of Premake adds the `WindowsTargetPlatformVersion` element to the project file to specify which version of the Windows SDK will be used. To change `WindowsTargetPlatformVersion` for Visual Studio 2015, change the value for `_AMD_WIN_SDK_VERSION` in `premake\amd_premake_util.lua` and regenerate the Visual Studio files.
 
 ### Third-Party Software
-* DXUT is distributed under the terms of the MIT License. See `dxut\MIT.txt`.
+* DXUT is distributed under the terms of the MIT License. See `framework\d3d11\dxut\MIT.txt`.
 * ContentExporter is distributed under the terms of the MIT License. See `amd_tressfx_tools\ContentExporter\src\LICENSE`
 * Premake is distributed under the terms of the BSD License. See `premake\LICENSE.txt`.
 
