@@ -84,11 +84,10 @@ struct ConstBufferCS_Per_Frame
     unsigned int NumFollowHairsPerGuideHair;
     float TipSeparationFactor;
 
-    int bWarp;
     int NumLocalShapeMatchingIterations;
 
     int NumVerticesPerStrand; // should be 2^n (n is integer and greater and 3) and less than or equal to THREAD_GROUP_SIZE. i.e. 8, 16, 32 or 64
-    float pad[2];
+    float pad[3];
 };
 
 struct ConstBufferCS_HeadTransform
@@ -425,7 +424,7 @@ float getScaledStiffness(float s0, float s_min_scale, float h, float h0)
 //--------------------------------------------------------------------------------------
 HRESULT TressFXSimulation::Simulate(ID3D11DeviceContext* pd3dContext, float fElapsedTime, float density,
                                     tressfx_vec3 & windDir, float windMag, XMMATRIX *pModelTransformForHead,
-                                    ID3D11UnorderedAccessView *pSkinningTransforms, float targetFrameRate/* = 1.0f/60.0f*/, bool singleHeadTransform, bool warp)
+                                    ID3D11UnorderedAccessView *pSkinningTransforms, float targetFrameRate/* = 1.0f/60.0f*/, bool singleHeadTransform, bool bAlwaysSimulate)
 {
     m_elapsedTimeSinceLastSim += fElapsedTime;
     bool bFullSimulate = true;
@@ -433,7 +432,7 @@ HRESULT TressFXSimulation::Simulate(ID3D11DeviceContext* pd3dContext, float fEla
     // Simulation is sensitive to frame rate. So, we set the target frame rate (defaulted to 1/60)
     // and if the current elapsed time since the last simulation is too early,
     // we run the simulation with lower iterations and stiffness values.
-    if ((m_elapsedTimeSinceLastSim < targetFrameRate) && !warp)
+    if ( (m_elapsedTimeSinceLastSim < targetFrameRate) && !bAlwaysSimulate )
     {
         bFullSimulate = false;
     }
@@ -453,8 +452,6 @@ HRESULT TressFXSimulation::Simulate(ID3D11DeviceContext* pd3dContext, float fEla
     pd3dContext->Map(m_pCBCSPerFrame, 0, D3D11_MAP_WRITE_DISCARD, 0, &MappedResource);
     {
         ConstBufferCS_Per_Frame* pCSPerFrame = (ConstBufferCS_Per_Frame*)MappedResource.pData;
-
-        pCSPerFrame->bWarp = warp;
 
         if (bFullSimulate)
         {
@@ -527,16 +524,8 @@ HRESULT TressFXSimulation::Simulate(ID3D11DeviceContext* pd3dContext, float fEla
             pCSPerFrame->StiffnessForLocalShapeMatching3 = getScaledStiffness(m_simParams.perSectionShapeParams[3].stiffnessForLocalShapeMatching, s_min_scale, h, h0);
         }
 
-        if (bFullSimulate)
-        {
-            pCSPerFrame->NumLocalShapeMatchingIterations = m_simParams.numLocalShapeMatchingIterations;
-        }
-        else
-        {
-            pCSPerFrame->NumLocalShapeMatchingIterations = 1;
-        }
-
-        pCSPerFrame->NumVerticesPerStrand = g_TressFXNumVerticesPerStrand;
+        // Unlike stiffness, we keep number of iterations for local shape constraint regardless of full simulation or not.
+        pCSPerFrame->NumLocalShapeMatchingIterations = m_simParams.numLocalShapeMatchingIterations;
     }
     pd3dContext->Unmap(m_pCBCSPerFrame, 0);
 

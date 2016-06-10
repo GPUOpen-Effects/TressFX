@@ -101,7 +101,7 @@ namespace AMD
         windDir.z = desc.simulationParams.windDir.z;
         HRESULT hr = tressFXSimulation.Simulate(desc.pd3dDeviceContext, elapsedTime,
             desc.hairParams.density, windDir, desc.simulationParams.windMag, &desc.modelTransformForHead,
-            desc.pSkinningTransformationsUAV, desc.targetFrameRate, desc.bSingleHeadTransform, desc.bWarp);
+            desc.pSkinningTransformationsUAV, desc.targetFrameRate, desc.bSingleHeadTransform, false);
 
         return (hr == S_OK);
     }

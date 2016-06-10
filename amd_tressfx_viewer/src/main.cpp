@@ -816,14 +816,6 @@ void MoveModel(int msg, WPARAM wParam, LPARAM lParam)
                 }
 
                 XMMATRIX modelTransform = mtxTfm * transform * mtxInvTfm;
-
-                bool bSimulate = g_SimulationHUD.m_GUI.GetCheckBox(IDC_CHECKBOX_SIMULATE)->GetChecked();
-
-                if ( !bSimulate )
-                {
-                    pModel->m_TressFXParams.bWarp = true;
-                }
-
                 pModel->m_modelTransformForHead = pModel->m_modelTransformForHead * modelTransform;
             }
             break;
@@ -889,14 +881,6 @@ void RotateModel(int msg, WPARAM wParam, LPARAM lParam)
                 }
 
                 XMMATRIX modelTransform = mtxTfm * transformX * transformY * mtxInvTfm;
-
-                bool bSimulate = g_SimulationHUD.m_GUI.GetCheckBox(IDC_CHECKBOX_SIMULATE)->GetChecked();
-
-                if (!bSimulate)
-                {
-                    pModel->m_TressFXParams.bWarp = true;
-                }
-
                 pModel->m_modelTransformForHead = modelTransform * pModel->m_modelTransformForHead;
             }
             break;
@@ -1457,7 +1441,6 @@ bool CreateDemo(const TFXProjectFile& tfxproject, bool createShaders)
     pModel->m_TressFXParams.pd3dDeviceContext = pd3dImmediateContext;
     pModel->m_TressFXParams.backBufferWidth = g_ScreenWidth;
     pModel->m_TressFXParams.backBufferHeight = g_ScreenHeight;
-    pModel->m_TressFXParams.bWarp = true;
     pHairParams = &pModel->m_TressFXParams.hairParams;
     pSimulationParams = GetCurrentSimulationParams();
 
@@ -2052,8 +2035,6 @@ void CALLBACK OnD3D11FrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext*
                 TIMER_Begin(0, L"Simulation");
                 TressFX_Simulate(pModel->m_TressFXParams, fElapsedTime);
                 TIMER_End(); // Simulation
-
-                pModel->m_TressFXParams.bWarp = false; // only needed for 1 frame
             }
             else
             {

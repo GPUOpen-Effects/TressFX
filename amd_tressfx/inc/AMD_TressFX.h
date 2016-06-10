@@ -217,7 +217,6 @@ struct TressFX_Desc
     DirectX::XMVECTOR               eyePoint;
     DirectX::XMVECTOR               lightPosition;
     DirectX::XMMATRIX               modelTransformForHead;
-    bool                            bWarp;
     float                           targetFrameRate;
     int                             numTotalHairStrands;
     int                             numTotalHairVertices;

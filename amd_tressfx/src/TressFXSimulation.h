@@ -57,7 +57,7 @@ public:
     HRESULT Simulate(ID3D11DeviceContext* pd3dContext, float fElapsedTime, float density,
                      tressfx_vec3 &windDir, float windMag, DirectX::XMMATRIX *pModelTransformForHead,
                      ID3D11UnorderedAccessView *pSkinningTransforms,
-                     float targetFrameRate = 1.0f/60.0f, bool singleHeadTransform = true, bool warp = false);
+                     float targetFrameRate = 1.0f / 60.0f, bool singleHeadTransform = true, bool bAlwaysSimulate = false);
     HRESULT GenerateTransforms(ID3D11DeviceContext* pd3dContext, TressFX_SceneMesh sceneMesh,
                                ID3D11UnorderedAccessView** ppSkinningTransformationsUAV,
                                DirectX::XMMATRIX *pModelTransformForHead);

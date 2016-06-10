@@ -64,11 +64,10 @@ cbuffer ConstBufferCS_Per_Frame : register(b0)
 	uint g_NumFollowHairsPerGuideHair;
 	float g_TipSeparationFactor;
 
-	int g_bWarp;
 	int g_NumLocalShapeMatchingIterations;
 
 	int g_NumVerticesPerStrand; // should be 2^n (n is integer and greater and 3) and less than or equal to THREAD_GROUP_SIZE. i.e. 8, 16, 32 or 64
-	float padding_0[2];
+	float padding_0[3];
 }
 
 cbuffer ConstBufferCS_Collision_Capsule : register(b3)
