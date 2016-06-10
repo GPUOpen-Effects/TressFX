@@ -1,7 +1,5 @@
 version 3.0
 damping 0.1
-stiffnessForLocalShapeMatching 0.9
-stiffnessForGlobalShapeMatching 0.1  
-globalShapeMatchingEffectiveRange 0.5
-lengthConstraintIterations 3       
-localShapeMatchingIterations 3     
+stiffnessForLocalShapeMatching 0.1
+stiffnessForGlobalShapeMatching 0.8  
+globalShapeMatchingEffectiveRange 1.0
