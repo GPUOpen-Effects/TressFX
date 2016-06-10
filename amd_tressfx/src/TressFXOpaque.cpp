@@ -167,7 +167,8 @@ namespace AMD
         tressFXSimulation.m_pTressFXMesh = (TressFXMesh *)desc.pTressFXMesh;
         desc.numTotalHairStrands = tressFXSimulation.m_pTressFXMesh->m_HairAsset.m_NumTotalHairStrands;
         desc.numTotalHairVertices = tressFXSimulation.m_pTressFXMesh->m_HairAsset.m_NumTotalHairVertices;
-		HRESULT hr = tressFXSimulation.ApplyTransformGlobally(desc.pd3dDeviceContext, desc.pSkinningTransformationsUAV, desc.hairParams.density, desc.bSingleHeadTransform, &desc.modelTransformForHead);
+        HRESULT hr = tressFXSimulation.ApplyTransformGlobally(desc.pd3dDeviceContext, desc.pSkinningTransformationsUAV,
+            desc.hairParams.density, desc.bSingleHeadTransform, &desc.modelTransformForHead);
         return (hr == S_OK);
     }
 
