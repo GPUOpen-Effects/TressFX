@@ -28,7 +28,7 @@
 
 #define AMD_TRESSFX_VERSION_MAJOR                    3
 #define AMD_TRESSFX_VERSION_MINOR                    1
-#define AMD_TRESSFX_VERSION_PATCH                    0
+#define AMD_TRESSFX_VERSION_PATCH                    1
 
 // default to static lib
 #ifndef AMD_TRESSFX_COMPILE_DYNAMIC_LIB
