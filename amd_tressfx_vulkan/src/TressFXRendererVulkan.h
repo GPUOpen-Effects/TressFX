@@ -97,10 +97,6 @@ class TressFXRenderer
     VkDeviceMemory m_pSMHairMemory;
     VkImageView m_pSMHairView;
 
-    // vertex buffer for full screen quad
-    VkBuffer m_pScreenQuadVB;
-    VkDeviceMemory m_pScreenQuadMemory;
-
     TressFXShortCut m_ShortCut;
 
     VkImageView m_depthBuffer;
@@ -122,20 +118,16 @@ class TressFXRenderer
     VkResult CreateFrameBuffer(VkDevice pvkDevice, VkImageView depthTextureView,
                                VkImageView colorTextureView, uint32_t width,
                                uint32_t height);
-    VkResult CreateTextureAndViews(VkDevice pvkDevice, uint32_t MemoryIndexGPU,
+    VkResult CreateTextureAndViews(VkDevice pvkDevice, VkPhysicalDeviceMemoryProperties memProperties,
                                    VkCommandBuffer commandBuffer,
                                    VkDeviceMemory scratchMemory, VkBuffer scratchBuffer,
                                    size_t &offsetInScratchBuffer);
     VkResult CreateConstantBuffer(VkDevice pvkDevice, uint32_t maxUniformBuffer,
-                                  uint32_t MemoryIndexCPU);
-    VkResult CreateVertexBuffers(VkDevice pvkDevice, uint32_t MemoryIndexGPU,
-                                 VkCommandBuffer commandBuffer,
-                                 VkDeviceMemory scratchMemory, VkBuffer scratchBuffer,
-                                 size_t &offsetInScratchBuffer);
+                                  VkPhysicalDeviceMemoryProperties memProperties);
     VkResult CreateSamplers(VkDevice pvkDevice);
-    VkResult CreateRenderStateObjects(VkDevice pvkDevice);
+    VkResult CreateRenderStateObjects(VkDevice pvkDevice, VkFormat depthStencilFormat, VkFormat colorFormat);
     VkResult CreatePPLL(VkDevice pvkDevice, int winWidth, int winHeight, bool resize,
-                        uint32_t MemoryIndexGPU);
+		VkPhysicalDeviceMemoryProperties memProperties);
     VkResult CreateLayouts(VkDevice pvkDevice);
     VkResult AllocateAndPopulateSets(VkDevice pvkDevice, bool isShortcut);
     void DeletePPLL(VkDevice pvkDevice);
@@ -148,12 +140,13 @@ class TressFXRenderer
     VkImageView GetShadowMapSRV() { return m_pSMHairView; };
     VkResult OnCreateDevice(VkDevice pvkDevice, int winWidth, int winHeight,
                             bool bShortCutOn, uint32_t maxUniformBuffer,
-                            uint32_t MemoryIndexCPU, uint32_t MemoryIndexGPU,
+                            VkPhysicalDeviceMemoryProperties memProperties,
                             VkImageView depthTexture, VkImageView colorTexture,
                             VkCommandBuffer commandBuffer, VkDeviceMemory scratchMemory,
-                            VkBuffer scratchBuffer, size_t &offsetInScratchBuffer);
+                            VkBuffer scratchBuffer, size_t &offsetInScratchBuffer,
+                            VkFormat depthStencilFormat, VkFormat colorFormat);
     VkResult OnResizedSwapChain(VkDevice pvkDevice, int winWidth, int WinHeight,
-                                bool bShortCutOn, uint32_t MemoryIndexGPU);
+                                bool bShortCutOn, VkPhysicalDeviceMemoryProperties memProperties);
     void BeginHairFrame(VkDevice pvkDevice, DirectX::XMVECTOR eyePoint,
                         DirectX::XMVECTOR lightPosition,
                         DirectX::XMMATRIX *pModelTrasnsformForHead,
@@ -161,12 +154,18 @@ class TressFXRenderer
                         DirectX::XMMATRIX *pViewProjLightOut, float screenWidth,
                         float screenHeight, bool singleHeadTransform,
                         uint32_t uniformBufferIndex);
-    void GenerateShadowMap(VkDevice pvkDevice, VkCommandBuffer commandBuffer,
-                           float density, uint32_t uniformBufferIndex);
-    void RenderHair(VkDevice pvkDevice, VkCommandBuffer commandBuffer, uint32_t width,
-                    uint32_t height, uint32_t uniformBufferIndex);
-    void RenderHairShortcut(VkDevice pvkDevice, VkCommandBuffer commandBuffer,
-                            uint32_t width, uint32_t height, uint32_t uniformBufferIndex);
+    void GenerateShadowMap(VkDevice pvkDevice,
+                           VkCommandBuffer commandBuffer,
+                           float density, uint32_t uniformBufferIndex,
+                           const DebugMarkerPointer& markerCallbacks);
+    void RenderHair(VkDevice pvkDevice, VkCommandBuffer commandBuffer,
+                    uint32_t width,
+                    uint32_t height, uint32_t uniformBufferIndex,
+                    const DebugMarkerPointer& markerCallbacks);
+    void RenderHairShortcut(VkDevice pvkDevice,
+                            VkCommandBuffer commandBuffer,
+                            uint32_t width, uint32_t height, uint32_t uniformBufferIndex,
+                            const DebugMarkerPointer& markerCallbacks);
     void EndHairFrame(VkDevice pvkDevice);
     void OnDestroy();
 };

@@ -29,6 +29,7 @@
 #pragma once
 #include "TressFXAsset.h"
 #include "Util.h"
+#include "UtilVulkan.h"
 
 namespace AMD
 {
@@ -38,11 +39,13 @@ class TressFXMesh
   private:
     VkDevice m_pvkDevice;
     // private member function
-    VkResult CreateBufferAndViews(VkDevice pvkDevice, TressFX_SceneMesh *sceneMesh,
-                                  uint32_t texture_buffer_memory_index,
+    VkResult CreateBufferAndViews(VkDevice pvkDevice,
+ TressFX_SceneMesh *sceneMesh,
+                                  VkPhysicalDeviceMemoryProperties memProperties,
                                   VkCommandBuffer upload_cmd_buffer,
-                                  VkBuffer scratchBuffer, VkDeviceMemory scratchMemory,
-                                  size_t &offsetInUploadBuffer);
+                                  VkBuffer scratchBuffer,
+ VkDeviceMemory scratchMemory,
+                                  size_t &offsetInUploadBuffer, const DebugMarkerPointer& markerCallbacks);
 
     VkResult AllocateDescriptorsSets(VkDevice pvkDevice,
                                      VkDescriptorSetLayout GlobalConstraintsSetLayout,
@@ -58,11 +61,10 @@ class TressFXMesh
 
   public:
     VkBuffer m_pIndexBuffer;
-    VkDeviceMemory m_pIndexMemory;
     VkBuffer m_pTriangleIndexBuffer;
-    VkDeviceMemory m_pTriangleIndexMemory;
     VkBuffer m_pThicknessCoeffsBuffer;
-    VkDeviceMemory m_pThicknessCoeffsMemory;
+    // Store thickness, index and triangle index buffer
+    VkDeviceMemory m_pThicknessIndexTriangleIndexMemory;
     VkBufferView m_pThicknessCoeffsView;
     int m_TotalIndexCount;
     int m_TotalTriangleIndexCount;
@@ -149,18 +151,29 @@ class TressFXMesh
     TressFXMesh(void);
     ~TressFXMesh(void);
 
-    VkResult OnCreate(VkDevice pvkDevice, TressFX_HairBlob *pHairBlob,
-                      TressFX_SceneMesh *sceneMesh, VkImageView pTexture,
-                      uint32_t MemoryIndexGPU, VkCommandBuffer upload_cmd_buffer,
-                      VkBuffer scratchBuffer, VkDeviceMemory scratchMemory,
+    VkResult OnCreate(VkDevice pvkDevice,
+ TressFX_HairBlob *pHairBlob,
+                      TressFX_SceneMesh *sceneMesh,
+ VkImageView pTexture,
+                      VkPhysicalDeviceMemoryProperties memProperties,
+ VkCommandBuffer upload_cmd_buffer,
+                      VkBuffer scratchBuffer,
+ VkDeviceMemory scratchMemory,
+
                       VkDescriptorSetLayout GlobalConstraintsSetLayout,
+
                       VkDescriptorSetLayout LocalConstraintsSetLayout,
+
                       VkDescriptorSetLayout LenghtWindCollisiontSetLayout,
+
                       VkDescriptorSetLayout PrepareFollowHairSetLayout,
+
                       VkDescriptorSetLayout UpdateFollowHaitSetLayout,
+
                       VkDescriptorSetLayout ComputeTangetSetLayout,
+
                       VkDescriptorSetLayout Pass1SetLayout,
-                      VkDescriptorSetLayout ShadowSetLayout);
+                      VkDescriptorSetLayout ShadowSetLayout, const DebugMarkerPointer& markerCallbacks);
     void OnDestroy();
 
     void DestroyAsset();

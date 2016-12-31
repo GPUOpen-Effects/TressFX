@@ -33,17 +33,6 @@
 #include <sstream>
 #include <string>
 
-#ifndef AMD_V_RETURN
-#define AMD_V_RETURN(x)                                                                  \
-    {                                                                                    \
-        vr = (x);                                                                        \
-        if (vr != VK_SUCCESS)                                                            \
-        {                                                                                \
-            return vr;                                                                   \
-        }                                                                                \
-    }
-#endif
-
 using namespace std;
 using namespace DirectX;
 
@@ -57,8 +46,8 @@ namespace AMD
 // Used for initializing member variables to default values.
 //--------------------------------------------------------------------------------------
 TressFXMesh::TressFXMesh(void)
-    : m_pIndexBuffer(NULL), m_pTriangleIndexBuffer(NULL), m_pThicknessCoeffsBuffer(NULL),
-      m_pTriangleIndexMemory(NULL), m_pThicknessCoeffsView(NULL)
+    : m_pIndexBuffer(NULL), m_pTriangleIndexBuffer(NULL), m_pThicknessCoeffsBuffer(NULL), m_pThicknessIndexTriangleIndexMemory(NULL),
+      m_pThicknessCoeffsView(NULL)
 {
     m_HairVertexPositionsBuffer = NULL;
     m_HairVertexPositionsView = NULL;
@@ -129,10 +118,13 @@ TressFXMesh::~TressFXMesh(void) { OnDestroy(); }
 //  and stores the hair data into these resources.
 //
 //--------------------------------------------------------------------------------------
-VkResult TressFXMesh::OnCreate(VkDevice pvkDevice, TressFX_HairBlob *pHairBlob,
-                               TressFX_SceneMesh *sceneMesh, VkImageView pTexture,
-                               uint32_t texture_buffer_memory_index,
-                               VkCommandBuffer upload_cmd_buffer, VkBuffer scratchBuffer,
+VkResult TressFXMesh::OnCreate(VkDevice pvkDevice,
+ TressFX_HairBlob *pHairBlob,
+                               TressFX_SceneMesh *sceneMesh,
+ VkImageView pTexture,
+                               VkPhysicalDeviceMemoryProperties memProperties,
+                               VkCommandBuffer upload_cmd_buffer,
+ VkBuffer scratchBuffer,
                                VkDeviceMemory scratchMemory,
                                VkDescriptorSetLayout GlobalConstraintsSetLayout,
                                VkDescriptorSetLayout LocalConstraintsSetLayout,
@@ -141,9 +133,10 @@ VkResult TressFXMesh::OnCreate(VkDevice pvkDevice, TressFX_HairBlob *pHairBlob,
                                VkDescriptorSetLayout UpdateFollowHaitSetLayout,
                                VkDescriptorSetLayout computeTangentSetLayout,
                                VkDescriptorSetLayout Pass1SetLayout,
-                               VkDescriptorSetLayout ShadowSetLayout)
+                               VkDescriptorSetLayout ShadowSetLayout, const DebugMarkerPointer& markerCallbacks)
 {
     VkResult vr;
+    size_t offsetInUploadBuffer = 0;
 
     // load the binary file
     if (!Deserialize(pHairBlob))
@@ -151,26 +144,71 @@ VkResult TressFXMesh::OnCreate(VkDevice pvkDevice, TressFX_HairBlob *pHairBlob,
         return VK_ERROR_INITIALIZATION_FAILED;
     }
 
-    size_t sizeToUpload = m_HairAsset.m_NumTotalHairVertices * sizeof(float);
-
-    void *uploadBuffer;
-    size_t offsetInUploadBuffer = 0;
-    vkMapMemory(pvkDevice, scratchMemory, 0, sizeToUpload, 0, &uploadBuffer);
-
-    // thickness coeff buffer
+    // Create Buffers
     {
+        // thickness coeff buffer
         VkBufferCreateInfo bd{VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
         bd.usage =
             VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
         bd.size = sizeof(float) * m_HairAsset.m_NumTotalHairVertices;
+        AMD_CHECKED_VULKAN_CALL(vkCreateBuffer(pvkDevice, &bd, nullptr, &m_pThicknessCoeffsBuffer));
 
-        AMD_V_RETURN(vkCreateBuffer(pvkDevice, &bd, nullptr, &m_pThicknessCoeffsBuffer));
-        m_pThicknessCoeffsMemory = allocBufferMemory(pvkDevice, m_pThicknessCoeffsBuffer,
-                                                     texture_buffer_memory_index);
+        //-----------------------------------
+        // Index buffer (lines and triangles)
+        //-----------------------------------
+
+        // Line index buffer
+        m_TotalIndexCount = (int)m_HairAsset.m_LineIndices.size();
+        bd.size = (UINT)(sizeof(unsigned int) * m_TotalIndexCount);
+        bd.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+        AMD_CHECKED_VULKAN_CALL(vkCreateBuffer(pvkDevice, &bd, nullptr, &m_pIndexBuffer));
+
+        // Triangle index buffer
+        m_TotalTriangleIndexCount = (int)m_HairAsset.m_TriangleIndices.size();
+        bd.size = (UINT)(sizeof(unsigned int) * m_TotalTriangleIndexCount);
+        AMD_CHECKED_VULKAN_CALL(vkCreateBuffer(pvkDevice, &bd, nullptr, &m_pTriangleIndexBuffer));
+
+        VkMemoryRequirements thicknessBufferMemReq;
+        vkGetBufferMemoryRequirements(pvkDevice, m_pThicknessCoeffsBuffer, &thicknessBufferMemReq);
+        VkMemoryRequirements indexBufferMemReq;
+        vkGetBufferMemoryRequirements(pvkDevice, m_pIndexBuffer, &indexBufferMemReq);
+        VkMemoryRequirements triangleIndexBufferMemReq;
+        vkGetBufferMemoryRequirements(pvkDevice, m_pTriangleIndexBuffer, &triangleIndexBufferMemReq);
+
+        uint32_t memoryType = getMemoryTypeIndex(indexBufferMemReq.memoryTypeBits & triangleIndexBufferMemReq.memoryTypeBits & thicknessBufferMemReq.memoryTypeBits,
+            memProperties, VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+        if (memoryType == -1) return VK_ERROR_INITIALIZATION_FAILED;
+
+        VkDeviceSize indexBufferOffset = align(thicknessBufferMemReq.size, indexBufferMemReq.alignment);
+        VkDeviceSize triangleIndexBufferOffset = align(indexBufferOffset + indexBufferMemReq.size, triangleIndexBufferMemReq.alignment);
+        VkDeviceSize totalSize = triangleIndexBufferOffset + triangleIndexBufferMemReq.size;
+
+        VkMemoryAllocateInfo allocateInfo{VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO};
+        allocateInfo.allocationSize = totalSize;
+        allocateInfo.memoryTypeIndex = memoryType;
+        vkAllocateMemory(pvkDevice, &allocateInfo, nullptr, &m_pThicknessIndexTriangleIndexMemory);
+
+        vkBindBufferMemory(pvkDevice, m_pThicknessCoeffsBuffer, m_pThicknessIndexTriangleIndexMemory, 0);
+        vkBindBufferMemory(pvkDevice, m_pIndexBuffer, m_pThicknessIndexTriangleIndexMemory, indexBufferOffset);
+        vkBindBufferMemory(pvkDevice, m_pTriangleIndexBuffer, m_pThicknessIndexTriangleIndexMemory, triangleIndexBufferOffset);
+
+        // Fill them
+        void *uploadBuffer;
+        vkMapMemory(pvkDevice, scratchMemory, 0, totalSize, 0, &uploadBuffer);
 
         fillInitialData(upload_cmd_buffer, scratchBuffer, uploadBuffer,
                         m_HairAsset.m_pThicknessCoeffs, m_pThicknessCoeffsBuffer,
-                        offsetInUploadBuffer, bd.size);
+                        offsetInUploadBuffer, sizeof(float) * m_HairAsset.m_NumTotalHairVertices);
+
+        fillInitialData(upload_cmd_buffer, scratchBuffer, uploadBuffer,
+                        &m_HairAsset.m_LineIndices[0], m_pIndexBuffer, offsetInUploadBuffer,
+                        sizeof(unsigned int) * m_TotalIndexCount);
+
+        fillInitialData(upload_cmd_buffer, scratchBuffer, uploadBuffer,
+                        &m_HairAsset.m_TriangleIndices[0], m_pTriangleIndexBuffer,
+                        offsetInUploadBuffer, sizeof(unsigned int) * m_TotalTriangleIndexCount);
+        vkUnmapMemory(pvkDevice, scratchMemory);
     }
 
     // thickness coeff buffer srv
@@ -180,53 +218,21 @@ VkResult TressFXMesh::OnCreate(VkDevice pvkDevice, TressFX_HairBlob *pHairBlob,
         SRVDesc.range = m_HairAsset.m_NumTotalHairVertices * sizeof(float);
         SRVDesc.buffer = m_pThicknessCoeffsBuffer;
 
-        AMD_V_RETURN(
+        AMD_CHECKED_VULKAN_CALL(
             vkCreateBufferView(pvkDevice, &SRVDesc, nullptr, &m_pThicknessCoeffsView));
     }
 
-    //-----------------------------------
-    // Index buffer (lines and triangles)
-    //-----------------------------------
-
-    // Line index buffer
-    m_TotalIndexCount = (int)m_HairAsset.m_LineIndices.size();
-
-    VkBufferCreateInfo bd{VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
-    bd.size = (UINT)(sizeof(unsigned int) * m_HairAsset.m_LineIndices.size());
-    bd.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-
-    AMD_V_RETURN(vkCreateBuffer(pvkDevice, &bd, nullptr, &m_pIndexBuffer));
-    m_pIndexMemory =
-        allocBufferMemory(pvkDevice, m_pIndexBuffer, texture_buffer_memory_index);
-
-    fillInitialData(upload_cmd_buffer, scratchBuffer, uploadBuffer,
-                    &m_HairAsset.m_LineIndices[0], m_pIndexBuffer, offsetInUploadBuffer,
-                    bd.size);
-
-    // Triangle index buffer
-    m_TotalTriangleIndexCount = (int)m_HairAsset.m_TriangleIndices.size();
-    bd.size = (UINT)(sizeof(unsigned int) * m_HairAsset.m_TriangleIndices.size());
-
-    AMD_V_RETURN(vkCreateBuffer(pvkDevice, &bd, nullptr, &m_pTriangleIndexBuffer));
-    m_pTriangleIndexMemory =
-        allocBufferMemory(pvkDevice, m_pTriangleIndexBuffer, texture_buffer_memory_index);
-
-    fillInitialData(upload_cmd_buffer, scratchBuffer, uploadBuffer,
-                    &m_HairAsset.m_TriangleIndices[0], m_pTriangleIndexBuffer,
-                    offsetInUploadBuffer, bd.size);
-
-    vkUnmapMemory(pvkDevice, scratchMemory);
-
     m_pHairTextureSRV = pTexture;
 
-    vr = CreateBufferAndViews(pvkDevice, sceneMesh, texture_buffer_memory_index,
-                              upload_cmd_buffer, scratchBuffer, scratchMemory,
-                              offsetInUploadBuffer);
-    vr =
-        AllocateDescriptorsSets(pvkDevice, GlobalConstraintsSetLayout,
+    AMD_CHECKED_VULKAN_CALL(CreateBufferAndViews(pvkDevice, sceneMesh,
+ memProperties,
+                              upload_cmd_buffer, scratchBuffer,
+ scratchMemory,
+                              offsetInUploadBuffer, markerCallbacks ));
+    AMD_CHECKED_VULKAN_CALL(AllocateDescriptorsSets(pvkDevice, GlobalConstraintsSetLayout,
                                 LocalConstraintsSetLayout, LenghtWindCollisionSetLayout,
                                 PrepareFollowHairSetLayout, UpdateFollowHaitSetLayout,
-                                computeTangentSetLayout, Pass1SetLayout, ShadowSetLayout);
+                                computeTangentSetLayout, Pass1SetLayout, ShadowSetLayout));
 
     VkBufferMemoryBarrier bufferBarrier[] = {
         getBufferBarrier(m_pThicknessCoeffsBuffer, VK_ACCESS_TRANSFER_WRITE_BIT,
@@ -268,9 +274,11 @@ VkResult TressFXMesh::OnCreate(VkDevice pvkDevice, TressFX_HairBlob *pHairBlob,
 //
 //--------------------------------------------------------------------------------------
 VkResult TressFXMesh::CreateBufferAndViews(
-    VkDevice pvkDevice, TressFX_SceneMesh *sceneMesh,
-    uint32_t texture_buffer_memory_index, VkCommandBuffer upload_cmd_buffer,
-    VkBuffer scratchBuffer, VkDeviceMemory scratchMemory, size_t &offsetInUploadBuffer)
+    VkDevice pvkDevice,
+ TressFX_SceneMesh *sceneMesh,
+    VkPhysicalDeviceMemoryProperties memProp,
+ VkCommandBuffer upload_cmd_buffer,
+    VkBuffer scratchBuffer, VkDeviceMemory scratchMemory, size_t &offsetInUploadBuffer, const DebugMarkerPointer& markerCallbacks)
 {
     VkResult vr;
     m_pvkDevice = pvkDevice;
@@ -307,19 +315,21 @@ VkResult TressFXMesh::CreateBufferAndViews(
         bufferDesc.usage =
             VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
         bufferDesc.size = m_HairAsset.m_NumTotalHairStrands * sizeof(int);
-        //        AMD_SAFE_RELEASE(m_HairStrandTypeBuffer);
-        AMD_V_RETURN(
+        AMD_CHECKED_VULKAN_CALL(
             vkCreateBuffer(pvkDevice, &bufferDesc, nullptr, &m_HairStrandTypeBuffer));
+		markerCallbacks.nameObject(m_HairStrandTypeBuffer, "HairStrandTypeBuffer");
+
         m_HairStrandTypeMemory = allocBufferMemory(pvkDevice, m_HairStrandTypeBuffer,
-                                                   texture_buffer_memory_index);
+                                                   memProp, VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+		markerCallbacks.nameObject(m_HairStrandTypeMemory, "HairStrandTypeMemory");
 
         VkBufferViewCreateInfo SRVDesc{VK_STRUCTURE_TYPE_BUFFER_VIEW_CREATE_INFO};
         SRVDesc.format = VK_FORMAT_R32_SINT;
         SRVDesc.range = m_HairAsset.m_NumTotalHairStrands * sizeof(int32_t);
         SRVDesc.buffer = m_HairStrandTypeBuffer;
-        //        AMD_SAFE_RELEASE(m_HairStrandTypeSRV);
-        AMD_V_RETURN(
+        AMD_CHECKED_VULKAN_CALL(
             vkCreateBufferView(pvkDevice, &SRVDesc, nullptr, &m_HairStrandTypeView));
+		markerCallbacks.nameObject(m_HairStrandTypeView, "HairStrandTypeView");
         fillInitialData(upload_cmd_buffer, scratchBuffer, uploadBuffer,
                         m_HairAsset.m_pHairStrandType, m_HairStrandTypeBuffer,
                         offsetInUploadBuffer, bufferDesc.size);
@@ -334,19 +344,20 @@ VkResult TressFXMesh::CreateBufferAndViews(
         bufferDesc.size = m_HairAsset.m_NumTotalHairVertices * sizeof(XMFLOAT4);
         bufferDesc.usage =
             VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-        //        AMD_SAFE_RELEASE(m_InitialHairPositionsBuffer);
-        AMD_V_RETURN(vkCreateBuffer(pvkDevice, &bufferDesc, nullptr,
+        AMD_CHECKED_VULKAN_CALL(vkCreateBuffer(pvkDevice, &bufferDesc, nullptr,
                                     &m_InitialHairPositionsBuffer));
+		markerCallbacks.nameObject(m_InitialHairPositionsBuffer, "InitialHairPositionBuffer");
         m_InitialHairPositionsMemory = allocBufferMemory(
-            pvkDevice, m_InitialHairPositionsBuffer, texture_buffer_memory_index);
+            pvkDevice, m_InitialHairPositionsBuffer, memProp, VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+		markerCallbacks.nameObject(m_InitialHairPositionsMemory, "InitialHairPositionsMemory");
 
         VkBufferViewCreateInfo desc{VK_STRUCTURE_TYPE_BUFFER_VIEW_CREATE_INFO};
         desc.format = VK_FORMAT_R32G32B32A32_SFLOAT;
         desc.range = m_HairAsset.m_NumTotalHairVertices * 4 * sizeof(float);
         desc.buffer = m_InitialHairPositionsBuffer;
-        //        AMD_SAFE_RELEASE(m_InitialHairPositionsSRV);
-        AMD_V_RETURN(
+        AMD_CHECKED_VULKAN_CALL(
             vkCreateBufferView(pvkDevice, &desc, nullptr, &m_InitialHairPositionsView));
+		markerCallbacks.nameObject(m_InitialHairPositionsView, "InitialHairPositionsView");
         fillInitialData(upload_cmd_buffer, scratchBuffer, uploadBuffer,
                         m_HairAsset.m_pVertices, m_InitialHairPositionsBuffer,
                         offsetInUploadBuffer, bufferDesc.size);
@@ -361,17 +372,19 @@ VkResult TressFXMesh::CreateBufferAndViews(
         bufferDescUA.usage = VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT |
                              VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
                              VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-        //        AMD_SAFE_RELEASE(m_HairVertexPositionsUAB);
-        //        AMD_SAFE_RELEASE(m_HairVertexPositionsPrevUAB);
-        AMD_V_RETURN(vkCreateBuffer(pvkDevice, &bufferDescUA, nullptr,
+        AMD_CHECKED_VULKAN_CALL(vkCreateBuffer(pvkDevice, &bufferDescUA, nullptr,
                                     &m_HairVertexPositionsBuffer));
-        AMD_V_RETURN(vkCreateBuffer(pvkDevice, &bufferDescUA, nullptr,
+		markerCallbacks.nameObject(m_HairVertexPositionsBuffer, "HairVertexPositionsBuffer");
+        AMD_CHECKED_VULKAN_CALL(vkCreateBuffer(pvkDevice, &bufferDescUA, nullptr,
                                     &m_HairVertexPositionsPrevBuffer));
+		markerCallbacks.nameObject(m_HairVertexPositionsPrevBuffer, "HairVertexPositionsPrevBuffer");
 
         m_HairVertexPositionsMemory = allocBufferMemory(
-            pvkDevice, m_HairVertexPositionsBuffer, texture_buffer_memory_index);
+            pvkDevice, m_HairVertexPositionsBuffer, memProp, VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+		markerCallbacks.nameObject(m_HairVertexPositionsMemory, "HairVertexPositionsMemory");
         m_HairVertexPositionsPrevMemory = allocBufferMemory(
-            pvkDevice, m_HairVertexPositionsPrevBuffer, texture_buffer_memory_index);
+            pvkDevice, m_HairVertexPositionsPrevBuffer, memProp, VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+		markerCallbacks.nameObject(m_HairVertexPositionsPrevMemory, "HairVertexPositionsPrevMemory");
         // TODO: We could write only once to uploadBuffer and share data between
         // the
         // 3 buffers
@@ -392,11 +405,12 @@ VkResult TressFXMesh::CreateBufferAndViews(
         bufferDescUA.usage = VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT |
                              VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
                              VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-        //        AMD_SAFE_RELEASE(m_HairVertexTangentsUAB);
-        AMD_V_RETURN(vkCreateBuffer(pvkDevice, &bufferDescUA, nullptr,
+        AMD_CHECKED_VULKAN_CALL(vkCreateBuffer(pvkDevice, &bufferDescUA, nullptr,
                                     &m_HairVertexTangentsBuffer));
+		markerCallbacks.nameObject(m_HairVertexTangentsBuffer, "HairVertexTangentsBuffer");
         m_HairVertexTangentsMemory = allocBufferMemory(
-            pvkDevice, m_HairVertexTangentsBuffer, texture_buffer_memory_index);
+            pvkDevice, m_HairVertexTangentsBuffer, memProp, VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+		markerCallbacks.nameObject(m_HairVertexTangentsMemory, "HairVertexTangentsMemory");
         fillInitialData(upload_cmd_buffer, scratchBuffer, uploadBuffer,
                         m_HairAsset.m_pTangents, m_HairVertexTangentsBuffer,
                         offsetInUploadBuffer, bufferDescUA.size);
@@ -410,9 +424,9 @@ VkResult TressFXMesh::CreateBufferAndViews(
         sbSRVDesc.range = m_HairAsset.m_NumTotalHairVertices * 4 * sizeof(float);
         sbSRVDesc.format = VK_FORMAT_R32G32B32A32_SFLOAT;
         sbSRVDesc.buffer = m_HairVertexPositionsBuffer;
-        //        AMD_SAFE_RELEASE(m_HairVertexPositionsSRV);
-        AMD_V_RETURN(vkCreateBufferView(pvkDevice, &sbSRVDesc, nullptr,
+        AMD_CHECKED_VULKAN_CALL(vkCreateBufferView(pvkDevice, &sbSRVDesc, nullptr,
                                         &m_HairVertexPositionsView));
+		markerCallbacks.nameObject(m_HairVertexPositionsView, "HairVertexPositionsView");
     }
 
     //-----------------------
@@ -423,9 +437,9 @@ VkResult TressFXMesh::CreateBufferAndViews(
         sbSRVDesc.range = m_HairAsset.m_NumTotalHairVertices * 4 * sizeof(float);
         sbSRVDesc.format = VK_FORMAT_R32G32B32A32_SFLOAT;
         sbSRVDesc.buffer = m_HairVertexTangentsBuffer;
-        //        AMD_SAFE_RELEASE(m_HairVertexTangentsSRV);
-        AMD_V_RETURN(vkCreateBufferView(pvkDevice, &sbSRVDesc, nullptr,
+        AMD_CHECKED_VULKAN_CALL(vkCreateBufferView(pvkDevice, &sbSRVDesc, nullptr,
                                         &m_HairVertexTangentsView));
+		markerCallbacks.nameObject(m_HairVertexTangentsView, "HairVertexTangentsView");
     }
 
     //-----------------------
@@ -436,10 +450,9 @@ VkResult TressFXMesh::CreateBufferAndViews(
         sbUAVDesc.range = m_HairAsset.m_NumTotalHairVertices * 4 * sizeof(float);
         sbUAVDesc.format = VK_FORMAT_R32G32B32A32_SFLOAT;
         sbUAVDesc.buffer = m_HairVertexPositionsPrevBuffer;
-        //        AMD_SAFE_RELEASE(m_HairVertexPositionsUAV);
-        //        AMD_SAFE_RELEASE(m_HairVertexPositionsPrevUAV);
-        AMD_V_RETURN(vkCreateBufferView(pvkDevice, &sbUAVDesc, nullptr,
+        AMD_CHECKED_VULKAN_CALL(vkCreateBufferView(pvkDevice, &sbUAVDesc, nullptr,
                                         &m_HairVertexPositionsPrevView));
+		markerCallbacks.nameObject(m_HairVertexPositionsPrevView, "HairVertexPositionsPrevView");
     }
 
     //---------------------------
@@ -451,10 +464,12 @@ VkResult TressFXMesh::CreateBufferAndViews(
         bufferDesc.usage =
             VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
         //        AMD_SAFE_RELEASE(m_HairLengthBuffer);
-        AMD_V_RETURN(
+        AMD_CHECKED_VULKAN_CALL(
             vkCreateBuffer(pvkDevice, &bufferDesc, nullptr, &m_HairLengthBuffer));
+		markerCallbacks.nameObject(m_HairLengthBuffer, "HairLengthBuffer");
         m_HairLengthMemory =
-            allocBufferMemory(pvkDevice, m_HairLengthBuffer, texture_buffer_memory_index);
+            allocBufferMemory(pvkDevice, m_HairLengthBuffer, memProp, VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+		markerCallbacks.nameObject(m_HairLengthMemory, "HairLengthMemory");
 
         fillInitialData(upload_cmd_buffer, scratchBuffer, uploadBuffer,
                         m_HairAsset.m_pRestLengths, m_HairLengthBuffer,
@@ -464,8 +479,8 @@ VkResult TressFXMesh::CreateBufferAndViews(
         desc.format = VK_FORMAT_R32_SFLOAT;
         desc.range = m_HairAsset.m_NumTotalHairVertices * sizeof(float);
         desc.buffer = m_HairLengthBuffer;
-        //        AMD_SAFE_RELEASE(m_HairRestLengthSRV);
-        AMD_V_RETURN(vkCreateBufferView(pvkDevice, &desc, nullptr, &m_HairRestLengthSRV));
+        AMD_CHECKED_VULKAN_CALL(vkCreateBufferView(pvkDevice, &desc, nullptr, &m_HairRestLengthSRV));
+		markerCallbacks.nameObject(m_HairRestLengthSRV, "HairRestLengthSRV");
     }
 
     //-----------------------------------
@@ -477,11 +492,12 @@ VkResult TressFXMesh::CreateBufferAndViews(
         bufferDesc.size = m_HairAsset.m_NumTotalHairVertices * sizeof(XMFLOAT4);
         bufferDesc.usage =
             VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-        //        AMD_SAFE_RELEASE(m_HairRefVectorsBuffer);
-        AMD_V_RETURN(
+        AMD_CHECKED_VULKAN_CALL(
             vkCreateBuffer(pvkDevice, &bufferDesc, nullptr, &m_HairRefVectorsBuffer));
+		markerCallbacks.nameObject(m_HairRefVectorsBuffer, "HairRefVectorsBuffer");
         m_HairRefVectorsMemory = allocBufferMemory(pvkDevice, m_HairRefVectorsBuffer,
-                                                   texture_buffer_memory_index);
+                                                   memProp, VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+		markerCallbacks.nameObject(m_HairRefVectorsMemory, "HairRefVectorsMemory");
 
         fillInitialData(upload_cmd_buffer, scratchBuffer, uploadBuffer,
                         m_HairAsset.m_pRefVectors, m_HairRefVectorsBuffer,
@@ -491,9 +507,9 @@ VkResult TressFXMesh::CreateBufferAndViews(
         desc.format = VK_FORMAT_R32G32B32A32_SFLOAT;
         desc.range = m_HairAsset.m_NumTotalHairVertices * 4 * sizeof(float);
         desc.buffer = m_HairRefVectorsBuffer;
-        //        AMD_SAFE_RELEASE(m_HairRefVecsInLocalFrameSRV);
-        AMD_V_RETURN(vkCreateBufferView(pvkDevice, &desc, nullptr,
+        AMD_CHECKED_VULKAN_CALL(vkCreateBufferView(pvkDevice, &desc, nullptr,
                                         &m_HairRefVecsInLocalFrameView));
+		markerCallbacks.nameObject(m_HairRefVecsInLocalFrameView, "HairRefVecsInLocalFrameView");
     }
 
     //-----------------------------------
@@ -505,10 +521,12 @@ VkResult TressFXMesh::CreateBufferAndViews(
         bufferDesc.usage =
             VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
         //        AMD_SAFE_RELEASE(m_FollowHairRootOffsetBuffer);
-        AMD_V_RETURN(vkCreateBuffer(pvkDevice, &bufferDesc, nullptr,
+        AMD_CHECKED_VULKAN_CALL(vkCreateBuffer(pvkDevice, &bufferDesc, nullptr,
                                     &m_FollowHairRootOffsetBuffer));
+		markerCallbacks.nameObject(m_FollowHairRootOffsetBuffer, "FollowHairRootOffsetBuffer");
         m_FollowHairRootOffsetMemory = allocBufferMemory(
-            pvkDevice, m_FollowHairRootOffsetBuffer, texture_buffer_memory_index);
+            pvkDevice, m_FollowHairRootOffsetBuffer, memProp, VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+		markerCallbacks.nameObject(m_FollowHairRootOffsetMemory, "FollowHaitRootOffsetMemory");
 
         fillInitialData(upload_cmd_buffer, scratchBuffer, uploadBuffer,
                         m_HairAsset.m_pFollowRootOffset, m_FollowHairRootOffsetBuffer,
@@ -518,9 +536,9 @@ VkResult TressFXMesh::CreateBufferAndViews(
         desc.format = VK_FORMAT_R32G32B32A32_SFLOAT;
         desc.range = m_HairAsset.m_NumTotalHairStrands * 4 * sizeof(float);
         desc.buffer = m_FollowHairRootOffsetBuffer;
-        //        AMD_SAFE_RELEASE(m_FollowHairRootOffsetSRV);
-        AMD_V_RETURN(
+        AMD_CHECKED_VULKAN_CALL(
             vkCreateBufferView(pvkDevice, &desc, nullptr, &m_FollowHairRootOffsetView));
+		markerCallbacks.nameObject(m_FollowHairRootOffsetView, "FollowHairRootOffsetView");
     }
 
     // --------------------------------------------
@@ -531,11 +549,12 @@ VkResult TressFXMesh::CreateBufferAndViews(
         bufferDescUA.size = m_HairAsset.m_NumTotalHairVertices * sizeof(XMFLOAT4);
         bufferDescUA.usage =
             VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-        //        AMD_SAFE_RELEASE(m_GlobalRotationsUAB);
-        AMD_V_RETURN(
+        AMD_CHECKED_VULKAN_CALL(
             vkCreateBuffer(pvkDevice, &bufferDescUA, nullptr, &m_GlobalRotationsBuffer));
+		markerCallbacks.nameObject(m_GlobalRotationsBuffer, "GlobalRotationsBuffer");
         m_GlobalRotationsMemory = allocBufferMemory(pvkDevice, m_GlobalRotationsBuffer,
-                                                    texture_buffer_memory_index);
+                                                    memProp, VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+		markerCallbacks.nameObject(m_GlobalRotationsMemory, "GlobalRotationsMemory");
 
         fillInitialData(upload_cmd_buffer, scratchBuffer, uploadBuffer,
                         m_HairAsset.m_pGlobalRotations, m_GlobalRotationsBuffer,
@@ -545,9 +564,9 @@ VkResult TressFXMesh::CreateBufferAndViews(
         sbUAVDesc.range = m_HairAsset.m_NumTotalHairVertices * sizeof(XMFLOAT4);
         sbUAVDesc.format = VK_FORMAT_R32G32B32A32_SFLOAT;
         sbUAVDesc.buffer = m_GlobalRotationsBuffer;
-        //        AMD_SAFE_RELEASE(m_GlobalRotationsUAV);
-        AMD_V_RETURN(
+        AMD_CHECKED_VULKAN_CALL(
             vkCreateBufferView(pvkDevice, &sbUAVDesc, nullptr, &m_GlobalRotationsView));
+		markerCallbacks.nameObject(m_GlobalRotationsView, "GlobalRotationsView");
     }
 
     // --------------------------------------------
@@ -558,11 +577,12 @@ VkResult TressFXMesh::CreateBufferAndViews(
         bufferDescUA.size = m_HairAsset.m_NumTotalHairVertices * sizeof(XMFLOAT4);
         bufferDescUA.usage =
             VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-        //        AMD_SAFE_RELEASE(m_LocalRotationsUAB);
-        AMD_V_RETURN(
+        AMD_CHECKED_VULKAN_CALL(
             vkCreateBuffer(pvkDevice, &bufferDescUA, nullptr, &m_LocalRotationsBuffer));
+		markerCallbacks.nameObject(m_LocalRotationsBuffer, "LocalROtationsBuffer");
         m_LocalRotationsMemory = allocBufferMemory(pvkDevice, m_LocalRotationsBuffer,
-                                                   texture_buffer_memory_index);
+                                                   memProp, VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+		markerCallbacks.nameObject(m_LocalRotationsMemory, "LocalRotationMemory");
 
         fillInitialData(upload_cmd_buffer, scratchBuffer, uploadBuffer,
                         m_HairAsset.m_pLocalRotations, m_LocalRotationsBuffer,
@@ -573,7 +593,7 @@ VkResult TressFXMesh::CreateBufferAndViews(
         sbUAVDesc.format = VK_FORMAT_R32G32B32A32_SFLOAT;
         sbUAVDesc.buffer = m_LocalRotationsBuffer;
         //        AMD_SAFE_RELEASE(m_LocalRotationsUAV);
-        //        AMD_V_RETURN(
+        //        AMD_CHECKED_VULKAN_CALL(
         //            vkCreateBufferView(pvkDevice, &sbUAVDesc, nullptr,
         //            &m_LocalRotationsView));
     }
@@ -598,18 +618,18 @@ VkResult TressFXMesh::CreateBufferAndViews(
             bufferDesc.size =
                 m_HairAsset.m_NumTotalHairStrands * sizeof(HairToTriangleMapping);
             bufferDesc.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
-            //            AMD_SAFE_RELEASE(m_HairSkinMappingBuffer);
-            AMD_V_RETURN(vkCreateBuffer(pvkDevice, &bufferDesc, nullptr,
+            AMD_CHECKED_VULKAN_CALL(vkCreateBuffer(pvkDevice, &bufferDesc, nullptr,
                                         &m_HairSkinMappingBuffer));
+			markerCallbacks.nameObject(m_HairSkinMappingBuffer, "HairSkinMappingBuffer");
 
             VkBufferViewCreateInfo desc{VK_STRUCTURE_TYPE_BUFFER_VIEW_CREATE_INFO};
             desc.format = VK_FORMAT_UNDEFINED;
             desc.range =
                 m_HairAsset.m_NumTotalHairStrands * sizeof(HairToTriangleMapping);
             desc.buffer = m_HairSkinMappingBuffer;
-            //            AMD_SAFE_RELEASE(m_HairSkinMappingSRV);
-            AMD_V_RETURN(
+            AMD_CHECKED_VULKAN_CALL(
                 vkCreateBufferView(pvkDevice, &desc, nullptr, &m_HairSkinMappingView));
+			markerCallbacks.nameObject(m_HairSkinMappingView, "HairSkinMappingView");
         }
 
         // --------------------------------------------
@@ -644,25 +664,22 @@ VkResult TressFXMesh::CreateBufferAndViews(
                 }
             }
 
-            //            D3D11_SUBRESOURCE_DATA initialData;
-            //            initialData.pSysMem = (void *)pTransforms;
-
             VkBufferCreateInfo bufferDescUA{VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
             bufferDescUA.size =
                 m_HairAsset.m_NumTotalHairStrands * sizeof(TressFX_HairTransform);
             bufferDescUA.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
-            //            AMD_SAFE_RELEASE(m_HairTransformsBuffer);
-            AMD_V_RETURN(vkCreateBuffer(pvkDevice, &bufferDescUA, nullptr,
+            AMD_CHECKED_VULKAN_CALL(vkCreateBuffer(pvkDevice, &bufferDescUA, nullptr,
                                         &m_HairTransformsBuffer));
+			markerCallbacks.nameObject(m_HairTransformsBuffer, "HairTransformsBuffer");
 
             VkBufferViewCreateInfo desc{VK_STRUCTURE_TYPE_BUFFER_VIEW_CREATE_INFO};
             desc.range =
                 m_HairAsset.m_NumTotalHairStrands * sizeof(TressFX_HairTransform);
             desc.format = VK_FORMAT_UNDEFINED;
             desc.buffer = m_HairTransformsBuffer;
-            //            AMD_SAFE_RELEASE(m_HairTransformsSRV);
-            AMD_V_RETURN(
+            AMD_CHECKED_VULKAN_CALL(
                 vkCreateBufferView(pvkDevice, &desc, nullptr, &m_HairTransformsView));
+			markerCallbacks.nameObject(m_HairTransformsView, "HairTransformView");
 
             AMD_SAFE_DELETE_ARRAY(pTransforms);
         }
@@ -678,11 +695,12 @@ VkResult TressFXMesh::CreateBufferAndViews(
             bufferDesc.size = m_HairAsset.m_NumTotalHairStrands * sizeof(float) * 2;
             bufferDesc.usage = VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT |
                                VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-            //            AMD_SAFE_RELEASE(m_pStrandTexCoordBuffer);
-            AMD_V_RETURN(vkCreateBuffer(pvkDevice, &bufferDesc, nullptr,
+            AMD_CHECKED_VULKAN_CALL(vkCreateBuffer(pvkDevice, &bufferDesc, nullptr,
                                         &m_pStrandTexCoordBuffer));
+			markerCallbacks.nameObject(m_pStrandTexCoordBuffer, "StrandTexCoordBuffer");
             m_pStrandTexCoordMemory = allocBufferMemory(
-                pvkDevice, m_pStrandTexCoordBuffer, texture_buffer_memory_index);
+                pvkDevice, m_pStrandTexCoordBuffer, memProp, VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+			markerCallbacks.nameObject(m_pStrandTexCoordMemory, "StrandTexCoordMemory");
 
             fillInitialData(upload_cmd_buffer, scratchBuffer, uploadBuffer,
                             m_HairAsset.m_pStrandTexCoords, m_pStrandTexCoordBuffer,
@@ -693,8 +711,9 @@ VkResult TressFXMesh::CreateBufferAndViews(
             desc.range = m_HairAsset.m_NumTotalHairStrands * sizeof(float) * 2;
             desc.buffer = m_pStrandTexCoordBuffer;
             //            AMD_SAFE_RELEASE(m_pStrandTexCoordSRV);
-            AMD_V_RETURN(
+            AMD_CHECKED_VULKAN_CALL(
                 vkCreateBufferView(pvkDevice, &desc, nullptr, &m_pStrandTexCoordView));
+			markerCallbacks.nameObject(m_pStrandTexCoordView, "StrandTexCoordView");
         }
     }
     vkUnmapMemory(pvkDevice, scratchMemory);
@@ -717,7 +736,7 @@ VkResult TressFXMesh::AllocateDescriptorsSets(
     info.poolSizeCount = AMD_ARRAY_SIZE(poolSizes);
     info.pPoolSizes = poolSizes;
     VkResult vr;
-    AMD_V_RETURN(vkCreateDescriptorPool(pvkDevice, &info, nullptr, &m_descriptorPool));
+    AMD_CHECKED_VULKAN_CALL(vkCreateDescriptorPool(pvkDevice, &info, nullptr, &m_descriptorPool));
 
     const VkDescriptorSetLayout setLayouts[] = {GlobalConstraintsSetLayout,
                                                 LocalConstraintsSetLayout,
@@ -735,7 +754,7 @@ VkResult TressFXMesh::AllocateDescriptorsSets(
 
     VkDescriptorSet sets[AMD_ARRAY_SIZE(setLayouts)]{};
 
-    AMD_V_RETURN(vkAllocateDescriptorSets(pvkDevice, &allocateInfo, sets));
+    AMD_CHECKED_VULKAN_CALL(vkAllocateDescriptorSets(pvkDevice, &allocateInfo, sets));
     m_GlobalConstraintsSet = sets[0];
     m_LocalConstraintsSet = sets[1];
     m_LenghtWindCollisionSet = sets[2];
@@ -835,10 +854,6 @@ VkResult TressFXMesh::AllocateDescriptorsSets(
     return VK_SUCCESS;
 }
 
-#define AMD_SAFE_RELEASE(object, releaseFunction, device)                                \
-    if (object != nullptr)                                                               \
-        releaseFunction(device, object, nullptr);
-
 //--------------------------------------------------------------------------------------
 //
 // OnDestroy
@@ -849,14 +864,12 @@ VkResult TressFXMesh::AllocateDescriptorsSets(
 void TressFXMesh::OnDestroy()
 {
     AMD_SAFE_RELEASE(m_pTriangleIndexBuffer, vkDestroyBuffer, m_pvkDevice);
-    AMD_SAFE_RELEASE(m_pTriangleIndexMemory, vkFreeMemory, m_pvkDevice);
 
     AMD_SAFE_RELEASE(m_pIndexBuffer, vkDestroyBuffer, m_pvkDevice);
-    AMD_SAFE_RELEASE(m_pIndexMemory, vkFreeMemory, m_pvkDevice);
 
     AMD_SAFE_RELEASE(m_pThicknessCoeffsView, vkDestroyBufferView, m_pvkDevice);
     AMD_SAFE_RELEASE(m_pThicknessCoeffsBuffer, vkDestroyBuffer, m_pvkDevice);
-    AMD_SAFE_RELEASE(m_pThicknessCoeffsMemory, vkFreeMemory, m_pvkDevice);
+    AMD_SAFE_RELEASE(m_pThicknessIndexTriangleIndexMemory, vkFreeMemory, m_pvkDevice);
 
     // compute shader variables
     AMD_SAFE_RELEASE(m_HairVertexPositionsView, vkDestroyBufferView, m_pvkDevice);

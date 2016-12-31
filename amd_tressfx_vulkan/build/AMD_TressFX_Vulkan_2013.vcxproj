@@ -225,7 +225,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <PreprocessorDefinitions>VULKAN;_USRDLL;AMD_TRESSFX_COMPILE_DYNAMIC_LIB=1;WIN32;_DEBUG;_WINDOWS;_WIN32_WINNT=0x0601;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>AMD_TRESSFX_VULKAN=1;_USRDLL;AMD_TRESSFX_COMPILE_DYNAMIC_LIB=1;WIN32;_DEBUG;_WINDOWS;_WIN32_WINNT=0x0601;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\inc;..\..\amd_lib\shared\common\inc;..\..\amd_tressfx\inc;..\..\amd_tressfx\src;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
@@ -253,7 +253,7 @@ xcopy "..\lib\VS2013\Win32\DLL_Debug\$(TargetName).lib"  "..\lib" /H /R /Y &gt; 
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <PreprocessorDefinitions>VULKAN;_USRDLL;AMD_TRESSFX_COMPILE_DYNAMIC_LIB=1;WIN32;_DEBUG;_WINDOWS;_WIN32_WINNT=0x0601;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>AMD_TRESSFX_VULKAN=1;_USRDLL;AMD_TRESSFX_COMPILE_DYNAMIC_LIB=1;WIN32;_DEBUG;_WINDOWS;_WIN32_WINNT=0x0601;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\inc;..\..\amd_lib\shared\common\inc;..\..\amd_tressfx\inc;..\..\amd_tressfx\src;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
@@ -281,7 +281,7 @@ xcopy "..\lib\VS2013\x64\DLL_Debug\$(TargetName).lib"  "..\lib" /H /R /Y &gt; nu
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <PreprocessorDefinitions>VULKAN;_USRDLL;AMD_TRESSFX_COMPILE_DYNAMIC_LIB=1;WIN32;NDEBUG;_WINDOWS;_WIN32_WINNT=0x0601;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>AMD_TRESSFX_VULKAN=1;_USRDLL;AMD_TRESSFX_COMPILE_DYNAMIC_LIB=1;WIN32;NDEBUG;_WINDOWS;_WIN32_WINNT=0x0601;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\inc;..\..\amd_lib\shared\common\inc;..\..\amd_tressfx\inc;..\..\amd_tressfx\src;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -314,7 +314,7 @@ xcopy "..\lib\VS2013\Win32\DLL_Release\$(TargetName).lib"  "..\lib" /H /R /Y &gt
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <PreprocessorDefinitions>VULKAN;_USRDLL;AMD_TRESSFX_COMPILE_DYNAMIC_LIB=1;WIN32;NDEBUG;_WINDOWS;_WIN32_WINNT=0x0601;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>AMD_TRESSFX_VULKAN=1;_USRDLL;AMD_TRESSFX_COMPILE_DYNAMIC_LIB=1;WIN32;NDEBUG;_WINDOWS;_WIN32_WINNT=0x0601;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\inc;..\..\amd_lib\shared\common\inc;..\..\amd_tressfx\inc;..\..\amd_tressfx\src;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -347,7 +347,7 @@ xcopy "..\lib\VS2013\x64\DLL_Release\$(TargetName).lib"  "..\lib" /H /R /Y &gt; 
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <PreprocessorDefinitions>VULKAN;_LIB;AMD_TRESSFX_COMPILE_DYNAMIC_LIB=0;WIN32;_DEBUG;_WINDOWS;_WIN32_WINNT=0x0601;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>AMD_TRESSFX_VULKAN=1;_LIB;AMD_TRESSFX_COMPILE_DYNAMIC_LIB=0;WIN32;_DEBUG;_WINDOWS;_WIN32_WINNT=0x0601;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\inc;..\..\amd_lib\shared\common\inc;..\..\amd_tressfx\inc;..\..\amd_tressfx\src;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
@@ -368,7 +368,7 @@ xcopy "..\lib\VS2013\x64\DLL_Release\$(TargetName).lib"  "..\lib" /H /R /Y &gt; 
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <PreprocessorDefinitions>VULKAN;_LIB;AMD_TRESSFX_COMPILE_DYNAMIC_LIB=0;WIN32;_DEBUG;_WINDOWS;_WIN32_WINNT=0x0601;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>AMD_TRESSFX_VULKAN=1;_LIB;AMD_TRESSFX_COMPILE_DYNAMIC_LIB=0;WIN32;_DEBUG;_WINDOWS;_WIN32_WINNT=0x0601;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\inc;..\..\amd_lib\shared\common\inc;..\..\amd_tressfx\inc;..\..\amd_tressfx\src;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
@@ -389,7 +389,7 @@ xcopy "..\lib\VS2013\x64\DLL_Release\$(TargetName).lib"  "..\lib" /H /R /Y &gt; 
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <PreprocessorDefinitions>VULKAN;_LIB;AMD_TRESSFX_COMPILE_DYNAMIC_LIB=0;WIN32;NDEBUG;_WINDOWS;_WIN32_WINNT=0x0601;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>AMD_TRESSFX_VULKAN=1;_LIB;AMD_TRESSFX_COMPILE_DYNAMIC_LIB=0;WIN32;NDEBUG;_WINDOWS;_WIN32_WINNT=0x0601;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\inc;..\..\amd_lib\shared\common\inc;..\..\amd_tressfx\inc;..\..\amd_tressfx\src;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -415,7 +415,7 @@ xcopy "..\lib\VS2013\x64\DLL_Release\$(TargetName).lib"  "..\lib" /H /R /Y &gt; 
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <PreprocessorDefinitions>VULKAN;_LIB;AMD_TRESSFX_COMPILE_DYNAMIC_LIB=0;WIN32;NDEBUG;_WINDOWS;_WIN32_WINNT=0x0601;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>AMD_TRESSFX_VULKAN=1;_LIB;AMD_TRESSFX_COMPILE_DYNAMIC_LIB=0;WIN32;NDEBUG;_WINDOWS;_WIN32_WINNT=0x0601;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\inc;..\..\amd_lib\shared\common\inc;..\..\amd_tressfx\inc;..\..\amd_tressfx\src;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -441,7 +441,7 @@ xcopy "..\lib\VS2013\x64\DLL_Release\$(TargetName).lib"  "..\lib" /H /R /Y &gt; 
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <PreprocessorDefinitions>VULKAN;_USRDLL;AMD_TRESSFX_COMPILE_DYNAMIC_LIB=1;WIN32;NDEBUG;_WINDOWS;_WIN32_WINNT=0x0601;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>AMD_TRESSFX_VULKAN=1;_USRDLL;AMD_TRESSFX_COMPILE_DYNAMIC_LIB=1;WIN32;NDEBUG;_WINDOWS;_WIN32_WINNT=0x0601;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\inc;..\..\amd_lib\shared\common\inc;..\..\amd_tressfx\inc;..\..\amd_tressfx\src;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -475,7 +475,7 @@ xcopy "..\lib\VS2013\Win32\DLL_Release_MT\$(TargetName).lib"  "..\lib" /H /R /Y 
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <PreprocessorDefinitions>VULKAN;_USRDLL;AMD_TRESSFX_COMPILE_DYNAMIC_LIB=1;WIN32;NDEBUG;_WINDOWS;_WIN32_WINNT=0x0601;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>AMD_TRESSFX_VULKAN=1;_USRDLL;AMD_TRESSFX_COMPILE_DYNAMIC_LIB=1;WIN32;NDEBUG;_WINDOWS;_WIN32_WINNT=0x0601;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\inc;..\..\amd_lib\shared\common\inc;..\..\amd_tressfx\inc;..\..\amd_tressfx\src;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>

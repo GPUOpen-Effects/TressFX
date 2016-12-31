@@ -34,7 +34,7 @@ namespace AMD
 {
 struct GPUOnlyStructuredBuffer
 {
-    GPUOnlyStructuredBuffer() : m_pBuffer(nullptr), m_pvkDevice(nullptr) {}
+    GPUOnlyStructuredBuffer() : m_pBuffer(VK_NULL_HANDLE), m_pvkDevice(nullptr) {}
     VkResult Create(VkDevice pd3dDevice, uint32_t structCount, uint32_t structSize);
     void Destroy();
 
@@ -92,9 +92,9 @@ class TressFXShortCut
     GPUOnlyStructuredBuffer m_FragmentColors;
 
     VkResult CreateScreenSizedItems(VkDevice pvkDevice, int winWidth, int winHeight,
-                                    uint32_t MemoryIndexGPU);
+                                    VkPhysicalDeviceMemoryProperties memProperties);
     void DestroyScreenSizedItems();
-    VkResult CreateRenderStateObjects(VkDevice pvkDevice);
+    VkResult CreateRenderStateObjects(VkDevice pvkDevice, VkFormat depthStencilFormat, VkFormat colorFormat);
     VkResult CreateLayouts(VkDevice pvkDevice, VkDescriptorSetLayout SLMesh,
                            VkSampler noiseSamplerRef, VkSampler shadowSamplerRef);
     VkResult CreateFramebuffer(VkDevice pvkDevice, VkImageView depthStencilView,
@@ -105,11 +105,11 @@ class TressFXShortCut
 
   public:
     TressFXShortCut(void)
-        : m_pFragmentColorsTexture(nullptr), m_pFragmentColorsMemory(nullptr),
-          m_pFragmentColorsView(nullptr), m_pFragmentDepthsTexture(nullptr),
-          m_pFragmentDepthsMemory(nullptr), m_pFragmentDepthsView(nullptr),
-          m_pAccumInvAlphaTexture(nullptr), m_pAccumInvAlphaMemory(nullptr),
-          m_pAccumInvAlphaView(nullptr)
+        : m_pFragmentColorsTexture(VK_NULL_HANDLE), m_pFragmentColorsMemory(VK_NULL_HANDLE),
+          m_pFragmentColorsView(VK_NULL_HANDLE), m_pFragmentDepthsTexture(VK_NULL_HANDLE),
+          m_pFragmentDepthsMemory(VK_NULL_HANDLE), m_pFragmentDepthsView(VK_NULL_HANDLE),
+          m_pAccumInvAlphaTexture(VK_NULL_HANDLE), m_pAccumInvAlphaMemory(VK_NULL_HANDLE),
+          m_pAccumInvAlphaView(VK_NULL_HANDLE)
     {
     }
     ~TressFXShortCut(void){};
@@ -119,10 +119,10 @@ class TressFXShortCut
                             VkSampler shadowSamplerRef, VkImageView depthStencilView,
                             VkImageView colorView, VkBuffer configBuffer,
                             uint64_t configBufferSize, VkImageView noiseMap,
-                            VkImageView hairShadowMap, uint32_t deviceLocalMemoryIndex,
-                            uint32_t width, uint32_t height);
+                            VkImageView hairShadowMap, VkPhysicalDeviceMemoryProperties memProperties,
+                            uint32_t width, uint32_t height, VkFormat depthStencilFormat, VkFormat colorFormat);
     VkResult OnResizedSwapChain(VkDevice pvkDevice, int winWidth, int WinHeight,
-                                uint32_t deviceLocalMemoryIndex);
+                                VkPhysicalDeviceMemoryProperties memProperties);
 
     // Individual render pass setups.
     // Each basically sets up render state, UAVs, SRVs, and returns pixel

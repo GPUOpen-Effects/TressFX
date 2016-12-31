@@ -32,16 +32,8 @@
 #include "TressFXPrecompiledShadersVulkan.h"
 #include "UtilVulkan.h"
 
-#ifndef AMD_V_RETURN
-#define AMD_V_RETURN(x)                                                                  \
-    {                                                                                    \
-        vr = (x);                                                                        \
-        if (vr != VK_SUCCESS)                                                            \
-        {                                                                                \
-            return vr;                                                                   \
-        }                                                                                \
-    }
-#endif
+// Number of depth layers to use.  2 or 3 supported.
+#define SHORTCUT_NUM_DEPTHS 3
 
 // unreferenced formal parameter
 #pragma warning(disable : 4100)
@@ -124,12 +116,15 @@ struct PPLL_BUFFERS
     VkBuffer pAtomicCounterPLL_Buffer;
     VkDeviceMemory pAtomicCounterPLL_Memory;
 
+    // If possible PLLL head, PPLL and atomic counter use same memory block
+    VkDeviceMemory pSharedMemory;
+
     int width;
     int height;
     int refCount; // reference count - delete buffers when 0
 };
 
-PPLL_BUFFERS g_PPLBuffers = {nullptr, nullptr, nullptr, 0, 0, 0};
+PPLL_BUFFERS g_PPLBuffers = {VK_NULL_HANDLE, VK_NULL_HANDLE, VK_NULL_HANDLE, VK_NULL_HANDLE, 0, 0, 0};
 
 const static UINT g_HairTotalLayers = 32;
 
@@ -142,17 +137,17 @@ namespace
 // Create the render pass used for the non shortcut algorithm
 //
 //----------------------------------------------------------------------------------
-VkRenderPass CreateRenderPass(VkDevice dev)
+VkRenderPass CreateRenderPass(VkDevice dev, VkFormat depthStencilFormat, VkFormat colorFormat)
 {
     const VkAttachmentDescription attachments[] = {
         // Depth Buffer
-        {0, VK_FORMAT_D24_UNORM_S8_UINT, VK_SAMPLE_COUNT_1_BIT,
+        {0, depthStencilFormat, VK_SAMPLE_COUNT_1_BIT,
          VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE,
          VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE,
          VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
          VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL},
         // color texture
-        {0, VK_FORMAT_R8G8B8A8_SRGB, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_LOAD,
+        {0, colorFormat, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_LOAD,
          VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE,
          VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
          VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL}};
@@ -231,7 +226,7 @@ namespace AMD
 //
 //--------------------------------------------------------------------------------------
 VkResult TressFXRenderer::CreateTextureAndViews(
-    VkDevice pvkDevice, uint32_t texture_memory_index, VkCommandBuffer commandBuffer,
+    VkDevice pvkDevice, VkPhysicalDeviceMemoryProperties memProperties, VkCommandBuffer commandBuffer,
     VkDeviceMemory scratchMemory, VkBuffer scratchBuffer, size_t &offsetInScratchBuffer)
 {
     VkResult vr;
@@ -241,17 +236,10 @@ VkResult TressFXRenderer::CreateTextureAndViews(
         VkImageCreateInfo hairShadowMapInfo = getImageCreateInfo(
             VK_FORMAT_D32_SFLOAT, SM_HAIR_WIDTH, SM_HAIR_HEIGHT,
             VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
-        AMD_V_RETURN(
+        AMD_CHECKED_VULKAN_CALL(
             vkCreateImage(pvkDevice, &hairShadowMapInfo, nullptr, &m_pSMHairTexture));
 
-        VkMemoryRequirements mem_requirement;
-        vkGetImageMemoryRequirements(pvkDevice, m_pSMHairTexture, &mem_requirement);
-        VkMemoryAllocateInfo memoryAllocateInfo{VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
-                                                nullptr, mem_requirement.size,
-                                                texture_memory_index};
-        AMD_V_RETURN(
-            vkAllocateMemory(pvkDevice, &memoryAllocateInfo, nullptr, &m_pSMHairMemory));
-        AMD_V_RETURN(vkBindImageMemory(pvkDevice, m_pSMHairTexture, m_pSMHairMemory, 0));
+        m_pSMHairMemory = allocImageMemory(pvkDevice, m_pSMHairTexture, memProperties);
 
         VkImageViewCreateInfo dsvDesc{VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO};
         dsvDesc.format = VK_FORMAT_D32_SFLOAT;
@@ -260,11 +248,11 @@ VkResult TressFXRenderer::CreateTextureAndViews(
         dsvDesc.subresourceRange.layerCount = 1;
         dsvDesc.subresourceRange.levelCount = 1;
         dsvDesc.image = m_pSMHairTexture;
-        AMD_V_RETURN(vkCreateImageView(pvkDevice, &dsvDesc, nullptr, &m_pSMHairView));
+        AMD_CHECKED_VULKAN_CALL(vkCreateImageView(pvkDevice, &dsvDesc, nullptr, &m_pSMHairView));
 
         VkImageMemoryBarrier defineHairSMLayoutBarrier[] = {getImageMemoryBarrier(
             m_pSMHairTexture, 0, VK_ACCESS_SHADER_READ_BIT, VK_IMAGE_LAYOUT_UNDEFINED,
-            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_ASPECT_DEPTH_BIT)};
+            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 1, VK_IMAGE_ASPECT_DEPTH_BIT)};
 
         vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
                              VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0,
@@ -277,17 +265,9 @@ VkResult TressFXRenderer::CreateTextureAndViews(
         VkImageCreateInfo noiseTextureInfo = getImageCreateInfo(
             VK_FORMAT_R32G32B32A32_SFLOAT, 512, 512,
             VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT);
-        AMD_V_RETURN(
+        AMD_CHECKED_VULKAN_CALL(
             vkCreateImage(pvkDevice, &noiseTextureInfo, nullptr, &m_pNoiseTexture));
-
-        VkMemoryRequirements mem_requirement;
-        vkGetImageMemoryRequirements(pvkDevice, m_pNoiseTexture, &mem_requirement);
-        VkMemoryAllocateInfo memoryAllocateInfo = {VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
-                                                   nullptr, mem_requirement.size,
-                                                   texture_memory_index};
-        AMD_V_RETURN(
-            vkAllocateMemory(pvkDevice, &memoryAllocateInfo, nullptr, &m_pNoiseMemory));
-        AMD_V_RETURN(vkBindImageMemory(pvkDevice, m_pNoiseTexture, m_pNoiseMemory, 0));
+        m_pNoiseMemory = allocImageMemory(pvkDevice, m_pNoiseTexture, memProperties);
 
         XMFLOAT4 *noiseArray = new XMFLOAT4[512 * 512];
         for (UINT i = 0; i < 512 * 512; i++)
@@ -307,10 +287,10 @@ VkResult TressFXRenderer::CreateTextureAndViews(
         VkImageMemoryBarrier makeNoiseTextureTransferableBarrier[] = {
             getImageMemoryBarrier(m_pNoiseTexture, 0, VK_ACCESS_TRANSFER_WRITE_BIT,
                                   VK_IMAGE_LAYOUT_UNDEFINED,
-                                  VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)};
+                                  VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, VK_IMAGE_ASPECT_COLOR_BIT)};
 
-        vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
-                             VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0,
+        vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+                             VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, nullptr, 0,
                              nullptr, AMD_ARRAY_SIZE(makeNoiseTextureTransferableBarrier),
                              makeNoiseTextureTransferableBarrier);
 
@@ -327,10 +307,10 @@ VkResult TressFXRenderer::CreateTextureAndViews(
         VkImageMemoryBarrier makeNoiseTextureSampleableBarrier[] = {getImageMemoryBarrier(
             m_pNoiseTexture, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT,
             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)};
+            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 1, VK_IMAGE_ASPECT_COLOR_BIT)};
 
-        vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
-                             VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0,
+        vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+                             VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, nullptr, 0,
                              nullptr, AMD_ARRAY_SIZE(makeNoiseTextureSampleableBarrier),
                              makeNoiseTextureSampleableBarrier);
 
@@ -344,62 +324,8 @@ VkResult TressFXRenderer::CreateTextureAndViews(
         srDesc.subresourceRange.levelCount = 1;
         srDesc.image = m_pNoiseTexture;
 
-        AMD_V_RETURN(vkCreateImageView(pvkDevice, &srDesc, nullptr, &m_pNoiseView));
+        AMD_CHECKED_VULKAN_CALL(vkCreateImageView(pvkDevice, &srDesc, nullptr, &m_pNoiseView));
     }
-
-    return VK_SUCCESS;
-}
-
-//--------------------------------------------------------------------------------------
-//
-// CreateVertexBuffers
-//
-// Creates the vertex buffers for hair rendering
-//
-//--------------------------------------------------------------------------------------
-VkResult TressFXRenderer::CreateVertexBuffers(
-    VkDevice pvkDevice, uint32_t texture_memory_index, VkCommandBuffer commandBuffer,
-    VkDeviceMemory scratchMemory, VkBuffer scratchBuffer, size_t &offsetInScratchBuffer)
-{
-    VkResult vr;
-    // Create the screen quad vertex buffer(use StandardVertex for simplicity)
-    const StandardVertex screenQuad[6] = {
-        {XMFLOAT3(-1.0f, -1.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f),
-         XMFLOAT2(0.0f, 1.0f)}, // 0
-        {XMFLOAT3(-1.0f, 1.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f),
-         XMFLOAT2(0.0f, 0.0f)}, // 1
-        {XMFLOAT3(1.0f, -1.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f),
-         XMFLOAT2(1.0f, 1.0f)}, // 2
-        {XMFLOAT3(1.0f, -1.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f),
-         XMFLOAT2(1.0f, 1.0f)}, // 2
-        {XMFLOAT3(-1.0f, 1.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f),
-         XMFLOAT2(0.0f, 0.0f)}, // 1
-        {XMFLOAT3(1.0f, 1.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f),
-         XMFLOAT2(1.0f, 0.0f)} // 3
-    };
-
-    VkBufferCreateInfo bd{VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
-    bd.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-    bd.size = sizeof(StandardVertex) * 6;
-    AMD_V_RETURN(vkCreateBuffer(pvkDevice, &bd, nullptr, &m_pScreenQuadVB));
-
-    VkMemoryRequirements memReq;
-    vkGetBufferMemoryRequirements(pvkDevice, m_pScreenQuadVB, &memReq);
-    VkMemoryAllocateInfo allocInfo{VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO};
-    allocInfo.allocationSize = memReq.size;
-    allocInfo.memoryTypeIndex = texture_memory_index;
-    AMD_V_RETURN(vkAllocateMemory(pvkDevice, &allocInfo, nullptr, &m_pScreenQuadMemory));
-    AMD_V_RETURN(vkBindBufferMemory(pvkDevice, m_pScreenQuadVB, m_pScreenQuadMemory, 0));
-
-    void *memoryPointer;
-    vkMapMemory(pvkDevice, scratchMemory, offsetInScratchBuffer,
-                6 * sizeof(StandardVertex), 0, &memoryPointer);
-    memcpy(memoryPointer, screenQuad, 6 * sizeof(StandardVertex));
-
-    VkBufferCopy region{offsetInScratchBuffer, 0, 6 * sizeof(StandardVertex)};
-    vkCmdCopyBuffer(commandBuffer, scratchBuffer, m_pScreenQuadVB, 1, &region);
-    offsetInScratchBuffer += 6 * sizeof(StandardVertex);
-    vkUnmapMemory(pvkDevice, scratchMemory);
 
     return VK_SUCCESS;
 }
@@ -413,14 +339,14 @@ VkResult TressFXRenderer::CreateVertexBuffers(
 //--------------------------------------------------------------------------------------
 VkResult TressFXRenderer::CreateConstantBuffer(VkDevice pvkDevice,
                                                uint32_t maxUniformBuffer,
-                                               uint32_t cpu_memory_index)
+                                               VkPhysicalDeviceMemoryProperties memProperties)
 {
     VkResult vr;
     VkBufferCreateInfo cbDesc{VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
     cbDesc.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
     cbDesc.size = maxUniformBuffer * sizeof(CB_PER_FRAME);
-    AMD_V_RETURN(vkCreateBuffer(pvkDevice, &cbDesc, nullptr, &m_pcbPerFrame));
-    m_pcbPerFrameMemory = allocBufferMemory(pvkDevice, m_pcbPerFrame, cpu_memory_index);
+    AMD_CHECKED_VULKAN_CALL(vkCreateBuffer(pvkDevice, &cbDesc, nullptr, &m_pcbPerFrame));
+    m_pcbPerFrameMemory = allocBufferMemory(pvkDevice, m_pcbPerFrame, memProperties, VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
     return VK_SUCCESS;
 }
@@ -443,7 +369,7 @@ VkResult TressFXRenderer::CreateFrameBuffer(VkDevice pvkDevice,
         info.width = width;
         info.height = height;
         info.layers = 1;
-        AMD_V_RETURN(
+        AMD_CHECKED_VULKAN_CALL(
             vkCreateFramebuffer(pvkDevice, &info, nullptr, &m_renderHairFramebuffer));
     }
 
@@ -455,7 +381,7 @@ VkResult TressFXRenderer::CreateFrameBuffer(VkDevice pvkDevice,
     info.width = SM_HAIR_WIDTH;
     info.height = SM_HAIR_HEIGHT;
     info.layers = 1;
-    AMD_V_RETURN(vkCreateFramebuffer(pvkDevice, &info, nullptr, &m_shadowFrameBuffer));
+    AMD_CHECKED_VULKAN_CALL(vkCreateFramebuffer(pvkDevice, &info, nullptr, &m_shadowFrameBuffer));
     return VK_SUCCESS;
 }
 
@@ -474,13 +400,13 @@ VkResult TressFXRenderer::CreateSamplers(VkDevice pvkDevice)
     samDesc.compareOp = VK_COMPARE_OP_NEVER;
     samDesc.minLod = 0.f;
     samDesc.maxLod = 1000.f;
-    AMD_V_RETURN(
+    AMD_CHECKED_VULKAN_CALL(
         vkCreateSampler(pvkDevice, &samDesc, nullptr, &m_pSamplerStateLinearWrap));
 
     samDesc.minFilter = VK_FILTER_NEAREST;
     samDesc.magFilter = VK_FILTER_NEAREST;
     samDesc.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
-    AMD_V_RETURN(
+    AMD_CHECKED_VULKAN_CALL(
         vkCreateSampler(pvkDevice, &samDesc, nullptr, &m_pSamplerStatePointClamp));
 
     samDesc.minFilter = VK_FILTER_LINEAR;
@@ -491,7 +417,7 @@ VkResult TressFXRenderer::CreateSamplers(VkDevice pvkDevice)
     samDesc.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
     samDesc.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
     samDesc.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
-    AMD_V_RETURN(vkCreateSampler(pvkDevice, &samDesc, nullptr, &m_pSamplerStateCmpLess));
+    AMD_CHECKED_VULKAN_CALL(vkCreateSampler(pvkDevice, &samDesc, nullptr, &m_pSamplerStateCmpLess));
 
     return VK_SUCCESS;
 }
@@ -503,11 +429,11 @@ VkResult TressFXRenderer::CreateSamplers(VkDevice pvkDevice)
 // Creates the render state objects for hair rendering
 //
 //--------------------------------------------------------------------------------------
-VkResult TressFXRenderer::CreateRenderStateObjects(VkDevice pvkDevice)
+VkResult TressFXRenderer::CreateRenderStateObjects(VkDevice pvkDevice, VkFormat depthStencilFormat, VkFormat colorFormat)
 {
     VkResult vr;
 
-    m_pRPHairRendering = CreateRenderPass(pvkDevice);
+    m_pRPHairRendering = CreateRenderPass(pvkDevice, depthStencilFormat, colorFormat);
     ShaderModule fragmentShadersModule(pvkDevice, pass1_fragment);
 
     ShaderModule vertexShadersModule(pvkDevice, render_hair_aa_strand_copies_vertex);
@@ -615,7 +541,7 @@ VkResult TressFXRenderer::CreateRenderStateObjects(VkDevice pvkDevice)
 
     VkPipeline pipelineArray[6] = {};
 
-    AMD_V_RETURN(vkCreateGraphicsPipelines(pvkDevice, VK_NULL_HANDLE,
+    AMD_CHECKED_VULKAN_CALL(vkCreateGraphicsPipelines(pvkDevice, VK_NULL_HANDLE,
                                            AMD_ARRAY_SIZE(pipelineInfoArray),
                                            pipelineInfoArray, nullptr, pipelineArray));
 
@@ -638,29 +564,27 @@ VkResult TressFXRenderer::CreateRenderStateObjects(VkDevice pvkDevice)
 //--------------------------------------------------------------------------------------
 VkResult TressFXRenderer::OnCreateDevice(
     VkDevice pvkDevice, int winWidth, int winHeight, bool bShortCutOn,
-    uint32_t maxUniformBuffer, uint32_t cpu_memory_index, uint32_t texture_memory_index,
+    uint32_t maxUniformBuffer, VkPhysicalDeviceMemoryProperties memProperties,
     VkImageView depthTexture, VkImageView colorTexture, VkCommandBuffer commandBuffer,
-    VkDeviceMemory scratchMemory, VkBuffer scratchBuffer, size_t &offsetInScratchBuffer)
+    VkDeviceMemory scratchMemory, VkBuffer scratchBuffer, size_t &offsetInScratchBuffer,
+    VkFormat depthStencilFormat, VkFormat colorFormat)
 {
     m_pvkDevice = pvkDevice;
     VkResult vr;
 
-    AMD_V_RETURN(CreateTextureAndViews(pvkDevice, texture_memory_index, commandBuffer,
+    AMD_CHECKED_VULKAN_CALL(CreateTextureAndViews(pvkDevice, memProperties, commandBuffer,
                                        scratchMemory, scratchBuffer,
                                        offsetInScratchBuffer));
-    AMD_V_RETURN(CreateConstantBuffer(pvkDevice, maxUniformBuffer, cpu_memory_index));
-    AMD_V_RETURN(CreateVertexBuffers(pvkDevice, texture_memory_index, commandBuffer,
-                                     scratchMemory, scratchBuffer,
-                                     offsetInScratchBuffer));
-    AMD_V_RETURN(CreateSamplers(pvkDevice));
-    AMD_V_RETURN(CreateLayouts(pvkDevice));
+    AMD_CHECKED_VULKAN_CALL(CreateConstantBuffer(pvkDevice, maxUniformBuffer, memProperties));
+    AMD_CHECKED_VULKAN_CALL(CreateSamplers(pvkDevice));
+    AMD_CHECKED_VULKAN_CALL(CreateLayouts(pvkDevice));
     if (!bShortCutOn)
     {
-        AMD_V_RETURN(
-            CreatePPLL(pvkDevice, winWidth, winHeight, false, texture_memory_index));
+        AMD_CHECKED_VULKAN_CALL(
+            CreatePPLL(pvkDevice, winWidth, winHeight, false, memProperties));
         VkImageMemoryBarrier defineHeadPPLLBarrier[] = {getImageMemoryBarrier(
             m_pHeadPPLLTexture, 0, VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_SHADER_READ_BIT,
-            VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL)};
+            VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, 1, VK_IMAGE_ASPECT_COLOR_BIT)};
         vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
                              VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0,
                              nullptr, AMD_ARRAY_SIZE(defineHeadPPLLBarrier),
@@ -672,31 +596,32 @@ VkResult TressFXRenderer::OnCreateDevice(
                                   m_pSamplerStateLinearWrap, m_pSamplerStatePointClamp,
                                   depthTexture, colorTexture, m_pcbPerFrame,
                                   sizeof(CB_PER_FRAME), m_pNoiseView, m_pSMHairView,
-                                  texture_memory_index, winWidth, winHeight);
+                                  memProperties, winWidth, winHeight, depthStencilFormat, colorFormat);
 
         VkImageMemoryBarrier barriers[] = {
             getImageMemoryBarrier(m_ShortCut.m_pAccumInvAlphaTexture, 0,
                                   VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
                                       VK_ACCESS_COLOR_ATTACHMENT_READ_BIT,
                                   VK_IMAGE_LAYOUT_UNDEFINED,
-                                  VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL),
+                                  VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, 1, VK_IMAGE_ASPECT_COLOR_BIT),
             getImageMemoryBarrier(m_ShortCut.m_pFragmentDepthsTexture, 0,
                                   VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
                                       VK_ACCESS_COLOR_ATTACHMENT_READ_BIT,
-                                  VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL),
+                                  VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL,
+                                  SHORTCUT_NUM_DEPTHS, VK_IMAGE_ASPECT_COLOR_BIT),
             getImageMemoryBarrier(m_ShortCut.m_pFragmentColorsTexture, 0,
                                   VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
                                       VK_ACCESS_COLOR_ATTACHMENT_READ_BIT,
                                   VK_IMAGE_LAYOUT_UNDEFINED,
-                                  VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)};
+                                  VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, 1, VK_IMAGE_ASPECT_COLOR_BIT)};
         vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
                              VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0,
                              nullptr, AMD_ARRAY_SIZE(barriers), barriers);
     }
 
-    AMD_V_RETURN(CreateRenderStateObjects(pvkDevice));
-    AMD_V_RETURN(AllocateAndPopulateSets(pvkDevice, bShortCutOn));
-    AMD_V_RETURN(
+    AMD_CHECKED_VULKAN_CALL(CreateRenderStateObjects(pvkDevice, depthStencilFormat, colorFormat));
+    AMD_CHECKED_VULKAN_CALL(AllocateAndPopulateSets(pvkDevice, bShortCutOn));
+    AMD_CHECKED_VULKAN_CALL(
         CreateFrameBuffer(pvkDevice, depthTexture, colorTexture, winWidth, winHeight));
 
     return VK_SUCCESS;
@@ -726,7 +651,7 @@ VkResult TressFXRenderer::CreateLayouts(VkDevice pvkDevice)
             {IDSRV_HAIR_THICKNESSES, VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1,
              VK_SHADER_STAGE_VERTEX_BIT},
         };
-        AMD_V_RETURN(getDescriptorLayout(pvkDevice, pass1_hair_bindings,
+        AMD_CHECKED_VULKAN_CALL(getDescriptorLayout(pvkDevice, pass1_hair_bindings,
                                          AMD_ARRAY_SIZE(pass1_hair_bindings),
                                          m_pass1_hair_set_layout));
     }
@@ -753,7 +678,7 @@ VkResult TressFXRenderer::CreateLayouts(VkDevice pvkDevice)
             {IDSRV_NOISEMAP, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1,
              VK_SHADER_STAGE_VERTEX_BIT},
         };
-        AMD_V_RETURN(getDescriptorLayout(pvkDevice, pass1_config_bindings,
+        AMD_CHECKED_VULKAN_CALL(getDescriptorLayout(pvkDevice, pass1_config_bindings,
                                          AMD_ARRAY_SIZE(pass1_config_bindings),
                                          m_pass1_config_set_layout));
     }
@@ -763,7 +688,7 @@ VkResult TressFXRenderer::CreateLayouts(VkDevice pvkDevice)
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{
         VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO, nullptr, 0,
         AMD_ARRAY_SIZE(pass1_descriptor_set_layouts), pass1_descriptor_set_layouts};
-    AMD_V_RETURN(
+    AMD_CHECKED_VULKAN_CALL(
         vkCreatePipelineLayout(pvkDevice, &pipelineLayoutInfo, nullptr, &m_pass1_layout));
 
     // Pass 2 set layout
@@ -785,7 +710,7 @@ VkResult TressFXRenderer::CreateLayouts(VkDevice pvkDevice)
             {IDSRV_SHADOW_SAMPLER, VK_DESCRIPTOR_TYPE_SAMPLER, 1,
              VK_SHADER_STAGE_FRAGMENT_BIT, &m_pSamplerStatePointClamp},
         };
-        AMD_V_RETURN(getDescriptorLayout(pvkDevice, pass2_bindings,
+        AMD_CHECKED_VULKAN_CALL(getDescriptorLayout(pvkDevice, pass2_bindings,
                                          AMD_ARRAY_SIZE(pass2_bindings),
                                          m_pass2_set_layout));
     }
@@ -793,7 +718,7 @@ VkResult TressFXRenderer::CreateLayouts(VkDevice pvkDevice)
     VkPipelineLayoutCreateInfo pass2PipelineLayoutInfo{
         VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO, nullptr, 0, 1,
         &m_pass2_set_layout};
-    AMD_V_RETURN(vkCreatePipelineLayout(pvkDevice, &pass2PipelineLayoutInfo, nullptr,
+    AMD_CHECKED_VULKAN_CALL(vkCreatePipelineLayout(pvkDevice, &pass2PipelineLayoutInfo, nullptr,
                                         &m_pass2_layout));
 
     // Shadow pass model dependent set layout
@@ -803,7 +728,7 @@ VkResult TressFXRenderer::CreateLayouts(VkDevice pvkDevice)
             {IDSRV_HAIR_VERTEX_POSITIONS, VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1,
              VK_SHADER_STAGE_VERTEX_BIT},
         };
-        AMD_V_RETURN(getDescriptorLayout(pvkDevice, shadow_pass_hair_bindings,
+        AMD_CHECKED_VULKAN_CALL(getDescriptorLayout(pvkDevice, shadow_pass_hair_bindings,
                                          AMD_ARRAY_SIZE(shadow_pass_hair_bindings),
                                          m_shadow_pass_hair_set_layout));
     }
@@ -814,7 +739,7 @@ VkResult TressFXRenderer::CreateLayouts(VkDevice pvkDevice)
             // TressFX parameters
             {IDSRV_CONSTANTS_BUFFER, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1,
              VK_SHADER_STAGE_VERTEX_BIT}};
-        AMD_V_RETURN(getDescriptorLayout(pvkDevice, shadow_pass_config_bindings,
+        AMD_CHECKED_VULKAN_CALL(getDescriptorLayout(pvkDevice, shadow_pass_config_bindings,
                                          AMD_ARRAY_SIZE(shadow_pass_config_bindings),
                                          m_shadow_pass_config_set_layout));
     }
@@ -825,7 +750,7 @@ VkResult TressFXRenderer::CreateLayouts(VkDevice pvkDevice)
         VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO, nullptr, 0,
         AMD_ARRAY_SIZE(shadow_pass_descriptor_set_layouts),
         shadow_pass_descriptor_set_layouts};
-    AMD_V_RETURN(vkCreatePipelineLayout(pvkDevice, &shadowPassPipelineLayoutInfo, nullptr,
+    AMD_CHECKED_VULKAN_CALL(vkCreatePipelineLayout(pvkDevice, &shadowPassPipelineLayoutInfo, nullptr,
                                         &m_shadow_pass_layout));
 
     return VK_SUCCESS;
@@ -854,43 +779,27 @@ VkResult TressFXRenderer::AllocateAndPopulateSets(VkDevice pvkDevice, bool isSho
     descriptorPoolCreateInfo.maxSets = 3;
     descriptorPoolCreateInfo.poolSizeCount = AMD_ARRAY_SIZE(descriptorPoolSize);
     descriptorPoolCreateInfo.pPoolSizes = descriptorPoolSize;
-    AMD_V_RETURN(vkCreateDescriptorPool(pvkDevice, &descriptorPoolCreateInfo, nullptr,
+    AMD_CHECKED_VULKAN_CALL(vkCreateDescriptorPool(pvkDevice, &descriptorPoolCreateInfo, nullptr,
                                         &m_descriptorStorage));
 
+    VkDescriptorBufferInfo bufferDescriptor{m_pcbPerFrame, 0, sizeof(CB_PER_FRAME)};
+    VkDescriptorSetAllocateInfo allocateInfo{
+        VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO};
+    allocateInfo.descriptorPool = m_descriptorStorage;
+    allocateInfo.descriptorSetCount = 1;
+    allocateInfo.pSetLayouts = &m_shadow_pass_config_set_layout;
+    AMD_CHECKED_VULKAN_CALL(
+        vkAllocateDescriptorSets(pvkDevice, &allocateInfo, &m_shadow_pass_set));
     if (!isShortcut)
     {
-        VkDescriptorSetAllocateInfo allocateInfo{
-            VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO};
-        allocateInfo.descriptorPool = m_descriptorStorage;
         allocateInfo.descriptorSetCount = 1;
         allocateInfo.pSetLayouts = &m_pass1_config_set_layout;
-        AMD_V_RETURN(
+        AMD_CHECKED_VULKAN_CALL(
             vkAllocateDescriptorSets(pvkDevice, &allocateInfo, &m_pass1_config_set));
-    }
 
-    if (!isShortcut)
-    {
-        VkDescriptorSetAllocateInfo allocate2Info{
-            VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO};
-        allocate2Info.descriptorPool = m_descriptorStorage;
-        allocate2Info.descriptorSetCount = 1;
-        allocate2Info.pSetLayouts = &m_pass2_set_layout;
-        AMD_V_RETURN(vkAllocateDescriptorSets(pvkDevice, &allocate2Info, &m_pass2_set));
-    }
-
-    {
-        VkDescriptorSetAllocateInfo allocate3Info{
-            VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO};
-        allocate3Info.descriptorPool = m_descriptorStorage;
-        allocate3Info.descriptorSetCount = 1;
-        allocate3Info.pSetLayouts = &m_shadow_pass_config_set_layout;
-        AMD_V_RETURN(
-            vkAllocateDescriptorSets(pvkDevice, &allocate3Info, &m_shadow_pass_set));
-    }
-
-    VkDescriptorBufferInfo bufferDescriptor{m_pcbPerFrame, 0, sizeof(CB_PER_FRAME)};
-    if (!isShortcut)
-    {
+        allocateInfo.descriptorSetCount = 1;
+        allocateInfo.pSetLayouts = &m_pass2_set_layout;
+        AMD_CHECKED_VULKAN_CALL(vkAllocateDescriptorSets(pvkDevice, &allocateInfo, &m_pass2_set));
 
         VkDescriptorBufferInfo atomicCounterDescriptor{m_pAtomicCounterPPLLBuffer, 0,
                                                        sizeof(unsigned int)};
@@ -960,7 +869,7 @@ VkResult TressFXRenderer::AllocateAndPopulateSets(VkDevice pvkDevice, bool isSho
 //
 //--------------------------------------------------------------------------------------
 VkResult TressFXRenderer::CreatePPLL(VkDevice pvkDevice, int winWidth, int winHeight,
-                                     bool resize, uint32_t texture_memory_index)
+                                     bool resize, VkPhysicalDeviceMemoryProperties memProperties)
 {
     VkResult vr;
 
@@ -968,22 +877,65 @@ VkResult TressFXRenderer::CreatePPLL(VkDevice pvkDevice, int winWidth, int winHe
     if ((winWidth != g_PPLBuffers.width) || (winHeight != g_PPLBuffers.height) ||
         (g_PPLBuffers.refCount == 0))
     {
-        // Release any previously allocated buffers
-        //        AMD_SAFE_RELEASE(g_PPLBuffers.pHeadPPLL_Buffer);
-        //        AMD_SAFE_RELEASE(g_PPLBuffers.pHeadPPLL_SRV);
-        //        AMD_SAFE_RELEASE(g_PPLBuffers.pHeadPPLL_UAV);
-        //        AMD_SAFE_RELEASE(g_PPLBuffers.pPPLL_Buffer);
-        //        AMD_SAFE_RELEASE(g_PPLBuffers.pPPLL_UAV);
-        //        AMD_SAFE_RELEASE(g_PPLBuffers.pPPLL_SRV);
-
         // linked list head texture
         VkImageCreateInfo headPPLLInfo =
             getImageCreateInfo(VK_FORMAT_R32_UINT, winWidth, winHeight,
-                               VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT);
-        AMD_V_RETURN(vkCreateImage(pvkDevice, &headPPLLInfo, nullptr,
+                               VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT);
+        AMD_CHECKED_VULKAN_CALL(vkCreateImage(pvkDevice, &headPPLLInfo, nullptr,
                                    &g_PPLBuffers.pHeadPPLL_Buffer));
-        g_PPLBuffers.pHeadPPLL_Memory = allocImageMemory(
-            pvkDevice, g_PPLBuffers.pHeadPPLL_Buffer, texture_memory_index);
+
+        // Per-pixel Linked List (PPLL) buffer
+        VkBufferCreateInfo BufferDesc{VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
+        BufferDesc.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+        BufferDesc.size = (DWORD)(g_HairTotalLayers * winWidth * winHeight *
+                                  sizeof(PER_PIXEL_LINKED_LIST_STRUCT));
+        AMD_CHECKED_VULKAN_CALL(
+            vkCreateBuffer(pvkDevice, &BufferDesc, nullptr, &g_PPLBuffers.pPPLL_Buffer));
+
+        // Atomic counter buffer
+        BufferDesc.usage =
+            VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+        BufferDesc.size = sizeof(unsigned int);
+        AMD_CHECKED_VULKAN_CALL(vkCreateBuffer(pvkDevice, &BufferDesc, nullptr,
+                                    &g_PPLBuffers.pAtomicCounterPLL_Buffer));
+
+        VkMemoryRequirements headPPLLMemReq;
+        vkGetImageMemoryRequirements(pvkDevice, g_PPLBuffers.pHeadPPLL_Buffer, &headPPLLMemReq);
+        VkMemoryRequirements PPLBufferMemReq;
+        vkGetBufferMemoryRequirements(pvkDevice, g_PPLBuffers.pPPLL_Buffer, &PPLBufferMemReq);
+        VkMemoryRequirements atomicBufferMemReq;
+        vkGetBufferMemoryRequirements(pvkDevice, g_PPLBuffers.pAtomicCounterPLL_Buffer, &atomicBufferMemReq);
+
+        uint32_t typeBits = headPPLLMemReq.memoryTypeBits & PPLBufferMemReq.memoryTypeBits & atomicBufferMemReq.memoryTypeBits;
+		uint32_t memoryType = getMemoryTypeIndex(typeBits, memProperties, VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+        if (memoryType == -1)
+        {
+			// Split in 3
+            g_PPLBuffers.pHeadPPLL_Memory = allocImageMemory(
+                pvkDevice, g_PPLBuffers.pHeadPPLL_Buffer, memProperties);
+
+            g_PPLBuffers.pPPLL_Memory =
+                allocBufferMemory(pvkDevice, g_PPLBuffers.pPPLL_Buffer, memProperties, VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+            g_PPLBuffers.pAtomicCounterPLL_Memory = allocBufferMemory(
+                pvkDevice, g_PPLBuffers.pAtomicCounterPLL_Buffer, memProperties, VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+        }
+        else
+        {
+			VkDeviceSize PPLBufferOffset = align(headPPLLMemReq.size, PPLBufferMemReq.alignment);
+			VkDeviceSize atomicBufferOffset = align(PPLBufferOffset + PPLBufferMemReq.size, atomicBufferMemReq.alignment);
+			VkDeviceSize totalSize = atomicBufferOffset + atomicBufferMemReq.size;
+
+			VkMemoryAllocateInfo allocate{ VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO };
+			allocate.allocationSize = totalSize;
+			allocate.memoryTypeIndex = memoryType;
+			AMD_CHECKED_VULKAN_CALL(vkAllocateMemory(pvkDevice, &allocate, NULL, &g_PPLBuffers.pSharedMemory));
+
+			AMD_CHECKED_VULKAN_CALL(vkBindImageMemory(pvkDevice, g_PPLBuffers.pHeadPPLL_Buffer, g_PPLBuffers.pSharedMemory, 0));
+			AMD_CHECKED_VULKAN_CALL(vkBindBufferMemory(pvkDevice, g_PPLBuffers.pPPLL_Buffer, g_PPLBuffers.pSharedMemory, PPLBufferOffset));
+			AMD_CHECKED_VULKAN_CALL(vkBindBufferMemory(pvkDevice, g_PPLBuffers.pAtomicCounterPLL_Buffer, g_PPLBuffers.pSharedMemory, atomicBufferOffset));
+		}
+
 
         // View for linked list head
         VkImageViewCreateInfo srDesc{VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO};
@@ -993,27 +945,10 @@ VkResult TressFXRenderer::CreatePPLL(VkDevice pvkDevice, int winWidth, int winHe
         srDesc.subresourceRange.layerCount = 1;
         srDesc.subresourceRange.levelCount = 1;
         srDesc.image = g_PPLBuffers.pHeadPPLL_Buffer;
-        AMD_V_RETURN(
+        AMD_CHECKED_VULKAN_CALL(
             vkCreateImageView(pvkDevice, &srDesc, nullptr, &g_PPLBuffers.pHeadPPLL_View));
 
-        // Per-pixel Linked List (PPLL) buffer
-        VkBufferCreateInfo BufferDesc{VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
-        BufferDesc.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
-        BufferDesc.size = (DWORD)(g_HairTotalLayers * winWidth * winHeight *
-                                  sizeof(PER_PIXEL_LINKED_LIST_STRUCT));
-        AMD_V_RETURN(
-            vkCreateBuffer(pvkDevice, &BufferDesc, nullptr, &g_PPLBuffers.pPPLL_Buffer));
-        g_PPLBuffers.pPPLL_Memory =
-            allocBufferMemory(pvkDevice, g_PPLBuffers.pPPLL_Buffer, texture_memory_index);
 
-        // Atomic counter buffer
-        BufferDesc.usage =
-            VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-        BufferDesc.size = sizeof(unsigned int);
-        AMD_V_RETURN(vkCreateBuffer(pvkDevice, &BufferDesc, nullptr,
-                                    &g_PPLBuffers.pAtomicCounterPLL_Buffer));
-        g_PPLBuffers.pAtomicCounterPLL_Memory = allocBufferMemory(
-            pvkDevice, g_PPLBuffers.pAtomicCounterPLL_Buffer, texture_memory_index);
 
         // update the width and height
         g_PPLBuffers.width = winWidth;
@@ -1071,6 +1006,7 @@ void TressFXRenderer::DeletePPLL(VkDevice pvkDevice)
         AMD_SAFE_RELEASE(g_PPLBuffers.pAtomicCounterPLL_Buffer, vkDestroyBuffer,
                          pvkDevice);
         AMD_SAFE_RELEASE(g_PPLBuffers.pAtomicCounterPLL_Memory, vkFreeMemory, pvkDevice);
+		AMD_SAFE_RELEASE(g_PPLBuffers.pSharedMemory, vkFreeMemory, pvkDevice);
 
         g_PPLBuffers.width = 0;
         g_PPLBuffers.height = 0;
@@ -1087,16 +1023,16 @@ void TressFXRenderer::DeletePPLL(VkDevice pvkDevice)
 //--------------------------------------------------------------------------------------
 VkResult TressFXRenderer::OnResizedSwapChain(VkDevice pvkDevice, int width, int height,
                                              bool bShortCutOn,
-                                             uint32_t texture_memory_index)
+                                             VkPhysicalDeviceMemoryProperties memProperties)
 {
     VkResult vr;
     if (bShortCutOn)
     {
-        // AMD_V_RETURN(m_ShortCut.OnResizedSwapChain(pd3dDevice, width, height));
+        // AMD_CHECKED_VULKAN_CALL(m_ShortCut.OnResizedSwapChain(pd3dDevice, width, height));
     }
     else
     {
-        AMD_V_RETURN(CreatePPLL(pvkDevice, width, height, true, texture_memory_index));
+        AMD_CHECKED_VULKAN_CALL(CreatePPLL(pvkDevice, width, height, true, memProperties));
     }
     return VK_SUCCESS;
 }
@@ -1230,7 +1166,7 @@ void TressFXRenderer::BeginHairFrame(
 //
 // RenderScreenQuad
 //
-// Renders a full screen quad
+// Renders a triangle big enough to cover whole screen
 //
 ////--------------------------------------------------------------------------------------
 void TressFXRenderer::RenderScreenQuad(VkCommandBuffer cmdbuffer, VkPipeline pPipeline)
@@ -1238,11 +1174,8 @@ void TressFXRenderer::RenderScreenQuad(VkCommandBuffer cmdbuffer, VkPipeline pPi
     // set shader
     vkCmdBindPipeline(cmdbuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pPipeline);
 
-    VkDeviceSize offsets = 0;
-    vkCmdBindVertexBuffers(cmdbuffer, 0, 1, &m_pScreenQuadVB, &offsets);
-
-    // Draw full screen quad
-    vkCmdDraw(cmdbuffer, 6, 1, 0, 0);
+    // Draw full screen triangle
+    vkCmdDraw(cmdbuffer, 3, 1, 0, 0);
 }
 
 //--------------------------------------------------------------------------------------
@@ -1252,8 +1185,10 @@ void TressFXRenderer::RenderScreenQuad(VkCommandBuffer cmdbuffer, VkPipeline pPi
 // Renders the hair from the point of view of the light into a shadow map
 //
 //--------------------------------------------------------------------------------------
-void TressFXRenderer::GenerateShadowMap(VkDevice pvkDevice, VkCommandBuffer commandBuffer,
-                                        float density, uint32_t uniformBufferIndex)
+void TressFXRenderer::GenerateShadowMap(VkDevice pvkDevice,
+                                        VkCommandBuffer commandBuffer,
+                                        float density, uint32_t uniformBufferIndex,
+                                        const DebugMarkerPointer& markerCallbacks)
 {
     VkViewport viewport{0.f, 0.f, SM_HAIR_WIDTH, SM_HAIR_HEIGHT, 0.f, 1.f};
     vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
@@ -1268,6 +1203,7 @@ void TressFXRenderer::GenerateShadowMap(VkDevice pvkDevice, VkCommandBuffer comm
     depthClear.depthStencil.depth = 1.f;
     info.pClearValues = &depthClear;
     info.renderArea.extent = {SM_HAIR_WIDTH, SM_HAIR_HEIGHT};
+    markerCallbacks.markBeginRegion(commandBuffer, "Shadowmap");
     vkCmdBeginRenderPass(commandBuffer, &info, VK_SUBPASS_CONTENTS_INLINE);
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
                       m_pPLGenerateHairSM);
@@ -1281,6 +1217,7 @@ void TressFXRenderer::GenerateShadowMap(VkDevice pvkDevice, VkCommandBuffer comm
     vkCmdDrawIndexed(commandBuffer, UINT(density * m_pTressFXMesh->m_TotalIndexCount), 1,
                      0, 0, 0);
     vkCmdEndRenderPass(commandBuffer);
+    markerCallbacks.markEndRegion(commandBuffer);
 }
 
 //--------------------------------------------------------------------------------------
@@ -1295,13 +1232,16 @@ void TressFXRenderer::GenerateShadowMap(VkDevice pvkDevice, VkCommandBuffer comm
 // and blends the nearest k fragments (K-buffer) in back to front order.
 //
 ////--------------------------------------------------------------------------------------
-void TressFXRenderer::RenderHair(VkDevice pvkDevice, VkCommandBuffer commandBuffer,
-                                 uint32_t width, uint32_t height,
-                                 uint32_t uniformBufferIndex)
+void TressFXRenderer::RenderHair(VkDevice pvkDevice,
+                                 VkCommandBuffer commandBuffer,
+                                 uint32_t width,
+                                 uint32_t height,
+                                 uint32_t uniformBufferIndex, const DebugMarkerPointer& markerCallbacks)
 {
     // Caller must rebind original render target and depth stencil view after call
 
     // render hair
+    markerCallbacks.markBeginRegion(commandBuffer, "RenderHair");
 
     // Clear HeadPPLL buffer as it's not an attachment
     VkClearColorValue dwClearDataMinusOne{};
@@ -1385,11 +1325,14 @@ void TressFXRenderer::RenderHair(VkDevice pvkDevice, VkCommandBuffer commandBuff
                             AMD_ARRAY_SIZE(descriptorOffsets), descriptorOffsets);
     RenderScreenQuad(commandBuffer, m_pPLResolveKBuffer);
     vkCmdEndRenderPass(commandBuffer);
+    markerCallbacks.markEndRegion(commandBuffer);
 }
 
 void TressFXRenderer::RenderHairShortcut(VkDevice pvkDevice,
-                                         VkCommandBuffer commandBuffer, uint32_t width,
-                                         uint32_t height, uint32_t uniformBufferIndex)
+
+                                         VkCommandBuffer commandBuffer,
+ uint32_t width,
+                                         uint32_t height, uint32_t uniformBufferIndex, const DebugMarkerPointer& markerCallbacks)
 {
     m_ShortCut.SetupDepthPass(pvkDevice, commandBuffer, width, height);
 
@@ -1512,9 +1455,6 @@ void TressFXRenderer::EndHairFrame(VkDevice pvkDevice) {}
 void TressFXRenderer::OnDestroy()
 {
     m_ShortCut.OnDestroy(true);
-
-    AMD_SAFE_RELEASE(m_pScreenQuadVB, vkDestroyBuffer, m_pvkDevice);
-    AMD_SAFE_RELEASE(m_pScreenQuadMemory, vkFreeMemory, m_pvkDevice);
 
     {
         AMD_SAFE_RELEASE(m_pPLRenderHairAAStrandCopies, vkDestroyPipeline, m_pvkDevice);

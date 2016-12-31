@@ -32,17 +32,6 @@
 #include "UtilVulkan.h"
 #include <vector>
 
-#ifndef AMD_V_RETURN
-#define AMD_V_RETURN(x)                                                                  \
-    {                                                                                    \
-        vr = (x);                                                                        \
-        if (vr != VK_SUCCESS)                                                            \
-        {                                                                                \
-            return vr;                                                                   \
-        }                                                                                \
-    }
-#endif
-
 // unreferenced formal parameter
 #pragma warning(disable : 4100)
 
@@ -73,7 +62,7 @@ VkResult GPUOnlyStructuredBuffer::Create(VkDevice pvkDevice, uint32_t structSize
     VkBufferCreateInfo BufferDesc{VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
     BufferDesc.size = structCount * structSize;
     BufferDesc.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
-    AMD_V_RETURN(vkCreateBuffer(pvkDevice, &BufferDesc, NULL, &m_pBuffer));
+    AMD_CHECKED_VULKAN_CALL(vkCreateBuffer(pvkDevice, &BufferDesc, NULL, &m_pBuffer));
     m_pvkDevice = pvkDevice;
 
     return VK_SUCCESS;
@@ -87,7 +76,7 @@ void GPUOnlyStructuredBuffer::Destroy()
 
 VkResult TressFXShortCut::CreateScreenSizedItems(VkDevice pvkDevice, int winWidth,
                                                  int winHeight,
-                                                 uint32_t texture_memory_index)
+                                                 VkPhysicalDeviceMemoryProperties memProperties)
 {
     m_pvkDevice = pvkDevice;
     VkResult vr;
@@ -96,10 +85,10 @@ VkResult TressFXShortCut::CreateScreenSizedItems(VkDevice pvkDevice, int winWidt
             VK_FORMAT_R16_SFLOAT, winWidth, winHeight,
             VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT |
                 VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT);
-        AMD_V_RETURN(vkCreateImage(pvkDevice, &accumInvAlphaInfo, nullptr,
+        AMD_CHECKED_VULKAN_CALL(vkCreateImage(pvkDevice, &accumInvAlphaInfo, nullptr,
                                    &m_pAccumInvAlphaTexture));
         m_pAccumInvAlphaMemory =
-            allocImageMemory(pvkDevice, m_pAccumInvAlphaTexture, texture_memory_index);
+            allocImageMemory(pvkDevice, m_pAccumInvAlphaTexture, memProperties);
 
         VkImageViewCreateInfo srDesc{VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO};
         srDesc.format = VK_FORMAT_R16_SFLOAT;
@@ -108,7 +97,7 @@ VkResult TressFXShortCut::CreateScreenSizedItems(VkDevice pvkDevice, int winWidt
         srDesc.subresourceRange.layerCount = 1;
         srDesc.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         srDesc.image = m_pAccumInvAlphaTexture;
-        AMD_V_RETURN(
+        AMD_CHECKED_VULKAN_CALL(
             vkCreateImageView(pvkDevice, &srDesc, nullptr, &m_pAccumInvAlphaView));
     }
 
@@ -118,11 +107,11 @@ VkResult TressFXShortCut::CreateScreenSizedItems(VkDevice pvkDevice, int winWidt
                                VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT |
                                    VK_IMAGE_USAGE_TRANSFER_DST_BIT,
                                SHORTCUT_NUM_DEPTHS);
-        AMD_V_RETURN(vkCreateImage(pvkDevice, &fragmentDepthInfo, nullptr,
+        AMD_CHECKED_VULKAN_CALL(vkCreateImage(pvkDevice, &fragmentDepthInfo, nullptr,
                                    &m_pFragmentDepthsTexture));
 
         m_pFragmentDepthsMemory =
-            allocImageMemory(pvkDevice, m_pFragmentDepthsTexture, texture_memory_index);
+            allocImageMemory(pvkDevice, m_pFragmentDepthsTexture, memProperties);
 
         VkImageViewCreateInfo srDesc{VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO};
         srDesc.format = VK_FORMAT_R32_UINT;
@@ -131,7 +120,7 @@ VkResult TressFXShortCut::CreateScreenSizedItems(VkDevice pvkDevice, int winWidt
         srDesc.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         srDesc.subresourceRange.layerCount = SHORTCUT_NUM_DEPTHS;
         srDesc.image = m_pFragmentDepthsTexture;
-        AMD_V_RETURN(
+        AMD_CHECKED_VULKAN_CALL(
             vkCreateImageView(pvkDevice, &srDesc, nullptr, &m_pFragmentDepthsView));
     }
 
@@ -141,11 +130,11 @@ VkResult TressFXShortCut::CreateScreenSizedItems(VkDevice pvkDevice, int winWidt
             VK_FORMAT_R16G16B16A16_SFLOAT, winWidth, winHeight,
             VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT |
                 VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT);
-        AMD_V_RETURN(vkCreateImage(pvkDevice, &fragmentColorInfo, nullptr,
+        AMD_CHECKED_VULKAN_CALL(vkCreateImage(pvkDevice, &fragmentColorInfo, nullptr,
                                    &m_pFragmentColorsTexture));
 
         m_pFragmentColorsMemory =
-            allocImageMemory(pvkDevice, m_pFragmentColorsTexture, texture_memory_index);
+            allocImageMemory(pvkDevice, m_pFragmentColorsTexture, memProperties);
 
         VkImageViewCreateInfo srDesc{VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO};
         srDesc.format = VK_FORMAT_R16G16B16A16_SFLOAT;
@@ -154,7 +143,7 @@ VkResult TressFXShortCut::CreateScreenSizedItems(VkDevice pvkDevice, int winWidt
         srDesc.subresourceRange.layerCount = 1;
         srDesc.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         srDesc.image = m_pFragmentColorsTexture;
-        AMD_V_RETURN(
+        AMD_CHECKED_VULKAN_CALL(
             vkCreateImageView(pvkDevice, &srDesc, nullptr, &m_pFragmentColorsView));
     }
 #else
@@ -195,13 +184,13 @@ VkAttachmentDescription getAttachmentDescription(
             inoutLayout};
 }
 
-VkRenderPass createRenderPass(VkDevice pvkDevice)
+VkRenderPass createRenderPass(VkDevice pvkDevice, VkFormat depthStencilFormat, VkFormat colorFormat)
 {
     VkRenderPassCreateInfo info{VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO};
 
     const VkAttachmentDescription attachments[] = {
         // DS
-        getAttachmentDescription(VK_FORMAT_D24_UNORM_S8_UINT, VK_ATTACHMENT_LOAD_OP_LOAD,
+        getAttachmentDescription(depthStencilFormat, VK_ATTACHMENT_LOAD_OP_LOAD,
                                  VK_ATTACHMENT_STORE_OP_STORE,
                                  VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
                                  VK_ATTACHMENT_LOAD_OP_CLEAR,
@@ -219,7 +208,7 @@ VkRenderPass createRenderPass(VkDevice pvkDevice)
 // TODO
 #endif
         // Result
-        getAttachmentDescription(VK_FORMAT_R8G8B8A8_SNORM, VK_ATTACHMENT_LOAD_OP_LOAD,
+        getAttachmentDescription(colorFormat, VK_ATTACHMENT_LOAD_OP_LOAD,
                                  VK_ATTACHMENT_STORE_OP_STORE,
                                  VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL),
 
@@ -305,9 +294,9 @@ VkRenderPass createRenderPass(VkDevice pvkDevice)
 // Creates the pipelines for hair rendering
 //
 //--------------------------------------------------------------------------------------
-VkResult TressFXShortCut::CreateRenderStateObjects(VkDevice pvkDevice)
+VkResult TressFXShortCut::CreateRenderStateObjects(VkDevice pvkDevice, VkFormat depthStencilFormat, VkFormat colorFormat)
 {
-    m_pRPRenderHair = createRenderPass(pvkDevice);
+    m_pRPRenderHair = createRenderPass(pvkDevice, depthStencilFormat, colorFormat);
 
     ShaderModule m_pPSDepthsAlpha(pvkDevice, depth_hair_data);
     ShaderModule m_pPSFillColors(pvkDevice, fillcolors_hair_data);
@@ -508,7 +497,7 @@ VkResult TressFXShortCut::CreateRenderStateObjects(VkDevice pvkDevice)
     VkPipeline pipelines[AMD_ARRAY_SIZE(pipelinesDesc)];
 
     VkResult vr;
-    AMD_V_RETURN(vkCreateGraphicsPipelines(pvkDevice, VK_NULL_HANDLE,
+    AMD_CHECKED_VULKAN_CALL(vkCreateGraphicsPipelines(pvkDevice, VK_NULL_HANDLE,
                                            AMD_ARRAY_SIZE(pipelinesDesc), pipelinesDesc,
                                            nullptr, pipelines));
 
@@ -559,7 +548,7 @@ VkResult TressFXShortCut::CreateLayouts(VkDevice pvkDevice,
         };
         info.bindingCount = AMD_ARRAY_SIZE(bindings);
         info.pBindings = bindings;
-        AMD_V_RETURN(
+        AMD_CHECKED_VULKAN_CALL(
             vkCreateDescriptorSetLayout(pvkDevice, &info, nullptr, &m_pSLDepthAlpha));
     }
 
@@ -598,7 +587,7 @@ VkResult TressFXShortCut::CreateLayouts(VkDevice pvkDevice,
         };
         info.bindingCount = AMD_ARRAY_SIZE(bindings);
         info.pBindings = bindings;
-        AMD_V_RETURN(
+        AMD_CHECKED_VULKAN_CALL(
             vkCreateDescriptorSetLayout(pvkDevice, &info, nullptr, &m_pSLColors));
     }
 
@@ -608,7 +597,7 @@ VkResult TressFXShortCut::CreateLayouts(VkDevice pvkDevice,
 
         info.setLayoutCount = AMD_ARRAY_SIZE(set_layout);
         info.pSetLayouts = set_layout;
-        AMD_V_RETURN(vkCreatePipelineLayout(pvkDevice, &info, nullptr,
+        AMD_CHECKED_VULKAN_CALL(vkCreatePipelineLayout(pvkDevice, &info, nullptr,
                                             &m_depthPassPipelineLayout));
     }
 
@@ -618,7 +607,7 @@ VkResult TressFXShortCut::CreateLayouts(VkDevice pvkDevice,
 
         info.setLayoutCount = AMD_ARRAY_SIZE(set_layout);
         info.pSetLayouts = set_layout;
-        AMD_V_RETURN(vkCreatePipelineLayout(pvkDevice, &info, nullptr,
+        AMD_CHECKED_VULKAN_CALL(vkCreatePipelineLayout(pvkDevice, &info, nullptr,
                                             &m_colorPassPipelineLayout));
     }
 
@@ -652,7 +641,7 @@ VkResult TressFXShortCut::CreateFramebuffer(VkDevice pvkDevice,
 #else
 // TODO
 #endif
-        AMD_V_RETURN(vkCreateFramebuffer(pvkDevice, &info, nullptr, &m_pFBRenderHair));
+        AMD_CHECKED_VULKAN_CALL(vkCreateFramebuffer(pvkDevice, &info, nullptr, &m_pFBRenderHair));
     }
     return VK_SUCCESS;
 }
@@ -682,7 +671,7 @@ VkResult TressFXShortCut::AllocateAndPopulateSets(VkDevice pvkDevice,
         info.maxSets = 2;
         info.poolSizeCount = AMD_ARRAY_SIZE(sizes);
         info.pPoolSizes = sizes;
-        AMD_V_RETURN(
+        AMD_CHECKED_VULKAN_CALL(
             vkCreateDescriptorPool(pvkDevice, &info, nullptr, &m_pDPShortcutPool));
     }
 
@@ -693,7 +682,7 @@ VkResult TressFXShortCut::AllocateAndPopulateSets(VkDevice pvkDevice,
         info.descriptorSetCount = AMD_ARRAY_SIZE(setLayout);
         info.pSetLayouts = setLayout;
         VkDescriptorSet sets[AMD_ARRAY_SIZE(setLayout)];
-        AMD_V_RETURN(vkAllocateDescriptorSets(pvkDevice, &info, sets));
+        AMD_CHECKED_VULKAN_CALL(vkAllocateDescriptorSets(pvkDevice, &info, sets));
         m_depthPassSet = sets[0];
         m_colorPassSet = sets[1];
     }
@@ -745,19 +734,19 @@ VkResult TressFXShortCut::OnCreateDevice(
     VkDevice pd3dDevice, int winWidth, int winHeight, VkDescriptorSetLayout mesh_layout,
     VkSampler noiseSamplerRef, VkSampler shadowSamplerRef, VkImageView depthStencilView,
     VkImageView colorView, VkBuffer configBuffer, uint64_t configBufferSize,
-    VkImageView noiseMap, VkImageView hairShadowMap, uint32_t deviceLocalMemoryIndex,
-    uint32_t width, uint32_t height)
+    VkImageView noiseMap, VkImageView hairShadowMap, VkPhysicalDeviceMemoryProperties memProperties,
+    uint32_t width, uint32_t height, VkFormat depthStencilFormat, VkFormat colorFormat)
 {
     VkResult vr;
 
-    AMD_V_RETURN(
-        CreateScreenSizedItems(pd3dDevice, winWidth, winHeight, deviceLocalMemoryIndex));
-    AMD_V_RETURN(
+    AMD_CHECKED_VULKAN_CALL(
+        CreateScreenSizedItems(pd3dDevice, winWidth, winHeight, memProperties));
+    AMD_CHECKED_VULKAN_CALL(
         CreateLayouts(pd3dDevice, mesh_layout, noiseSamplerRef, shadowSamplerRef));
-    AMD_V_RETURN(CreateRenderStateObjects(pd3dDevice));
-    AMD_V_RETURN(
+    AMD_CHECKED_VULKAN_CALL(CreateRenderStateObjects(pd3dDevice, depthStencilFormat, colorFormat));
+    AMD_CHECKED_VULKAN_CALL(
         CreateFramebuffer(pd3dDevice, depthStencilView, colorView, width, height));
-    AMD_V_RETURN(AllocateAndPopulateSets(pd3dDevice, configBuffer, configBufferSize,
+    AMD_CHECKED_VULKAN_CALL(AllocateAndPopulateSets(pd3dDevice, configBuffer, configBufferSize,
                                          noiseMap, hairShadowMap))
 
     return VK_SUCCESS;
@@ -765,13 +754,13 @@ VkResult TressFXShortCut::OnCreateDevice(
 
 VkResult TressFXShortCut::OnResizedSwapChain(VkDevice pd3dDevice, int winWidth,
                                              int winHeight,
-                                             uint32_t deviceLocalMemoryIndex)
+                                             VkPhysicalDeviceMemoryProperties memProperties)
 {
     DestroyScreenSizedItems();
 
     VkResult vr;
-    AMD_V_RETURN(
-        CreateScreenSizedItems(pd3dDevice, winWidth, winHeight, deviceLocalMemoryIndex));
+    AMD_CHECKED_VULKAN_CALL(
+        CreateScreenSizedItems(pd3dDevice, winWidth, winHeight, memProperties));
     return VK_SUCCESS;
 }
 

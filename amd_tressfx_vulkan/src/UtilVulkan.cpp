@@ -17,15 +17,39 @@ ShaderModule::~ShaderModule()
     vkDestroyShaderModule(m_pvkDevice, m_shaderModule, nullptr);
 }
 
+
+uint32_t getMemoryTypeIndex(uint32_t typeBits, const VkPhysicalDeviceMemoryProperties &memprops, VkMemoryPropertyFlags properties)
+{
+	// Iterate over all memory types available for the device used in this example
+	for (uint32_t i = 0; i < memprops.memoryTypeCount; i++)
+	{
+		if ((typeBits & 1) == 1)
+		{
+			if ((memprops.memoryTypes[i].propertyFlags & properties) == properties)
+			{
+				return i;
+			}
+		}
+		typeBits >>= 1;
+	}
+	return static_cast<uint32_t>(-1);
+}
+
+VkDeviceSize align(VkDeviceSize offset, VkDeviceSize alignment)
+{
+	return ((offset + alignment - 1) / alignment) * alignment;
+}
+
+
 VkDeviceMemory allocBufferMemory(VkDevice dev, VkBuffer buffer,
-                                 uint32_t texture_memory_index)
+                                 const VkPhysicalDeviceMemoryProperties &memprops, VkMemoryPropertyFlags properties)
 {
     VkMemoryRequirements memReqs;
     vkGetBufferMemoryRequirements(dev, buffer, &memReqs);
 
     VkMemoryAllocateInfo allocateInfo{VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO};
     allocateInfo.allocationSize = memReqs.size;
-    allocateInfo.memoryTypeIndex = texture_memory_index;
+    allocateInfo.memoryTypeIndex = getMemoryTypeIndex(memReqs.memoryTypeBits, memprops, properties);
     VkDeviceMemory result;
     vkAllocateMemory(dev, &allocateInfo, nullptr, &result);
     vkBindBufferMemory(dev, buffer, result, 0);
@@ -33,14 +57,14 @@ VkDeviceMemory allocBufferMemory(VkDevice dev, VkBuffer buffer,
 }
 
 VkDeviceMemory allocImageMemory(VkDevice dev, VkImage image,
-                                uint32_t texture_memory_index)
+                                const VkPhysicalDeviceMemoryProperties &memprops)
 {
     VkMemoryRequirements memReqs;
     vkGetImageMemoryRequirements(dev, image, &memReqs);
 
     VkMemoryAllocateInfo allocateInfo{VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO};
     allocateInfo.allocationSize = memReqs.size;
-    allocateInfo.memoryTypeIndex = texture_memory_index;
+    allocateInfo.memoryTypeIndex = getMemoryTypeIndex(memReqs.memoryTypeBits, memprops, VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
     VkDeviceMemory result;
     vkAllocateMemory(dev, &allocateInfo, nullptr, &result);
     vkBindImageMemory(dev, image, result, 0);
@@ -91,10 +115,10 @@ void fillInitialData(VkCommandBuffer commandBuffer, VkBuffer scratchBuffer,
                      size_t &offsetInScratchBuffer, VkDeviceSize size)
 {
     memcpy(reinterpret_cast<char *>(pScratchBuffer) + offsetInScratchBuffer,
-           pDataToUpload, size);
+           pDataToUpload, static_cast<size_t>(size));
     VkBufferCopy copyInfo{offsetInScratchBuffer, 0, static_cast<uint32_t>(size)};
     vkCmdCopyBuffer(commandBuffer, scratchBuffer, destBuffer, 1, &copyInfo);
-    offsetInScratchBuffer += size;
+    offsetInScratchBuffer += static_cast<size_t>(size);
 }
 
 VkResult getDescriptorLayout(VkDevice pvkDevice, const VkDescriptorSetLayoutBinding *ptr,
@@ -106,13 +130,13 @@ VkResult getDescriptorLayout(VkDevice pvkDevice, const VkDescriptorSetLayoutBind
     info.pBindings = ptr;
 
     VkResult vr;
-    AMD_V_RETURN(vkCreateDescriptorSetLayout(pvkDevice, &info, nullptr, &result));
+    AMD_CHECKED_VULKAN_CALL(vkCreateDescriptorSetLayout(pvkDevice, &info, nullptr, &result));
     return VK_SUCCESS;
 }
 
 VkBufferMemoryBarrier getBufferBarrier(VkBuffer buffer, VkAccessFlags srcAccess,
                                        VkAccessFlags dstAccess, size_t offset,
-                                       size_t size)
+                                       uint64_t size)
 {
     VkBufferMemoryBarrier result{VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER};
     result.buffer = buffer;
@@ -214,7 +238,7 @@ VkGraphicsPipelineCreateInfo CommonPipelineState::getBasePipelineCreateInfo(
 namespace
 {
 VkPipelineDepthStencilStateCreateInfo
-getSpecializedDSS(bool depth_test_enable, bool depth_write_enable,
+getSpecializedDepthStencilState(bool depth_test_enable, bool depth_write_enable,
                   bool stencil_test_enable, VkCompareOp stencil_op, VkStencilOp pass_op,
                   uint32_t write_mask)
 {
@@ -266,29 +290,20 @@ const VkPipelineColorBlendAttachmentState m_pSum_BS_render_target_0{
     VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD,
     VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
         VK_COLOR_COMPONENT_A_BIT};
-
-// Full screen quad layout structure
-const VkVertexInputBindingDescription layout_quad_bindings[1] = {
-    {0, 32, VK_VERTEX_INPUT_RATE_VERTEX}};
-const VkVertexInputAttributeDescription layout_quad[3] = {
-    {0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0},  // POSITION
-    {1, 0, VK_FORMAT_R32G32B32_SFLOAT, 12}, // TANGENT
-    {2, 0, VK_FORMAT_R32G32_SFLOAT, 24},    // TEXCOORD
-};
 }
 
 const VkPipelineDepthStencilStateCreateInfo CommonPipelineState::DepthTestEnabledDesc =
-    getSpecializedDSS(true, true, false, VK_COMPARE_OP_NEVER, VK_STENCIL_OP_KEEP, 0xff);
+    getSpecializedDepthStencilState(true, true, false, VK_COMPARE_OP_NEVER, VK_STENCIL_OP_KEEP, 0xff);
 const VkPipelineDepthStencilStateCreateInfo
     CommonPipelineState::DepthTestEnabledNoDepthWritesStencilWriteIncrementDesc =
-        getSpecializedDSS(true, false, true, VK_COMPARE_OP_ALWAYS,
+        getSpecializedDepthStencilState(true, false, true, VK_COMPARE_OP_ALWAYS,
                           VK_STENCIL_OP_INCREMENT_AND_WRAP, 0xff);
 const VkPipelineDepthStencilStateCreateInfo
-    CommonPipelineState::DepthTestDisabledStencilTestLessDSS = getSpecializedDSS(
+    CommonPipelineState::DepthTestDisabledStencilTestLessDSS = getSpecializedDepthStencilState(
         false, false, true, VK_COMPARE_OP_LESS, VK_STENCIL_OP_KEEP, 0x00);
 const VkPipelineDepthStencilStateCreateInfo
     CommonPipelineState::m_pDepthWriteEnabledStencilTestLess_DSS =
-        getSpecializedDSS(true, true, true, VK_COMPARE_OP_LESS, VK_STENCIL_OP_KEEP, 0x0);
+        getSpecializedDepthStencilState(true, true, true, VK_COMPARE_OP_LESS, VK_STENCIL_OP_KEEP, 0x0);
 
 // disable color write if there is no need for fragments counting
 const VkPipelineColorBlendStateCreateInfo CommonPipelineState::ColorWritesOff{
@@ -334,14 +349,14 @@ const VkPipelineVertexInputStateCreateInfo CommonPipelineState::m_pLayoutQuad{
     VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
     nullptr,
     0,
-    1,
-    layout_quad_bindings,
-    3,
-    layout_quad};
+    0,
+    nullptr,
+    0,
+    nullptr};
 
 VkImageMemoryBarrier getImageMemoryBarrier(VkImage image, VkAccessFlags srcMask,
                                            VkAccessFlags dstMask, VkImageLayout oldLayout,
-                                           VkImageLayout newLayout,
+                                           VkImageLayout newLayout, uint32_t layoutCount,
                                            VkImageAspectFlags aspect)
 {
     VkImageMemoryBarrier memoryBarrier{VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER};
@@ -351,8 +366,8 @@ VkImageMemoryBarrier getImageMemoryBarrier(VkImage image, VkAccessFlags srcMask,
     memoryBarrier.newLayout = newLayout;
     memoryBarrier.image = image;
     memoryBarrier.subresourceRange.aspectMask = aspect;
-    memoryBarrier.subresourceRange.levelCount =
-        memoryBarrier.subresourceRange.layerCount = 1;
+	memoryBarrier.subresourceRange.levelCount = 1;
+    memoryBarrier.subresourceRange.layerCount = layoutCount;
     return memoryBarrier;
 }
 

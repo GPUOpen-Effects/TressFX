@@ -45,7 +45,7 @@ project ("AMD_" .. _AMD_LIBRARY_NAME .. "_Vulkan")
 
    -- Specify WindowsTargetPlatformVersion here for VS2015
    windowstarget (_AMD_WIN_SDK_VERSION)
-   defines { "VULKAN"}
+   defines { "AMD_TRESSFX_VULKAN=1"}
    files { "../inc/**.h", "../src/**.h", "../src/**.cpp", "../src/Shaders/**.glsl", "../src/Shaders/**.comp", "../src/Shaders/**.vert", "../src/Shaders/**.frag", "../../amd_tressfx/src/TressFXAsset.cpp", "../../amd_tressfx/src/Util.cpp", "../../amd_tressfx/src/Math/**.cpp" }
    includedirs { "../inc", "../../amd_lib/shared/common/inc",  "../../amd_tressfx/inc", "../../amd_tressfx/src", "$(VULKAN_SDK)/Include" }
    libdirs { "$(VULKAN_SDK)/Bin"}
