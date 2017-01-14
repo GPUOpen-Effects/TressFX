@@ -24,6 +24,14 @@
 #define AMD_TRESSFX_H
 
 #include <d3d11.h>
+#if AMD_TRESSFX_VULKAN
+#include <vulkan\vulkan.h>
+#elif AMD_TRESSFX_DIRECT3D11
+#include <d3d11.h>
+#else
+#error
+#endif
+
 #include <DirectXMath.h>
 
 #define AMD_TRESSFX_VERSION_MAJOR                    3
@@ -75,6 +83,19 @@
 #define IDSRV_HAIR_FRAGMENT_COLORS              14
 #define IDSRV_HAIR_ACCUM_INV_ALPHA              15
 
+#define IDSRV_CONSTANTS_BUFFER                  16
+#define IDSRV_ATOMIC_COUNTER_BUFFER             17
+#define IDSRV_NOISE_SAMPLER                     18
+#define IDSRV_SHADOW_SAMPLER                    19
+
+#define IDSRV_HAIR_PREVIOUS_VERTEX_POSITIONS    20
+#define IDSRV_HAIR_VERTEX_INITIAL_POSITIONS     21
+#define IDSRV_HAIR_STRAND_TYPE                  22
+#define IDSRV_HAIR_GLOBAL_ROTATION              23
+#define IDSRV_HAIR_LOCAL_REF_VEC                24
+#define IDSRV_HAIR_ROOT_OFFSET                  25
+#define IDSRV_HAIR_LENGTH                       26
+#define IDSRV_HEAD_TRANSFORM                    27
 
 #if defined(DEBUG) || defined(_DEBUG)
 #define AMD_TRESSFX_DEBUG                       1
@@ -167,10 +188,17 @@ struct TressFX_HairBlob
 
 struct TressFX_SceneMesh
 {
+#if AMD_TRESSFX_VULKAN
+    VkBufferView                pMeshVertices;     // untransformed vertices
+    VkBufferView                pTransformedVerts; // untransformed vertices
+#elif AMD_TRESSFX_DIRECT3D11
     ID3D11ShaderResourceView*   pMeshVertices;     // untransformed vertices
+    ID3D11ShaderResourceView*   pTransformedVerts; // transformed vertices
+#else
+#error
+#endif
     unsigned                    numMeshes;         // number of meshes
     unsigned*                   meshOffsets;       // offset to the start of each mesh
-    ID3D11ShaderResourceView*   pTransformedVerts; // transformed vertices
 };
 
 struct TressFX_HairTransform
@@ -227,33 +255,71 @@ struct TressFX_Desc
     // Buffer of transformations (one transform per strand) for hair skinning
     // This UAV is used as a structured buffer where each element is a TressFX_HairTransform.
     // The number of elements in the buffer is numTotalHairStrands.
+#if AMD_TRESSFX_VULKAN
+    VkBufferView                    pSkinningTransformationsUAV;
+    // hair shadow map
+    VkImageView                     pHairShadowMapSRV;
+    VkDevice                        pvkDevice;
+    VkPhysicalDeviceMemoryProperties memoryProperties;
+    VkImageView                     pvkDepthSRV;
+    uint32_t                        maxConstantBuffers;
+    VkFormat                        depthStencilFormat;
+    VkFormat                        colorFormat;
+#elif AMD_TRESSFX_DIRECT3D11
     ID3D11UnorderedAccessView*      pSkinningTransformationsUAV;
-
     // hair shadow map
     ID3D11ShaderResourceView*       pHairShadowMapSRV;
-
     ID3D11Device*                   pd3dDevice;
     ID3D11DeviceContext*            pd3dDeviceContext;
     ID3D11ShaderResourceView*       pd3dDepthSRV;
     ID3D11RenderTargetView*         pd3dOutputRTV;
+#else
+#error
+#endif
 };
 
 extern "C"
 {
     AMD_TRESSFX_DLL_API TRESSFX_RETURN_CODE TressFX_GetVersion(uint* major, uint* minor, uint* patch);
-    AMD_TRESSFX_DLL_API TRESSFX_RETURN_CODE TressFX_Initialize(TressFX_Desc & desc);
     AMD_TRESSFX_DLL_API TRESSFX_RETURN_CODE TressFX_LoadRawAsset(TressFX_Desc & desc,   const TressFX_GuideFollowParams& guideFollowParams, TressFX_HairBlob *pRawHairBlob);
-    AMD_TRESSFX_DLL_API TRESSFX_RETURN_CODE TressFX_LoadProcessedAsset(TressFX_Desc & desc, TressFX_HairBlob *pHairBlob, TressFX_SceneMesh *sceneMesh, ID3D11ShaderResourceView *pTextureSRV);
-    AMD_TRESSFX_DLL_API TRESSFX_RETURN_CODE TressFX_CreateProcessedAsset(TressFX_Desc & desc, TressFX_HairBlob **ppHairBlob, TressFX_SceneMesh *sceneMesh, ID3D11ShaderResourceView *pTextureSRV);
-    AMD_TRESSFX_DLL_API TRESSFX_RETURN_CODE TressFX_Begin(TressFX_Desc & desc);
     AMD_TRESSFX_DLL_API TRESSFX_RETURN_CODE TressFX_End(TressFX_Desc & desc);
     AMD_TRESSFX_DLL_API TRESSFX_RETURN_CODE TressFX_GenerateTransforms(TressFX_Desc & desc, TressFX_SceneMesh &sceneMesh);
     AMD_TRESSFX_DLL_API TRESSFX_RETURN_CODE TressFX_ApplyRigidTransforms(TressFX_Desc & desc);
-    AMD_TRESSFX_DLL_API TRESSFX_RETURN_CODE TressFX_Simulate(TressFX_Desc & desc, float elapsedTime);
-    AMD_TRESSFX_DLL_API TRESSFX_RETURN_CODE TressFX_RenderShadowMap(TressFX_Desc & desc);
-    AMD_TRESSFX_DLL_API TRESSFX_RETURN_CODE TressFX_Render(TressFX_Desc & desc);
-    AMD_TRESSFX_DLL_API TRESSFX_RETURN_CODE TressFX_Resize(TressFX_Desc & desc);
     AMD_TRESSFX_DLL_API TRESSFX_RETURN_CODE TressFX_Release(TressFX_Desc & desc);
+#if AMD_TRESSFX_VULKAN
+    AMD_TRESSFX_DLL_API TRESSFX_RETURN_CODE TressFX_Initialize(
+        TressFX_Desc &desc, VkImageView depthTexture, VkImageView colorTexture,
+        VkCommandBuffer commandBuffer, VkDeviceMemory scratchMemory,
+        VkBuffer scratchBuffer, size_t &offsetInScratchBuffer);
+    AMD_TRESSFX_DLL_API TRESSFX_RETURN_CODE TressFX_LoadProcessedAsset(
+        TressFX_Desc &desc, TressFX_HairBlob *pHairBlob,
+        TressFX_SceneMesh *sceneMesh, VkImageView pTextureSRV,
+        VkCommandBuffer uploadCmdBuffer,
+        VkBuffer scratchBuffer, VkDeviceMemory scratchMemory);
+    AMD_TRESSFX_DLL_API TRESSFX_RETURN_CODE TressFX_CreateProcessedAsset(
+        TressFX_Desc &desc, TressFX_HairBlob **ppHairBlob,
+        TressFX_SceneMesh *sceneMesh, VkImageView pTextureSRV,
+        VkCommandBuffer uploadCmdBuffer,
+        VkBuffer scratchBuffer, VkDeviceMemory scratchMemory);
+    AMD_TRESSFX_DLL_API TRESSFX_RETURN_CODE TressFX_Begin(TressFX_Desc & desc, uint32_t uniformBufferIndex);
+    AMD_TRESSFX_DLL_API TRESSFX_RETURN_CODE TressFX_Simulate(TressFX_Desc & desc, VkCommandBuffer commandBuffer, float elapsedTime, uint32_t uniformBufferIndex);
+    AMD_TRESSFX_DLL_API TRESSFX_RETURN_CODE TressFX_RenderShadowMap(TressFX_Desc & desc, VkCommandBuffer commandBuffer, uint32_t uniformBufferIndex);
+    AMD_TRESSFX_DLL_API TRESSFX_RETURN_CODE
+        TressFX_Render(TressFX_Desc &desc, VkCommandBuffer commandBuffer, uint32_t uniformBufferIndex);
+    AMD_TRESSFX_DLL_API TRESSFX_RETURN_CODE
+        TressFX_Resize(TressFX_Desc &desc, VkPhysicalDeviceMemoryProperties memProperties);
+#elif AMD_TRESSFX_DIRECT3D11
+    AMD_TRESSFX_DLL_API TRESSFX_RETURN_CODE TressFX_Initialize(TressFX_Desc &desc);
+    AMD_TRESSFX_DLL_API TRESSFX_RETURN_CODE TressFX_LoadProcessedAsset(TressFX_Desc & desc, TressFX_HairBlob *pHairBlob, TressFX_SceneMesh *sceneMesh, ID3D11ShaderResourceView *pTextureSRV);
+    AMD_TRESSFX_DLL_API TRESSFX_RETURN_CODE TressFX_CreateProcessedAsset(TressFX_Desc & desc, TressFX_HairBlob **ppHairBlob, TressFX_SceneMesh *sceneMesh, ID3D11ShaderResourceView *pTextureSRV);
+    AMD_TRESSFX_DLL_API TRESSFX_RETURN_CODE TressFX_Begin(TressFX_Desc & desc);
+    AMD_TRESSFX_DLL_API TRESSFX_RETURN_CODE TressFX_Render(TressFX_Desc & desc);
+    AMD_TRESSFX_DLL_API TRESSFX_RETURN_CODE TressFX_Resize(TressFX_Desc &desc);
+    AMD_TRESSFX_DLL_API TRESSFX_RETURN_CODE TressFX_RenderShadowMap(TressFX_Desc & desc);
+    AMD_TRESSFX_DLL_API TRESSFX_RETURN_CODE TressFX_Simulate(TressFX_Desc & desc, float elapsedTime);
+#else
+#error
+#endif
 }
 
 } // namespace AMD

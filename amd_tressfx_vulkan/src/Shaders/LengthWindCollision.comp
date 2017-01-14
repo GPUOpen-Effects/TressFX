@@ -1,0 +1,199 @@
+#version 450
+
+#include "SimulationConfig.glsl"
+
+layout (local_size_x = THREAD_GROUP_SIZE, local_size_y = 1, local_size_z = 1) in;
+
+layout(std430, set = 1, binding = IDSRV_HAIR_VERTEX_POSITIONS) buffer writeablePositions
+{
+  vec4 g_HairVertexPositions[];
+};
+layout(set = 1, binding = IDSRV_HAIR_LENGTH) uniform samplerBuffer g_HairRestLengthSRV;
+
+#include "IndicesComputations.glsl"
+
+shared vec4 sharedPos[THREAD_GROUP_SIZE];
+shared float sharedLength[THREAD_GROUP_SIZE];
+
+vec2 ConstraintMultiplier(vec4 particle0, vec4 particle1)
+{
+  if (IsMovable(particle0))
+  {
+    if (IsMovable(particle1))
+      return vec2(0.5, 0.5);
+    else
+      return vec2(1, 0);
+  }
+  else
+  {
+    if (IsMovable(particle1))
+      return vec2(0, 1);
+    else
+      return vec2(0, 0);
+  }
+}
+
+void ApplyDistanceConstraint(inout vec4 pos0, inout vec4 pos1, float targetDistance, float stiffness)
+{
+  vec3 delta = pos1.xyz - pos0.xyz;
+  float distance = max(length(delta), 1e-7);
+  float stretching = 1 - targetDistance / distance;
+  delta = stretching * delta;
+  vec2 multiplier = ConstraintMultiplier(pos0, pos1);
+
+  pos0.xyz += multiplier[0] * delta * stiffness;
+  pos1.xyz -= multiplier[1] * delta * stiffness;
+}
+
+
+//--------------------------------------------------------------------------------------
+//
+//  LengthConstriantsWindAndCollision
+//
+//  Compute shader to move the vertex position based on wind, maintain the lenght constraints
+//  and handles collisions.
+//
+//  One thread computes one vertex.
+//
+//--------------------------------------------------------------------------------------
+
+void main()
+{
+  uint globalStrandIndex, localStrandIndex, localVertexIndex, numVerticesInTheStrand, indexForSharedMem, strandType;
+  int globalVertexIndex;
+  CalcIndicesInVertexLevelMaster(gl_LocalInvocationID.x, gl_WorkGroupID.x, globalStrandIndex, localStrandIndex, globalVertexIndex, localVertexIndex, numVerticesInTheStrand, indexForSharedMem, strandType);
+
+  uint numOfStrandsPerThreadGroup = g_NumOfStrandsPerThreadGroup;
+
+  //------------------------------
+  // Copy data into shared memory
+  //------------------------------
+  sharedPos[indexForSharedMem] = g_HairVertexPositions[globalVertexIndex];
+  sharedLength[indexForSharedMem] = texelFetch(g_HairRestLengthSRV, globalVertexIndex).x;
+  barrier();
+
+
+  //------------
+  // Wind
+  //------------
+  if (g_Wind.x != 0 || g_Wind.y != 0 || g_Wind.z != 0)
+  {
+    vec4 force = vec4(0.);
+
+    float frame = g_Wind.w;
+
+    if (localVertexIndex >= 2 && localVertexIndex < numVerticesInTheStrand - 1)
+    {
+      // combining four winds.
+      float a = float(globalStrandIndex % 20) / 20.0;
+      vec3 w = a * g_Wind.xyz + (1.0 - a) * g_Wind1.xyz + a * g_Wind2.xyz + (1. - a) * g_Wind3.xyz;
+
+      int sharedIndex = int(localVertexIndex) * int(numOfStrandsPerThreadGroup) + int(localStrandIndex);
+
+      vec3 v = sharedPos[sharedIndex].xyz - sharedPos[sharedIndex + numOfStrandsPerThreadGroup].xyz;
+      vec3 force = -cross(cross(v, w), v);
+      sharedPos[sharedIndex].xyz += force*g_TimeStep*g_TimeStep;
+    }
+  }
+
+  barrier();
+
+  //----------------------------
+  // Enforce length constraints
+  //----------------------------
+  int a = int(floor(numVerticesInTheStrand / 2.));
+  int b = int(floor((numVerticesInTheStrand - 1.) / 2.));
+
+  for (int iterationE = 0; iterationE < g_NumLengthConstraintIterations; iterationE++)
+  {
+    int sharedIndex = 2 * int(localVertexIndex) * int(numOfStrandsPerThreadGroup) + int(localStrandIndex);
+
+    if( localVertexIndex < a)
+      ApplyDistanceConstraint(sharedPos[sharedIndex], sharedPos[sharedIndex+numOfStrandsPerThreadGroup], sharedLength[sharedIndex].x, 1.);
+
+    barrier();
+
+    if( localVertexIndex < b)
+      ApplyDistanceConstraint(sharedPos[sharedIndex + numOfStrandsPerThreadGroup], sharedPos[sharedIndex + numOfStrandsPerThreadGroup * 2], sharedLength[sharedIndex + numOfStrandsPerThreadGroup].x, 1.);
+
+    barrier();
+  }
+
+
+  //-------------------------------------------------
+  // Collision handling hard-code collision shapes
+  //-------------------------------------------------
+  bool bColDetected = false;
+
+  /*
+	float4 oldPos = g_HairVertexPositionsPrev[globalVertexIndex];
+
+    if ( g_bCollision > 0 )
+    {
+		float3 newPos;
+
+        {
+            float3 centerSphere = g_cc0_center;
+            centerSphere = mul(float4( centerSphere.xyz, 1), g_ModelTransformForHead).xyz;
+            float radius = g_cc0_radius;
+
+			CollisionCapsule cc;
+			cc.p1.xyz = centerSphere;
+			cc.p1.w = radius;
+			cc.p2.xyz = centerSphere + float3(0.0,1.0,0.0);
+			cc.p2.w = g_cc0_radius2;
+			
+			bColDetected = CapsuleCollision(sharedPos[indexForSharedMem], oldPos, newPos, cc, true);
+
+			if ( bColDetected )
+				sharedPos[indexForSharedMem].xyz = newPos;
+        }
+
+        {
+            float3 centerSphere = g_cc1_center;
+            centerSphere = mul(float4( centerSphere.xyz, 1), g_ModelTransformForHead).xyz;
+            float radius = g_cc1_radius;
+
+			CollisionCapsule cc;
+			cc.p1.xyz = centerSphere;
+			cc.p1.w = radius;
+			cc.p2.xyz = centerSphere + float3(0.0,1.0,0.0);
+			cc.p2.w = g_cc1_radius2;
+			
+			bColDetected = CapsuleCollision(sharedPos[indexForSharedMem], oldPos, newPos, cc, true);
+
+			if ( bColDetected )
+				sharedPos[indexForSharedMem].xyz = newPos;
+        }
+
+        {
+            float3 centerSphere = g_cc2_center;
+            centerSphere = mul(float4( centerSphere.xyz, 1), g_ModelTransformForHead).xyz;
+            float radius = g_cc2_radius;
+
+			CollisionCapsule cc;
+			cc.p1.xyz = centerSphere;
+			cc.p1.w = radius;
+			cc.p2.xyz = centerSphere + float3(0.0,1.0,0.0);
+			cc.p2.w =  g_cc2_radius2;
+			
+			bColDetected = CapsuleCollision(sharedPos[indexForSharedMem], oldPos, newPos, cc, true);
+
+			if ( bColDetected )
+				sharedPos[indexForSharedMem].xyz = newPos;
+        }
+    }
+
+    GroupMemoryBarrierWithGroupSync();
+*/
+
+  //---------------------------------------
+  // update global position buffers
+  //---------------------------------------
+  g_HairVertexPositions[globalVertexIndex] = sharedPos[indexForSharedMem];
+
+//  if ( bColDetected )
+//    g_HairVertexPositionsPrev[globalVertexIndex] = sharedPos[indexForSharedMem];
+
+  return;
+}

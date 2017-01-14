@@ -1,0 +1,44 @@
+#version 450
+
+#include "SimulationConfig.glsl"
+
+layout(local_size_x = THREAD_GROUP_SIZE, local_size_y = 1, local_size_z = 1) in;
+layout(set = 1, binding = IDSRV_HAIR_VERTEX_POSITIONS) uniform usamplerBuffer g_HairVertexPositions;
+layout(std430, set = 1, binding = IDSRV_HAIR_TANGENTS) buffer writeablePositions
+{
+  vec4 g_HairVertexTangents[];
+};
+
+#include "IndicesComputations.glsl"
+
+shared vec4 sharedPos[THREAD_GROUP_SIZE];
+
+void main()
+{
+    uint globalStrandIndex, localStrandIndex, localVertexIndex, numVerticesInTheStrand, indexForSharedMem, strandType;
+    int globalVertexIndex;
+    CalcIndicesInVertexLevelTotal(gl_LocalInvocationID.x, gl_WorkGroupID.x, globalStrandIndex, localStrandIndex, globalVertexIndex, localVertexIndex, numVerticesInTheStrand, indexForSharedMem, strandType);
+
+    sharedPos[indexForSharedMem] = texelFetch(g_HairVertexPositions, globalVertexIndex);
+    barrier();
+
+    uint numOfStrandsPerThreadGroup = g_NumOfStrandsPerThreadGroup;
+
+    if (localVertexIndex == 0) // vertex 0
+    {
+        vec3 tangent = sharedPos[indexForSharedMem + numOfStrandsPerThreadGroup].xyz - sharedPos[indexForSharedMem].xyz;
+        g_HairVertexTangents[globalVertexIndex].xyz = normalize(tangent);
+    }
+    else // vertex 1 through n-1
+    {
+        vec3 vert_i_minus_1 = sharedPos[indexForSharedMem - numOfStrandsPerThreadGroup].xyz;
+        vec3 vert_i = sharedPos[indexForSharedMem].xyz;
+        g_HairVertexTangents[globalVertexIndex].xyz = normalize(vert_i - vert_i_minus_1);
+    }
+
+/*	if ( localVertexIndex < numVerticesInTheStrand - 1 )
+	{
+		vec3 tangent = sharedPos[indexForSharedMem + numOfStrandsPerThreadGroup].xyz - sharedPos[indexForSharedMem].xyz;
+	g_HairVertexTangents[globalVertexIndex].xyz = normalize(tangent);
+	}*/
+}
