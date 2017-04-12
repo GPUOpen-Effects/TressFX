@@ -6,6 +6,7 @@
 
 # Build results
 VS*/
+!amd_tressfx_sample/prebuilt/bin/VS*/
 [Dd]esktop_*/
 amd_tressfx/lib/GPUOpen_TressFX_*.*
 amd_tressfx_sample/bin/*.dll
