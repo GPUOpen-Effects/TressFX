@@ -21,12 +21,11 @@
 -- right before processing anything else
 -- takes the package object as the parameter
 function preprocess_hook(p)
-	-- p.code has all the input code from the pkg
-  
+   -- p.code has all the input code from the pkg
    -- tolua screws up on our SU_DLL symbol (it thinks its a type), so strip it out
    p.code = string.gsub( p.code, "SU_DLL", "" )
 
-   
+
 end
 
 
