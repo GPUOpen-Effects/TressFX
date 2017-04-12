@@ -1,5 +1,12 @@
+//---------------------------------------------------------------------------------------
+// Main header file for TressFX
+// This will eventually contain the C interface to all functionality.
 //
-// Copyright (c) 2016 Advanced Micro Devices, Inc. All rights reserved.
+// In the meantime, users need to use the individual headers for the components they 
+// require.
+//-------------------------------------------------------------------------------------
+//
+// Copyright (c) 2017 Advanced Micro Devices, Inc. All rights reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -23,12 +30,9 @@
 #ifndef AMD_TRESSFX_H
 #define AMD_TRESSFX_H
 
-#include <d3d11.h>
-#include <DirectXMath.h>
-
-#define AMD_TRESSFX_VERSION_MAJOR                    3
-#define AMD_TRESSFX_VERSION_MINOR                    1
-#define AMD_TRESSFX_VERSION_PATCH                    1
+#define AMD_TRESSFX_VERSION_MAJOR                    4
+#define AMD_TRESSFX_VERSION_MINOR                    0
+#define AMD_TRESSFX_VERSION_PATCH                    0
 
 // default to static lib
 #ifndef AMD_TRESSFX_COMPILE_DYNAMIC_LIB
@@ -47,215 +51,380 @@
 
 #include "AMD_Types.h"
 
-#define MAX_SHAPE_PARAMS    16
-#define MAX_SCENE_MESHES    32
-
-#define NONE_SHADOW_INDEX   0x00000000
-#define SDSM_SHADOW_INDEX   0x00000002
-
-#define ALPHA_THRESHOLD     0.99f/255.0f    // minimum alpha value required to render a hair fragment
-
-// shader resource view slots
-#define IDSRV_PPLL                              0
-#define IDSRV_HEAD_PPLL                         1
-#define IDSRV_SCENESM                           2
-#define IDSRV_HAIRSM                            3
-#define IDSRV_HAIR_COLOR_TEXTURE                4
-#define IDSRV_NOISEMAP                          5
-#define IDSRV_HAIR_THICKNESSES                  6
-#define IDSRV_HAIR_VERTEX_POSITIONS             7
-#define IDSRV_HAIR_TANGENTS                     8
-#define IDSRV_HAIR_TRANSFORMS                   9
-#define IDSRV_HAIR_STRAND_TEX_COORDS            10
-#define IDSRV_HAIR_VERTEX_TEX_COORDS            11
-#define IDSRV_HAIR_VERTEX_COLORS                12
-
-// Shortcut resources.
-#define IDSRV_HAIR_FRAGMENT_DEPTHS              13
-#define IDSRV_HAIR_FRAGMENT_COLORS              14
-#define IDSRV_HAIR_ACCUM_INV_ALPHA              15
-
-
 #if defined(DEBUG) || defined(_DEBUG)
 #define AMD_TRESSFX_DEBUG                       1
 #endif
 
+#ifndef TRESSFX_STRING_TYPE
+typedef const char* EI_StringHash;
+#define TRESSFX_STRING_TYPE 1
+#endif
+
+
+#ifndef EI_STREAM
+typedef void EI_Stream;
+typedef void* EI_StreamRef;
+#define EI_STREAM 1
+#endif
+
+#ifndef TRESSFX_ASSERT
+#include <assert.h>
+#define TRESSFX_ASSERT assert
+#endif
+
+
+// Max number of bones in a skeleton
+#ifndef AMD_TRESSFX_MAX_NUM_BONES
+#define AMD_TRESSFX_MAX_NUM_BONES 256
+#endif 
+
+#include "TressFXBoneSkeletonInterface.h"
+
+static const AMD::uint32 TRESSFX_INDEX_SIZE = 4;
+
+class EI_Resource;
+class EI_Device;
+class EI_CommandContext;      // ID3D11DeviceContext
+class EI_LayoutManager;
+struct EI_BindLayout;
+class EI_BindSet;
+class EI_PSO;
+class EI_IndexBuffer;
+
+
+typedef EI_CommandContext& EI_CommandContextRef;
+typedef EI_Resource& EI_StructuredBufferRef;
+typedef EI_LayoutManager& EI_LayoutManagerRef;
+
+typedef EI_Resource* EI_UAV;
+typedef EI_Resource* EI_SRV;
+
+class TressFXAsset;
+
+class TressFXHairObject;
+typedef TressFXHairObject* TressFXHairHandle;
+
 namespace AMD
 {
 
-// The Return codes
-enum TRESSFX_RETURN_CODE
-{
-    TRESSFX_RETURN_CODE_SUCCESS,
-    TRESSFX_RETURN_CODE_FAIL,
-    TRESSFX_RETURN_CODE_INVALID_DEVICE,
-    TRESSFX_RETURN_CODE_INVALID_DEVICE_CONTEXT,
-    TRESSFX_RETURN_CODE_INVALID_ARGUMENT,
-    TRESSFX_RETURN_CODE_INVALID_POINTER,
-    TRESSFX_RETURN_CODE_D3D11_CALL_FAILED,
+    // The Return codes
+    enum TRESSFX_RETURN_CODE
+    {
+        TRESSFX_RETURN_CODE_SUCCESS,
+        TRESSFX_RETURN_CODE_FAIL,
+        TRESSFX_RETURN_CODE_INVALID_ARGUMENT,
+        TRESSFX_RETURN_CODE_INVALID_POINTER,
+        TRESSFX_RETURN_CODE_OUT_OF_MEMORY,
 
-    TRESSFX_RETURN_CODE_COUNT,
-};
+        TRESSFX_RETURN_CODE_COUNT,
+    };
 
-struct TressFX_HairParams
-{
-    float               Ka;                         // ambient
-    float               Kd;                         // diffuse
-    float               Ks1;                        // specular intensity 1
-    float               Ex1;                        // specular exponent 1
-    float               Ks2;                        // specular intensity 2
-    float               Ex2;                        // specular exponent 2
-    float               thickness;                  // hair strand radius (thickness)
-    float               density;                    // density of hair strands (between [0, 1])
-    float               alpha;                      // hair transparency
-    float               alphaThreshold;             // cutoff when hair fragment is rendered based on transparency
-    bool                bTransparency;              // enable/disable hair transparency
-    int                 strandCopies;              // number of strands to duplicate
-    float               duplicateStrandSpacing;     // distance between hairs duplicated hairs
-    bool                bThinTip;                   // if true, the end of the hair is tapered
-    DirectX::XMFLOAT3   color;                      // hair color
-    int                 shadowTechnique;            // hair self shadowing technique
-    float               shadowMapAlpha;             // shadow map transparency value
-    bool                bSimulation;                // enable/disable simulation
-    float               targetFrameRateForSimulation; // i.e 1/60
-    bool                bAntialias;                 // enable/disable antialiasing
-    int                 maxFragments;              // maximum number of overlapping fragments to render per pixel
-    DirectX::XMFLOAT4   ambientLightColor;          // ambient light color
-    DirectX::XMFLOAT4   pointLightColor;            // color of the point light
-};
+    enum EI_ShaderStage
+    {
+        EI_UNINITIALIZED = 0,  // we will always specify shader stage.  "all" is never used.
+        EI_VS,
+        EI_PS,
+        EI_CS
+    };
+    enum EI_ResourceState
+    {
+        EI_STATE_NON_PS_SRV,
+        EI_STATE_VS_SRV,
+        EI_STATE_CS_SRV,
+        EI_STATE_PS_SRV,
+        EI_STATE_UAV,
+        EI_STATE_COPY_DEST,
+        EI_STATE_COPY_SOURCE,
+        EI_STATE_RENDER_TARGET
+    };
 
-struct TressFX_ShapeParams
-{
-    float               damping;
-    float               stiffnessForLocalShapeMatching;
-    float               stiffnessForGlobalShapeMatching;
-    float               globalShapeMatchingEffectiveRange;
-};
+    struct TressFXConstantBufferDesc
+    {
+        const EI_StringHash     constantBufferName;
+        const int               bytes;
+        const int               nConstants;
+        const EI_StringHash*    parameterNames;
+    };
 
-struct TressFX_SimulationParams
-{
-    float                       gravityMagnitude;
-    bool                        bCollision;
-    bool                        bGuideFollowSimulation;
-    DirectX::XMFLOAT3           windDir;
-    float                       windMag;
-    int                         numLengthConstraintIterations;
-    int                         numLocalShapeMatchingIterations;
+    struct TressFXLayoutDescription
+    {
+        const int nSRVs;
+        const EI_StringHash* srvNames;
 
-    static const int            MAX_NUM_HAIR_SECTIONS = 4;
-    TressFX_ShapeParams         perSectionShapeParams[MAX_NUM_HAIR_SECTIONS];
-    int                         numHairSections;
-};
+        const int nUAVs;
+        const EI_StringHash* uavNames;
 
-struct TressFX_CollisionCapsule
-{
-    DirectX::XMFLOAT4   cc0_center1AndRadius;
-    DirectX::XMFLOAT4   cc0_center2AndRadiusSquared;
-    DirectX::XMFLOAT4   cc1_center1AndRadius;
-    DirectX::XMFLOAT4   cc1_center2AndRadiusSquared;
-    DirectX::XMFLOAT4   cc2_center1AndRadius;
-    DirectX::XMFLOAT4   cc2_center2AndRadiusSquared;
-};
+        TressFXConstantBufferDesc constants;
+        EI_ShaderStage stage;
+    };
 
-struct TressFX_HairBlob
-{
-    unsigned    size;
-    void*       pHair;
-    unsigned    animationSize;
-    void*       pAnimation;
-};
+    struct EI_Barrier
+    {
+        EI_Resource* pResource;
+        EI_ResourceState from;
+        EI_ResourceState to;
+    };
 
-struct TressFX_SceneMesh
-{
-    ID3D11ShaderResourceView*   pMeshVertices;     // untransformed vertices
-    unsigned                    numMeshes;         // number of meshes
-    unsigned*                   meshOffsets;       // offset to the start of each mesh
-    ID3D11ShaderResourceView*   pTransformedVerts; // transformed vertices
-};
+    struct TressFXBindSet
+    {
+        int     nSRVs;
+        EI_SRV* srvs;
+        int     nUAVs;
+        EI_UAV* uavs;
+        void*   values;
+        int     nBytes;
+    };
 
-struct TressFX_HairTransform
-{
-    float   matrix[4][4];
-    float   quaternion[4];
-};
 
-struct TressFX_GuideFollowParams
-{
-    int numFollowHairsPerGuideHair; // follow-to-guide ratio. It could be zero.
-    float radiusForFollowHair;      // radius around guide strand to grow follow strands
-    float tipSeparationFactor;      // follow strand tip separation factor from guide strand.
-    // If zero, follow hair would be parallel to its guide. If one, the tip will
-    // be away from its guide's tip by twice of the distance between their roots.
-};
 
-struct TressFX_OpaqueDesc;
 
-struct TressFX_Desc
-{
-    TressFX_Desc() : pOpaque(NULL) {}
+    extern "C"
+    {
+        /////////////////////////////////////////////////////////////////////////////////
+        // CPU Memory Allocation Callbacks.
+        // 
+        typedef void* (*EI_Malloc_t)(size_t size);
+        typedef void(*EI_Free_t)(void*);
+        typedef void(*EI_Error_t)(EI_StringHash message);
 
-    TressFX_OpaqueDesc*             pOpaque;
+        /////////////////////////////////////////////////////////////////////////////////
+        // File IO Callbacks.
+        // 
+        typedef void(*EI_Read_t)(void* ptr, uint size, EI_Stream* pFile);
+        typedef void(*EI_Seek_t)(EI_Stream* pFile, uint offset);
 
-    int                             backBufferWidth;
-    int                             backBufferHeight;
+        /////////////////////////////////////////////////////////////////////////////////
+        // Layouts
+        //
+        // Callbacks for the system that defines / assigns slots. 
+        // Bind sets, in the next section, the actual resources that are bound to these slots.
 
-    TressFX_HairParams              hairParams;
-    TressFX_SimulationParams        simulationParams;
-    TressFX_CollisionCapsule        collisionCapsule;
-    TressFX_HairBlob                tressFXHair;
+        typedef EI_BindLayout* (*EI_CreateLayout_t)(EI_Device* pDevice,
+            EI_LayoutManagerRef pLayoutManager,
+            const TressFXLayoutDescription& description);
 
-    void *                          pTressFXMesh;
-    unsigned                        groupID;
+        typedef void(*EI_DestroyLayout_t)(EI_Device* pDevice, EI_BindLayout* pLayout);
 
-    DirectX::XMMATRIX               mWorld;
-    DirectX::XMMATRIX               mViewProj;
-    DirectX::XMMATRIX               mInvViewProj;
+        /////////////////////////////////////////////////////////////////////////////////
+        // Bindsets
+        //
+        typedef EI_BindSet* (*EI_CreateBindSet_t)(EI_Device* pDevice, TressFXBindSet& bindSet);
+        typedef void(*EI_DestroyBindSet_t)(EI_Device* pDevice, EI_BindSet* bindSet);
+        typedef void(*EI_Bind_t)(EI_CommandContextRef commandContext, EI_BindLayout* pLayout, EI_BindSet& bindSet);
 
-    // this gets initialized by the library in AMD_TressFXBegin
-    DirectX::XMMATRIX               mViewProjLightFromLibrary;
+        /////////////////////////////////////////////////////////////////////////////////
+        // Structured Buffers / Linear buffers
+        //
+        typedef EI_Resource* (*EI_CreateSB_t)(EI_Device* pDevice, AMD::uint32 structSize, AMD::uint32 structCount, EI_StringHash resourceName, EI_StringHash objectName);
+        typedef void(*EI_DestroyResource_t)(EI_Device* pDevice, EI_Resource* pResource);
 
-    DirectX::XMVECTOR               eyePoint;
-    DirectX::XMVECTOR               lightPosition;
-    DirectX::XMMATRIX               modelTransformForHead;
-    float                           targetFrameRate;
-    int                             numTotalHairStrands;
-    int                             numTotalHairVertices;
-    bool                            bEnableSkinning;
-    bool                            bSingleHeadTransform;
-    bool                            bShortCutOn;
+        // Map gets a pointer to upload heap / mapped memory.
+        // Unmap issues the copy.
+        // This is always called on linear buffers.
+        typedef void* (*EI_Map_t)(EI_CommandContextRef pContext, EI_StructuredBufferRef sb);
+        typedef bool (*EI_Unmap_t)(EI_CommandContextRef pContext, EI_StructuredBufferRef sb);
 
-    // Buffer of transformations (one transform per strand) for hair skinning
-    // This UAV is used as a structured buffer where each element is a TressFX_HairTransform.
-    // The number of elements in the buffer is numTotalHairStrands.
-    ID3D11UnorderedAccessView*      pSkinningTransformationsUAV;
+        typedef EI_Resource* (*EI_CreateFP16RT_t)(EI_Device* pDevice,
+            const size_t     width,
+            const size_t     height,
+            const size_t     channels,
+            EI_StringHash    strHash,
+            float            clearR,
+            float            clearG,
+            float            clearB,
+            float            clearA);
 
-    // hair shadow map
-    ID3D11ShaderResourceView*       pHairShadowMapSRV;
+        typedef EI_Resource* (*EI_CreateRW2D_t)(EI_Device* pDevice,
+            const size_t     width,
+            const size_t     height,
+            const size_t     arraySize,
+            EI_StringHash    strHash);
 
-    ID3D11Device*                   pd3dDevice;
-    ID3D11DeviceContext*            pd3dDeviceContext;
-    ID3D11ShaderResourceView*       pd3dDepthSRV;
-    ID3D11RenderTargetView*         pd3dOutputRTV;
-};
 
-extern "C"
-{
-    AMD_TRESSFX_DLL_API TRESSFX_RETURN_CODE TressFX_GetVersion(uint* major, uint* minor, uint* patch);
-    AMD_TRESSFX_DLL_API TRESSFX_RETURN_CODE TressFX_Initialize(TressFX_Desc & desc);
-    AMD_TRESSFX_DLL_API TRESSFX_RETURN_CODE TressFX_LoadRawAsset(TressFX_Desc & desc,   const TressFX_GuideFollowParams& guideFollowParams, TressFX_HairBlob *pRawHairBlob);
-    AMD_TRESSFX_DLL_API TRESSFX_RETURN_CODE TressFX_LoadProcessedAsset(TressFX_Desc & desc, TressFX_HairBlob *pHairBlob, TressFX_SceneMesh *sceneMesh, ID3D11ShaderResourceView *pTextureSRV);
-    AMD_TRESSFX_DLL_API TRESSFX_RETURN_CODE TressFX_CreateProcessedAsset(TressFX_Desc & desc, TressFX_HairBlob **ppHairBlob, TressFX_SceneMesh *sceneMesh, ID3D11ShaderResourceView *pTextureSRV);
-    AMD_TRESSFX_DLL_API TRESSFX_RETURN_CODE TressFX_Begin(TressFX_Desc & desc);
-    AMD_TRESSFX_DLL_API TRESSFX_RETURN_CODE TressFX_End(TressFX_Desc & desc);
-    AMD_TRESSFX_DLL_API TRESSFX_RETURN_CODE TressFX_GenerateTransforms(TressFX_Desc & desc, TressFX_SceneMesh &sceneMesh);
-    AMD_TRESSFX_DLL_API TRESSFX_RETURN_CODE TressFX_ApplyRigidTransforms(TressFX_Desc & desc);
-    AMD_TRESSFX_DLL_API TRESSFX_RETURN_CODE TressFX_Simulate(TressFX_Desc & desc, float elapsedTime);
-    AMD_TRESSFX_DLL_API TRESSFX_RETURN_CODE TressFX_RenderShadowMap(TressFX_Desc & desc);
-    AMD_TRESSFX_DLL_API TRESSFX_RETURN_CODE TressFX_Render(TressFX_Desc & desc);
-    AMD_TRESSFX_DLL_API TRESSFX_RETURN_CODE TressFX_Resize(TressFX_Desc & desc);
-    AMD_TRESSFX_DLL_API TRESSFX_RETURN_CODE TressFX_Release(TressFX_Desc & desc);
-}
+        // TODO get rid of clearValue argument?
+        typedef void (*EI_ClearCounter_t)(
+            EI_CommandContextRef    pContext,
+            EI_StructuredBufferRef sb,
+            AMD::uint32          clearValue);
+
+        typedef void (*EI_Copy_t)(EI_CommandContextRef pContext, EI_StructuredBufferRef from, EI_StructuredBufferRef to);
+
+
+
+        typedef void(*EI_ClearRW2D_t)(EI_CommandContext* pContext, EI_Resource* pResource, AMD::uint32 clearValue);
+
+
+
+        typedef void(*EI_SubmitBarriers_t)(EI_CommandContextRef commands,
+            int numBarriers,
+            EI_Barrier* barriers);
+
+
+        ///////////////////////////////////////////////////////////////
+        // Compute Shaders
+        //
+
+        // TODO add layout array.
+        typedef EI_PSO* (*EI_CreateComputeShaderPSO_t)(EI_Device* pDevice,
+            EI_LayoutManagerRef     layoutManager,
+            const EI_StringHash& shaderName);
+        typedef void(*EI_DestroyPSO_t)(EI_Device* pDevice, EI_PSO* pso);
+
+        // All our compute shaders have dimensions of (N,1,1)
+        typedef void(*EI_Dispatch_t)(EI_CommandContextRef commandContext, EI_PSO& pso, int nThreadGroups);
+
+
+        ///////////////////////////////////////////////////////////////
+        // Indexed, instanced draw.
+        //
+        // Initialize and leave in state for use as index buffer.
+        // Indices are assumed to be 32 bits / 4 bytes.
+        // TODO upload should be seperate, and use command context.
+        typedef EI_IndexBuffer* (*EI_CreateIndexBuffer_t)(EI_Device* pDevice,
+            AMD::uint32      size,
+            void*            pInitialData, EI_StringHash objectName);
+        typedef void(*EI_DestroyIB_t)(EI_Device* pDevice, EI_IndexBuffer* pBuffer);
+
+
+        // TODO Change this to TressFX definition.
+        struct EI_IndexedDrawParams
+        {
+            EI_IndexBuffer* pIndexBuffer;
+            AMD::uint32    numIndices;
+            AMD::uint32    numInstances;
+        };
+
+
+        // TODO I don't think we are using the layouts and sets.  If we were, they would probaly be part of
+        // the pso we are already passing in.
+        // TODO This is probaly not the right place to have the PSO. It should actually be set before this.
+        // But Sushi is using it (because it needs technique name) to make the draw.
+        // TODO ...  so perhaps we need to define an "indexed draw" context.  Like in vulkan, it might
+        // contain the pipeline layout info.
+        typedef void(*EI_Draw_t)(EI_CommandContextRef     commandContext,
+            EI_PSO&                pso,
+            EI_IndexedDrawParams& drawParams);
+
+        typedef struct TressFX_Callbacks_t
+        {
+            /////////////////////////////////////////////////////////////////////////////////
+            // Report an error.
+            // 
+            EI_Error_t pfError;
+
+            /////////////////////////////////////////////////////////////////////////////////
+            // CPU Memory Allocation Callbacks.
+            // 
+            EI_Malloc_t pfMalloc;
+            EI_Free_t pfFree;
+
+            /////////////////////////////////////////////////////////////////////////////////
+            // File IO Callbacks.
+            // 
+            EI_Read_t pfRead;
+            EI_Seek_t pfSeek;
+
+            /////////////////////////////////////////////////////////////////////////////////
+            // Layouts
+            //
+            // Callbacks for the system that defines / assigns slots. 
+            // Bind sets, in the next section, are the actual resources that are bound to these slots.
+            EI_CreateLayout_t pfCreateLayout;
+            EI_DestroyLayout_t pfDestroyLayout;
+
+
+            ///////////////////////////////////////////////////////////////
+            // Bind sets
+            //
+            // Collection of UAVs, SRVs, and constant buffer(s) that are bound together,
+            // as well as updated values for the constant buffers.
+            // order is always consistent with the associated layout.
+
+            EI_CreateBindSet_t pfCreateBindSet;
+            EI_DestroyBindSet_t pfDestroyBindSet;
+            EI_Bind_t pfBind;
+
+
+            ///////////////////////////////////////////////////////////////
+            // Barriers
+            //
+            // Important for Vulkan/DX12 efficiency
+
+            EI_SubmitBarriers_t pfSubmitBarriers;
+
+
+            ///////////////////////////////////////////////////////////////
+            // Callbacks for drawing strands.
+            //
+            // These are the minimum functions necessary to just draw hair strands.
+
+            // Structured Buffers
+            EI_CreateSB_t pfCreateReadOnlySB;
+            EI_CreateSB_t pfCreateReadWriteSB;
+            EI_DestroyResource_t pfDestroySB;
+
+            // Initalizing structured buffer data.
+            EI_Map_t pfMap;
+            EI_Unmap_t pfUnmap;
+
+            // Draw hair geometry.
+            EI_CreateIndexBuffer_t pfCreateIndexBuffer;
+            EI_DestroyIB_t pfDestroyIB;
+            EI_Draw_t pfDraw;
+
+            ///////////////////////////////////////////////////////////////
+            // Callbacks for Simulation
+            //
+            // These are the additional functions necessary for simulation.
+            // "Create" in this context, could just be a "get" using the string name.
+            // Since this is really for compute, the "PSO" is equivalent to a shader.
+            EI_CreateComputeShaderPSO_t pfCreateComputeShaderPSO;
+            EI_DestroyPSO_t pfDestroyPSO;
+            EI_Dispatch_t pfDispatch;
+
+
+            ///////////////////////////////////////////////////////////////
+            // Callbacks for OIT
+            //
+            // These are the additional functions necessary for OIT, 
+            // common to both PPLL and Shortcut
+            EI_CreateRW2D_t pfCreate2D;
+            EI_ClearRW2D_t pfClear2D;
+
+
+            ///////////////////////////////////////////////////////////////
+            // Callbacks for PPLL
+            //
+            // These are the additional functions necessary for the PPLL method.
+            EI_CreateSB_t pfCreateCountedSB;
+            EI_ClearCounter_t pfClearCounter;
+
+            ///////////////////////////////////////////////////////////////
+            // Callbacks for PPLL
+            //
+            // These are the additional functions necessary for Shortcut.
+
+
+            // used by shortcut.
+            EI_CreateFP16RT_t pfCreateRT;
+
+
+            ///////////////////////////////////////////////////////////////
+            // Do we still need this?
+
+            EI_Copy_t pfCopy;
+
+        } TressFX_Callbacks;
+
+        AMD_TRESSFX_DLL_API TRESSFX_RETURN_CODE TressFX_GetCallbacks(TressFX_Callbacks** ppCallbacks);
+        AMD_TRESSFX_DLL_API TRESSFX_RETURN_CODE TressFX_GetVersion(uint* major, uint* minor, uint* patch);
+
+        // The C interface is not complete.
+    }
 
 } // namespace AMD
 
-#endif // AMD_TRESSFX_H
+
+
+
+#endif

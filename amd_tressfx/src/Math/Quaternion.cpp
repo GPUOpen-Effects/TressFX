@@ -2,7 +2,7 @@
 // File: Quaternion.cpp
 //
 //
-// Copyright (c) 2016 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright (c) 2017 Advanced Micro Devices, Inc. All rights reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -24,264 +24,267 @@
 //
 //--------------------------------------------------------------------------------------
 
-#include <math.h>
+#include "Math/Quaternion.h"
 #include <cassert>
-#include "Quaternion.h"
+#include <math.h>
+#include <memory.h>
 
 namespace AMD
 {
-
-tressfx_quat::tressfx_quat(float x/* = 0.0*/, float y/* = 0.0*/, float z/* = 0.0*/, float w/* = 1.0*/) : x(x), y(y), z(z), w(w)
-{
-}
-
-tressfx_quat::~tressfx_quat(void)
-{
-}
-
-tressfx_quat::tressfx_quat(const tressfx_quat& other)
-{
-    x = other.x;
-    y = other.y;
-    z = other.z;
-    w = other.w;
-}
-
-tressfx_quat::tressfx_quat(const tressfx_mat33& rotMat)
-{
-    SetRotation(rotMat);
-}
-
-tressfx_quat::tressfx_quat(const tressfx_vec3& axis, float angle_radian)
-{
-    SetRotation(axis, angle_radian);
-}
-
-tressfx_quat& tressfx_quat::Normalize()
-{
-    float n = w * w + x * x + y * y + z * z;
-
-    if ( n == 0 )
+    tressfx_quat::tressfx_quat(float x /* = 0.0*/,
+                               float y /* = 0.0*/,
+                               float z /* = 0.0*/,
+                               float w /* = 1.0*/)
+        : x(x), y(y), z(z), w(w)
     {
-        w = 1;
+    }
+
+    tressfx_quat::~tressfx_quat(void) {}
+
+    tressfx_quat::tressfx_quat(const tressfx_quat& other)
+    {
+        x = other.x;
+        y = other.y;
+        z = other.z;
+        w = other.w;
+    }
+
+    tressfx_quat::tressfx_quat(const tressfx_mat33& rotMat) { SetRotation(rotMat); }
+
+    tressfx_quat::tressfx_quat(const tressfx_vec3& axis, float angle_radian)
+    {
+        SetRotation(axis, angle_radian);
+    }
+
+    tressfx_quat::tressfx_quat(float* xyz) { memcpy(m, xyz, sizeof(tressfx_quat)); }
+
+    tressfx_quat& tressfx_quat::Normalize()
+    {
+        float n = w * w + x * x + y * y + z * z;
+
+        if (n == 0)
+        {
+            w = 1;
+            return (*this);
+        }
+
+        n = 1.0f / sqrt(n);
+
+        w *= n;
+        x *= n;
+        y *= n;
+        z *= n;
+
         return (*this);
     }
 
-    n = 1.0f / sqrt(n);
-
-    w *= n;
-    x *= n;
-    y *= n;
-    z *= n;
-
-    return (*this);
-}
-
-void tressfx_quat::SetRotation(const tressfx_vec3& axis, float angle_radian)
-{
-    // This function assumes that the axis vector has been normalized.
-    float halfAng = 0.5f * angle_radian;
-    float sinHalf = sin(halfAng);
-    w = cos(halfAng);
-
-    x = sinHalf * axis.x;
-    y = sinHalf * axis.y;
-    z = sinHalf * axis.z;
-}
-
-void tressfx_quat::SetRotation(const tressfx_mat33& rotMat)
-{
-    float fTrace = rotMat.m[0][0] + rotMat.m[1][1] + rotMat.m[2][2];
-    float fRoot;
-
-    if ( fTrace > 0.0f )
+    void tressfx_quat::SetRotation(const tressfx_vec3& axis, float angle_radian)
     {
-        // |w| > 1/2, may as well choose w > 1/2
-        fRoot = sqrt(fTrace + 1.0f);  // 2w
-        w = 0.5f*fRoot;
-        fRoot = 0.5f / fRoot;  // 1/(4w)
-        x = (rotMat.m[2][1] - rotMat.m[1][2])*fRoot;
-        y = (rotMat.m[0][2] - rotMat.m[2][0])*fRoot;
-        z = (rotMat.m[1][0] - rotMat.m[0][1])*fRoot;
+        // This function assumes that the axis vector has been normalized.
+        float halfAng = 0.5f * angle_radian;
+        float sinHalf = sin(halfAng);
+        w             = cos(halfAng);
+
+        x = sinHalf * axis.x;
+        y = sinHalf * axis.y;
+        z = sinHalf * axis.z;
     }
-    else
+
+    void tressfx_quat::SetRotation(const tressfx_mat33& rotMat)
     {
-        // |w| <= 1/2
-        static size_t s_iNext[3] = {1, 2, 0};
-        size_t i = 0;
-        if ( rotMat.m[1][1] > rotMat.m[0][0] )
+        float fTrace = rotMat.m[0][0] + rotMat.m[1][1] + rotMat.m[2][2];
+        float fRoot;
+
+        if (fTrace > 0.0f)
         {
-            i = 1;
+            // |w| > 1/2, may as well choose w > 1/2
+            fRoot = sqrt(fTrace + 1.0f);  // 2w
+            w     = 0.5f * fRoot;
+            fRoot = 0.5f / fRoot;  // 1/(4w)
+            x     = (rotMat.m[2][1] - rotMat.m[1][2]) * fRoot;
+            y     = (rotMat.m[0][2] - rotMat.m[2][0]) * fRoot;
+            z     = (rotMat.m[1][0] - rotMat.m[0][1]) * fRoot;
         }
-        if ( rotMat.m[2][2] > rotMat.m[i][i] )
+        else
         {
-            i = 2;
+            // |w| <= 1/2
+            static size_t s_iNext[3] = { 1, 2, 0 };
+            size_t        i          = 0;
+            if (rotMat.m[1][1] > rotMat.m[0][0])
+            {
+                i = 1;
+            }
+            if (rotMat.m[2][2] > rotMat.m[i][i])
+            {
+                i = 2;
+            }
+            size_t j = s_iNext[i];
+            size_t k = s_iNext[j];
+
+            fRoot             = sqrt(rotMat.m[i][i] - rotMat.m[j][j] - rotMat.m[k][k] + 1.0f);
+            float* apkQuat[3] = { &x, &y, &z };
+            *apkQuat[i]       = 0.5f * fRoot;
+            fRoot             = 0.5f / fRoot;
+            w                 = (rotMat.m[k][j] - rotMat.m[j][k]) * fRoot;
+            *apkQuat[j]       = (rotMat.m[j][i] + rotMat.m[i][j]) * fRoot;
+            *apkQuat[k]       = (rotMat.m[k][i] + rotMat.m[i][k]) * fRoot;
         }
-        size_t j = s_iNext[i];
-        size_t k = s_iNext[j];
-
-        fRoot = sqrt(rotMat.m[i][i] - rotMat.m[j][j] - rotMat.m[k][k] + 1.0f);
-        float* apkQuat[3] = {&x, &y, &z};
-        *apkQuat[i] = 0.5f*fRoot;
-        fRoot = 0.5f / fRoot;
-        w = (rotMat.m[k][j] - rotMat.m[j][k])*fRoot;
-        *apkQuat[j] = (rotMat.m[j][i] + rotMat.m[i][j])*fRoot;
-        *apkQuat[k] = (rotMat.m[k][i] + rotMat.m[i][k])*fRoot;
     }
-}
 
-void tressfx_quat::SetRotation(const tressfx_quat& quaternion)
-{
-    *this = quaternion;
-}
+    void tressfx_quat::SetRotation(const tressfx_quat& quaternion) { *this = quaternion; }
 
-void tressfx_quat::GetRotation(tressfx_vec3* pAxis, float* pAngle_radian) const
-{
-    *pAngle_radian = 2.0f * acos(w);
-
-    float scale = sqrt(x * x + y * y + z * z);
-
-    if ( scale > 0 )
+    void tressfx_quat::GetRotation(tressfx_vec3* pAxis, float* pAngle_radian) const
     {
-        pAxis->x = x / scale;
-        pAxis->y = y / scale;
-        pAxis->z = z / scale;
+        *pAngle_radian = 2.0f * acos(w);
+
+        float scale = sqrt(x * x + y * y + z * z);
+
+        if (scale > 0)
+        {
+            pAxis->x = x / scale;
+            pAxis->y = y / scale;
+            pAxis->z = z / scale;
+        }
+        else
+        {
+            pAxis->x = 0;
+            pAxis->y = 0;
+            pAxis->z = 0;
+        }
     }
-    else
+
+    void tressfx_quat::GetRotation(tressfx_mat33* pMat33) const
     {
-        pAxis->x = 0;
-        pAxis->y = 0;
-        pAxis->z = 0;
+        float nQ = x * x + y * y + z * z + w * w;
+        float s  = 0.0;
+
+        if (nQ > 0.0)
+        {
+            s = 2.0f / nQ;
+        }
+
+        float xs  = x * s;
+        float ys  = y * s;
+        float zs  = z * s;
+        float wxs = w * xs;
+        float wys = w * ys;
+        float wzs = w * zs;
+        float xxs = x * xs;
+        float xys = x * ys;
+        float xzs = x * zs;
+        float yys = y * ys;
+        float yzs = y * zs;
+        float zzs = z * zs;
+
+        pMat33->Set(1.0f - yys - zzs,
+                    xys - wzs,
+                    xzs + wys,
+                    xys + wzs,
+                    1.0f - xxs - zzs,
+                    yzs - wxs,
+                    xzs - wys,
+                    yzs + wxs,
+                    1.0f - xxs - yys);
     }
-}
 
-void tressfx_quat::GetRotation(tressfx_mat33* pMat33) const
-{
-    float nQ = x*x + y*y + z*z + w*w;
-    float s = 0.0;
-
-    if ( nQ > 0.0 )
+    tressfx_mat33 tressfx_quat::GetMatrix33() const
     {
-        s = 2.0f / nQ;
+        tressfx_mat33 mat;
+        GetRotation(&mat);
+        return mat;
     }
 
-    float xs = x*s;
-    float ys = y*s;
-    float zs = z*s;
-    float wxs = w*xs;
-    float wys = w*ys;
-    float wzs = w*zs;
-    float xxs = x*xs;
-    float xys = x*ys;
-    float xzs = x*zs;
-    float yys = y*ys;
-    float yzs = y*zs;
-    float zzs = z*zs;
+    float tressfx_quat::Length() const { return sqrt(x * x + y * y + z * z + w * w); }
 
-    pMat33->Set(1.0f - yys - zzs, xys - wzs, xzs + wys,
-                xys + wzs, 1.0f - xxs - zzs, yzs - wxs,
-                xzs - wys, yzs + wxs, 1.0f - xxs - yys);
-}
+    void tressfx_quat::SetIdentity()
+    {
+        x = y = z = 0.0;
+        w         = 1.0;
+    }
 
-tressfx_mat33 tressfx_quat::GetMatrix33() const
-{
-    tressfx_mat33 mat;
-    GetRotation(&mat);
-    return mat;
-}
+    void tressfx_quat::Inverse()
+    {
+        float lengthSqr = x * x + y * y + z * z + w * w;
 
-float tressfx_quat::Length() const
-{
-    return sqrt(x*x + y*y + z*z + w*w);
-}
+        assert(lengthSqr != 0.0);
 
-void tressfx_quat::SetIdentity()
-{
-    x = y = z = 0.0;
-    w = 1.0;
-}
+        x = -x / lengthSqr;
+        y = -y / lengthSqr;
+        z = -z / lengthSqr;
+        w = w / lengthSqr;
+    }
 
-void tressfx_quat::Inverse()
-{
-    float lengthSqr = x*x + y*y + z*z + w*w;
+    tressfx_quat tressfx_quat::InverseOther() const
+    {
+        tressfx_quat q(*this);
+        q.Inverse();
+        return q;
+    }
 
-    assert(lengthSqr != 0.0);
+    tressfx_quat& tressfx_quat::operator=(const tressfx_quat& other)
+    {
+        w = other.w;
+        x = other.x;
+        y = other.y;
+        z = other.z;
 
-    x = -x / lengthSqr;
-    y = -y / lengthSqr;
-    z = -z / lengthSqr;
-    w = w / lengthSqr;
-}
+        return (*this);
+    }
 
-tressfx_quat tressfx_quat::InverseOther() const
-{
-    tressfx_quat q(*this);
-    q.Inverse();
-    return q;
-}
+    tressfx_quat& tressfx_quat::operator=(float* xyz)
+    {
+        memcpy(m, xyz, sizeof(tressfx_quat));
+        return *this;
+    }
 
-tressfx_quat& tressfx_quat::operator=(const tressfx_quat& other)
-{
-    w = other.w;
-    x = other.x;
-    y = other.y;
-    z = other.z;
+    tressfx_quat tressfx_quat::operator+(const tressfx_quat& other) const
+    {
+        tressfx_quat q;
 
-    return (*this);
-}
+        q.w = w + other.w;
+        q.x = x + other.x;
+        q.y = y + other.y;
+        q.z = z + other.z;
 
-tressfx_quat tressfx_quat::operator+(const tressfx_quat& other) const
-{
-    tressfx_quat q;
+        return q;
+    }
 
-    q.w = w + other.w;
-    q.x = x + other.x;
-    q.y = y + other.y;
-    q.z = z + other.z;
+    tressfx_quat tressfx_quat::operator+(const tressfx_vec3& vec) const
+    {
+        tressfx_quat q;
 
-    return q;
-}
+        q.w = w;
+        q.x = x + vec.x;
+        q.y = y + vec.y;
+        q.z = z + vec.z;
 
-tressfx_quat tressfx_quat::operator+(const tressfx_vec3& vec) const
-{
-    tressfx_quat q;
+        return q;
+    }
 
-    q.w = w;
-    q.x = x + vec.x;
-    q.y = y + vec.y;
-    q.z = z + vec.z;
+    tressfx_quat tressfx_quat::operator*(const tressfx_quat& other) const
+    {
+        tressfx_quat q(*this);
 
-    return q;
-}
+        q.w = w * other.w - x * other.x - y * other.y - z * other.z;
+        q.x = w * other.x + x * other.w + y * other.z - z * other.y;
+        q.y = w * other.y + y * other.w + z * other.x - x * other.z;
+        q.z = w * other.z + z * other.w + x * other.y - y * other.x;
 
-tressfx_quat tressfx_quat::operator* (const tressfx_quat& other) const
-{
-    tressfx_quat q(*this);
+        return q;
+    }
 
-    q.w = w * other.w - x * other.x - y * other.y - z * other.z;
-    q.x = w * other.x + x * other.w + y * other.z - z * other.y;
-    q.y = w * other.y + y * other.w + z * other.x - x * other.z;
-    q.z = w * other.z + z * other.w + x * other.y - y * other.x;
+    tressfx_vec3 tressfx_quat::operator*(const tressfx_vec3& vec) const
+    {
+        tressfx_vec3 uv, uuv;
+        tressfx_vec3 qvec(x, y, z);
+        uv  = qvec.Cross(vec);
+        uuv = qvec.Cross(uv);
+        uv *= (2.0f * w);
+        uuv *= 2.0f;
 
-    return q;
-}
+        return vec + uv + uuv;
+    }
 
-tressfx_vec3 tressfx_quat::operator* (const tressfx_vec3& vec) const
-{
-
-    tressfx_vec3 uv, uuv;
-    tressfx_vec3 qvec(x, y, z);
-    uv = qvec.Cross(vec);
-    uuv = qvec.Cross(uv);
-    uv *= (2.0f * w);
-    uuv *= 2.0f;
-
-    return vec + uv + uuv;
-}
-
-tressfx_vec3 operator*(const tressfx_vec3& vec, const tressfx_quat& q)
-{
-    return q * vec;
-}
+    tressfx_vec3 operator*(const tressfx_vec3& vec, const tressfx_quat& q) { return q * vec; }
 
 }  // namespace AMD

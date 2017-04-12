@@ -1,8 +1,10 @@
-//--------------------------------------------------------------------------------------
-// File: TressFXAsset.cpp
+//---------------------------------------------------------------------------------------
+// Loads and processes TressFX files.
+// Inputs are binary files/streams/blobs
+// Outputs are raw data that will mostly end up on the GPU.
+//-------------------------------------------------------------------------------------
 //
-//
-// Copyright (c) 2016 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright (c) 2017 Advanced Micro Devices, Inc. All rights reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -22,920 +24,623 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 //
-//--------------------------------------------------------------------------------------
 
-#include "AMD_Types.h"
-#include "Math\\Vector3D.h"
-#include "Math\\Transform.h"
-#include "Util.h"
+#include "Math/Transform.h"
+#include "Math/Vector3D.h"
 #include "TressFXAsset.h"
 #include "TressFXFileFormat.h"
+#include "TressFXGPUInterface.h"
+#include "TressFXEngineInterface.h"
+
+#include <vector>
 #include <string>
-#include <sstream>
 
-using namespace std;
-using namespace DirectX;
-
-extern int g_TressFXNumVerticesPerStrand;
+using namespace AMD::TRESSFX;
 
 namespace AMD
 {
-
-//--------------------------------------------------------------------------------------
-//
-// Constructor
-//
-//--------------------------------------------------------------------------------------
-TressFXAssetLoader::TressFXAssetLoader(void)
-{
-    m_HairAsset.m_pHairStrandType = NULL;
-    m_HairAsset.m_pRefVectors = NULL;
-    m_HairAsset.m_pTriangleVertices = NULL;
-    m_HairAsset.m_pGlobalRotations = NULL;
-    m_HairAsset.m_pLocalRotations = NULL;
-    m_HairAsset.m_pVertices = NULL;
-    m_HairAsset.m_pTangents = NULL;
-    m_HairAsset.m_pThicknessCoeffs = NULL;
-    m_HairAsset.m_pRestLengths = NULL;
-    m_HairAsset.m_pFollowRootOffset = NULL;
-    m_HairAsset.m_NumFollowHairsPerGuideHair = 4;
-    m_HairAsset.m_NumGuideHairStrands = 0;
-    m_HairAsset.m_NumOfVerticesInStrand = 0;
-    m_HairAsset.m_TipSeparationFactor = 0;
-
-    m_maxRadiusAroundGuideHair = 0.5;
-    m_usingPerStrandTexCoords = false;
-    m_usingPerVertexColors = false;
-    m_usingPerVertexTexCoords = false;
-}
-
-//--------------------------------------------------------------------------------------
-//
-// Destructor
-//
-//--------------------------------------------------------------------------------------
-TressFXAssetLoader::~TressFXAssetLoader(void)
-{
-    Clear();
-}
-
-//--------------------------------------------------------------------------------------
-//
-// DestroyAll
-//
-// Deletes member variables
-//
-//--------------------------------------------------------------------------------------
-void TressFXAssetLoader::DestroyAll()
-{
-    if ( m_HairAsset.m_pVertices )
+    static void GetTangentVectors(const tressfx_vec3& n, tressfx_vec3& t0, tressfx_vec3& t1)
     {
-        delete [] m_HairAsset.m_pVertices;
-        m_HairAsset.m_pVertices = NULL;
-    }
-
-    if ( m_HairAsset.m_pTangents )
-    {
-        delete [] m_HairAsset.m_pTangents;
-        m_HairAsset.m_pTangents = NULL;
-    }
-
-    if ( m_HairAsset.m_pHairStrandType )
-    {
-        delete [] m_HairAsset.m_pHairStrandType;
-        m_HairAsset.m_pHairStrandType = NULL;
-    }
-
-    if ( m_HairAsset.m_pStrandTexCoords )
-    {
-        delete [] m_HairAsset.m_pStrandTexCoords;
-        m_HairAsset.m_pStrandTexCoords = NULL;
-    }
-
-    if ( m_HairAsset.m_pLocalRotations )
-    {
-        delete [] m_HairAsset.m_pLocalRotations;
-        m_HairAsset.m_pLocalRotations = NULL;
-    }
-
-    if ( m_HairAsset.m_pGlobalRotations )
-    {
-        delete [] m_HairAsset.m_pGlobalRotations;
-        m_HairAsset.m_pGlobalRotations = NULL;
-    }
-
-    if ( m_HairAsset.m_pRefVectors )
-    {
-        delete [] m_HairAsset.m_pRefVectors;
-        m_HairAsset.m_pRefVectors = NULL;
-    }
-
-    if ( m_HairAsset.m_pTriangleVertices )
-    {
-        delete [] m_HairAsset.m_pTriangleVertices;
-        m_HairAsset.m_pTriangleVertices = NULL;
-    }
-
-    if ( m_HairAsset.m_pThicknessCoeffs )
-    {
-        delete [] m_HairAsset.m_pThicknessCoeffs;
-        m_HairAsset.m_pThicknessCoeffs = NULL;
-    }
-
-    if ( m_HairAsset.m_pRestLengths )
-    {
-        delete [] m_HairAsset.m_pRestLengths;
-        m_HairAsset.m_pRestLengths = NULL;
-    }
-
-    if ( m_HairAsset.m_pFollowRootOffset )
-    {
-        delete [] m_HairAsset.m_pFollowRootOffset;
-        m_HairAsset.m_pFollowRootOffset = NULL;
-    }
-
-    if (m_HairAsset.m_pMapping )
-    {
-        delete [] m_HairAsset.m_pMapping;
-        m_HairAsset.m_pMapping = NULL;
-    }
-}
-
-void TressFXAssetLoader::ConstructTransforms()
-{
-    // construct local and global transforms for all hair strands
-    for ( int iStrand = 0; iStrand < m_HairAsset.m_NumTotalHairStrands; ++iStrand )
-    {
-        int indexRootVertMaster = iStrand * m_HairAsset.m_NumOfVerticesInStrand;
-
-        // vertex 0
+        if (fabsf(n[2]) > 0.707f)
         {
-            TressFXHairVertex& vert_i = m_Vertices[indexRootVertMaster];
-            TressFXHairVertex& vert_i_plus_1 = m_Vertices[indexRootVertMaster + 1];
+            float a = n[1] * n[1] + n[2] * n[2];
+            float k = 1.0f / sqrtf(a);
+            t0[0]   = 0;
+            t0[1]   = -n[2] * k;
+            t0[2]   = n[1] * k;
 
-            const tressfx_vec3 vec = vert_i_plus_1.position - vert_i.position;
-            tressfx_vec3 vecX = vec.NormalizeOther();
-
-            tressfx_vec3 vecZ = vecX.Cross(tressfx_vec3(1.0, 0, 0));
-
-            if ( vecZ.LengthSqr() < 0.0001 )
-            {
-                vecZ = vecX.Cross(tressfx_vec3(0, 1.0f, 0));
-            }
-
-            vecZ.Normalize();
-            tressfx_vec3 vecY = vecZ.Cross(vecX).Normalize();
-
-            tressfx_mat33 rotL2W;
-
-            rotL2W(0, 0) = vecX.x;  rotL2W(0, 1) = vecY.x;      rotL2W(0, 2) = vecZ.x;
-            rotL2W(1, 0) = vecX.y;  rotL2W(1, 1) = vecY.y;      rotL2W(1, 2) = vecZ.y;
-            rotL2W(2, 0) = vecX.z;  rotL2W(2, 1) = vecY.z;      rotL2W(2, 2) = vecZ.z;
-
-            vert_i.localTransform.GetRotation() = rotL2W;
-            vert_i.localTransform.GetTranslation() = vert_i.position;
-            vert_i.globalTransform = vert_i.localTransform; // For vertex 0, local and global transforms are the same.
+            t1[0] = a * k;
+            t1[1] = -n[0] * t0[2];
+            t1[2] = n[0] * t0[1];
         }
-
-        // vertex 1 through n-1
-        for ( int i = 1; i < (int)m_HairAsset.m_NumOfVerticesInStrand; i++ )
+        else
         {
-            TressFXHairVertex& vert_i_minus_1 = m_Vertices[indexRootVertMaster + i - 1];
-            TressFXHairVertex& vert_i = m_Vertices[indexRootVertMaster + i];
+            float a = n[0] * n[0] + n[1] * n[1];
+            float k = 1.0f / sqrtf(a);
+            t0[0]   = -n[1] * k;
+            t0[1]   = n[0] * k;
+            t0[2]   = 0;
 
-            tressfx_vec3 vec = vert_i.position - vert_i_minus_1.position;
-            vec = vert_i_minus_1.globalTransform.GetRotation().InverseOther() * vec;
-
-            tressfx_vec3 vecX = vec.NormalizeOther();
-
-            tressfx_vec3 X = tressfx_vec3(1.0f, 0, 0);
-            tressfx_vec3 rotAxis = X.Cross(vecX);
-            float angle = acos(X.Dot(vecX));
-
-            if ( abs(angle) < 0.001 || rotAxis.LengthSqr() < 0.001 )
-            {
-                vert_i.localTransform.GetRotation().SetIdentity();
-            }
-            else
-            {
-                rotAxis.Normalize();
-                tressfx_quat rot = tressfx_quat(rotAxis, angle);
-                vert_i.localTransform.GetRotation() = rot;
-            }
-
-            vert_i.localTransform.GetTranslation() = vec;
-            vert_i.globalTransform = vert_i_minus_1.globalTransform * vert_i.localTransform;
-            vert_i.referenceVector = vert_i.localTransform.GetTranslation();
+            t1[0] = -n[2] * t0[1];
+            t1[1] = n[2] * t0[0];
+            t1[2] = a * k;
         }
     }
-}
 
-//--------------------------------------------------------------------------------------
-//
-// GetTangentVectors
-//
-// Create two arbitrary tangent vectors (t0 and t1) perpendicular to the input normal vector (n).
-//
-//--------------------------------------------------------------------------------------
-void GetTangentVectors(const tressfx_vec3& n, tressfx_vec3& t0, tressfx_vec3& t1)
-{
-    if ( fabsf(n[2]) > 0.707f )
+   static float GetRandom(float Min, float Max)
     {
-        float a = n[1]*n[1] + n[2]*n[2];
-        float k = 1.0f/sqrtf(a);
-        t0[0] = 0;
-        t0[1] = -n[2]*k;
-        t0[2] = n[1]*k;
-
-        t1[0] = a*k;
-        t1[1] = -n[0]*t0[2];
-        t1[2] = n[0]*t0[1];
-    }
-    else
-    {
-        float a = n[0]*n[0] + n[1]*n[1];
-        float k = 1.0f/sqrtf(a);
-        t0[0] = -n[1]*k;
-        t0[1] = n[0]*k;
-        t0[2] = 0;
-
-        t1[0] = -n[2]*t0[1];
-        t1[1] = n[2]*t0[0];
-        t1[2] = a*k;
-    }
-}
-
-// Reads in a file of hair data and appends it to the list of hair strands
-bool TressFXAssetLoader::LoadAppend(TressFX_HairBlob *pRawHairBlob, const TressFX_GuideFollowParams& guideFollowParams, int groupId)
-{
-    m_maxRadiusAroundGuideHair = guideFollowParams.radiusForFollowHair;
-    m_HairAsset.m_TipSeparationFactor = guideFollowParams.tipSeparationFactor;
-    m_HairAsset.m_NumFollowHairsPerGuideHair = guideFollowParams.numFollowHairsPerGuideHair;
-
-    TressFXFileObject tfxFileObj;
-    memcpy((void *)&tfxFileObj, pRawHairBlob->pHair, sizeof(TressFXFileObject));
-
-    g_TressFXNumVerticesPerStrand = tfxFileObj.numVerticesPerStrand;
-
-    bool bothEndsImmovable = tfxFileObj.bothEndsImmovable != 0;
-    m_HairAsset.m_NumOfVerticesInStrand = tfxFileObj.numVerticesPerStrand;
-
-    // Make sure number of vertices per strand is greater than two and less than or equal to thread group size (64). Also thread group size should be a multiple of number of vertices per strand.
-    // So possible number is 4, 8, 16, 32 and 64.
-    assert(m_HairAsset.m_NumOfVerticesInStrand > 2 && m_HairAsset.m_NumOfVerticesInStrand <= THREAD_GROUP_SIZE && THREAD_GROUP_SIZE % m_HairAsset.m_NumOfVerticesInStrand == 0);
-
-    // number of strands to load from tfx file.
-    unsigned numStrandsInFile = tfxFileObj.numGuideHairStrands;
-    char *pHairSrc = (char *)pRawHairBlob->pHair;
-
-    FLOAT *pVerts = (FLOAT *)(pHairSrc + tfxFileObj.verticesOffset);
-    FLOAT *pTexCoords = NULL;
-
-    if (tfxFileObj.perStrandTexCoordOffset != 0)
-    {
-        pTexCoords = (FLOAT *)(pHairSrc + tfxFileObj.perStrandTexCoordOffset);
-        m_usingPerStrandTexCoords = true;
-    }
-    else
-    {
-        m_usingPerStrandTexCoords = false;
+        return ((float(rand()) / float(RAND_MAX)) * (Max - Min)) + Min;
     }
 
-    // Compute the total number of strands considering slave hairs and thread size.
-    // Make the number of total strands a multiple of thread group size to avoid branching in compute shader.
-    int numGuideStrands_old = m_HairAsset.m_NumGuideHairStrands;
-    int numStrandsToLoad = numStrandsInFile - numStrandsInFile % THREAD_GROUP_SIZE;
-    int numGuideStrands = numGuideStrands_old + numStrandsToLoad;
-    int numTotalStrands = numGuideStrands * (m_HairAsset.m_NumFollowHairsPerGuideHair + 1);
-    int numTotalVertices = numTotalStrands * m_HairAsset.m_NumOfVerticesInStrand;
+    TressFXAsset::TressFXAsset()
+        : m_positions(NULL)
+        , m_strandUV(NULL)
+        , m_refVectors(NULL)
+        , m_globalRotations(NULL)
+        , m_localRotations(NULL)
+        , m_tangents(NULL)
+        , m_followRootOffsets(NULL)
+        , m_strandTypes(NULL)
+        , m_thicknessCoeffs(NULL)
+        , m_restLengths(NULL)
+        , m_triangleIndices(NULL)
+        , m_boneSkinningData(NULL)
+        , m_numTotalStrands(0)
+        , m_numTotalVertices(0)
+        , m_numVerticesPerStrand(0)
+        , m_numGuideStrands(0)
+        , m_numGuideVertices(0)
+        , m_numFollowStrandsPerGuide(0)
 
-    m_HairAsset.m_NumGuideHairStrands = numGuideStrands;
-    m_HairAsset.m_NumTotalHairStrands = numTotalStrands;
-    m_HairAsset.m_NumGuideHairVertices = numGuideStrands * m_HairAsset.m_NumOfVerticesInStrand;
-    m_HairAsset.m_NumTotalHairVertices = numTotalVertices;
-
-    // reading strand and vertex data from tfx buffer.
-    for ( int i = 0; i < numStrandsToLoad; i++ )
     {
-        TressFXStrand guideStrand;
-        guideStrand.m_bGuideHair = true;
-        guideStrand.m_GroupID = groupId;
+    }
 
-        for ( int j = 0; j < m_HairAsset.m_NumOfVerticesInStrand; j++ )
+    TressFXAsset::~TressFXAsset()
+    {
+        Clear();
+    }
+
+    void TressFXAsset::Clear()
+    {
+        m_numTotalStrands = 0;
+        m_numTotalVertices = 0;
+        m_numVerticesPerStrand = 0;
+        m_numGuideStrands = 0;
+        m_numGuideVertices = 0;
+        m_numFollowStrandsPerGuide = 0;
+
+        EI_Safe_Free(m_positions);
+        EI_Safe_Free(m_strandUV);
+        EI_Safe_Free(m_refVectors);
+        EI_Safe_Free(m_globalRotations);
+        EI_Safe_Free(m_localRotations);
+        EI_Safe_Free(m_tangents);
+        EI_Safe_Free(m_followRootOffsets);
+        EI_Safe_Free(m_strandTypes);
+        EI_Safe_Free(m_thicknessCoeffs);
+        EI_Safe_Free(m_restLengths);
+        EI_Safe_Free(m_triangleIndices);
+        EI_Safe_Free(m_boneSkinningData);
+    }
+
+    bool TressFXAsset::LoadHairData(EI_StreamRef ioObject)
+    {
+        // Clear all data before loading an asset. 
+        Clear();
+
+        TressFXTFXFileHeader header;
+
+        // read the header
+        EI_Seek(ioObject, 0); // make sure the stream pos is at the beginning. 
+        EI_Read((void*)&header, sizeof(TressFXTFXFileHeader), ioObject);
+
+        // If the tfx version is lower than the current major version, exit. 
+        if (header.version < AMD_TRESSFX_VERSION_MAJOR)
         {
-            TressFXHairVertex v;
-            m_Vertices.push_back(v);
-            TressFXHairVertex& vert = m_Vertices[m_Vertices.size() - 1];
+            return false;
+        }
 
-            vert.position.x = *pVerts++;
-            vert.position.y = *pVerts++;
-            vert.position.z = *pVerts++;
+        unsigned int numStrandsInFile = header.numHairStrands;
 
-            // first two vertices are always immovable by having zero inverse mass.
-            if ( j == 0 || j == 1 )
+        // We make the number of strands be multiple of TRESSFX_SIM_THREAD_GROUP_SIZE. 
+        m_numGuideStrands = (numStrandsInFile - numStrandsInFile % TRESSFX_SIM_THREAD_GROUP_SIZE) + TRESSFX_SIM_THREAD_GROUP_SIZE;
+
+        m_numVerticesPerStrand = header.numVerticesPerStrand;
+
+        // Make sure number of vertices per strand is greater than two and less than or equal to
+        // thread group size (64). Also thread group size should be a mulitple of number of
+        // vertices per strand. So possible number is 4, 8, 16, 32 and 64.
+        TRESSFX_ASSERT(m_numVerticesPerStrand > 2 && m_numVerticesPerStrand <= TRESSFX_SIM_THREAD_GROUP_SIZE && TRESSFX_SIM_THREAD_GROUP_SIZE % m_numVerticesPerStrand == 0);
+
+        m_numFollowStrandsPerGuide = 0;
+        m_numTotalStrands = m_numGuideStrands; // Until we call GenerateFollowHairs, the number of total strands is equal to the number of guide strands. 
+        m_numGuideVertices = m_numGuideStrands * m_numVerticesPerStrand;
+        m_numTotalVertices = m_numGuideVertices; // Again, the total number of vertices is equal to the number of guide vertices here. 
+
+        TRESSFX_ASSERT(m_numTotalVertices % TRESSFX_SIM_THREAD_GROUP_SIZE == 0); // number of total vertices should be multiple of thread group size. 
+                                                                               // This assert is actually redundant because we already made m_numGuideStrands
+                                                                               // and m_numTotalStrands are multiple of thread group size. 
+                                                                               // Just demonstrating the requirement for number of vertices here in case 
+                                                                               // you are to make your own loader. 
+
+        m_positions = (TRESSFX::float4*)EI_Malloc(m_numTotalVertices * sizeof(float4)); // size of m_positions = number of total vertices * sizeo of each position vector. 
+
+        if (!m_positions)
+        {
+            Clear();
+            return false;
+        }
+
+        // Read position data from the io stream. 
+        EI_Seek(ioObject, header.offsetVertexPosition);
+        EI_Read((void*)m_positions, numStrandsInFile * m_numVerticesPerStrand * sizeof(float4), ioObject); // note that the position data in io stream contains only guide hairs. If we call GenerateFollowHairs
+                                                                                                       // to generate follow hairs, m_positions will be re-allocated. 
+
+                                                                                                       // We need to make up some strands to fill up the buffer because the number of strands from stream is not necessarily multile of thread size. 
+        AMD::int32 numStrandsToMakeUp = m_numGuideStrands - numStrandsInFile;
+
+        for (AMD::int32 i = 0; i < numStrandsToMakeUp; ++i)
+        {
+            for (AMD::int32 j = 0; j < m_numVerticesPerStrand; ++j)
             {
-                vert.invMass = 0;
+                AMD::int32 indexLastVertex = (numStrandsInFile - 1) * m_numVerticesPerStrand + j;
+                AMD::int32 indexVertex = (numStrandsInFile + i) * m_numVerticesPerStrand + j;
+                m_positions[indexVertex] = m_positions[indexLastVertex];
             }
-            else
-            {
-                vert.invMass = 1.0f;
-            }
+        }
 
-            // In some cases, two end vertices in both ends of strand are needed to be immovable.
-            if ( bothEndsImmovable )
+        // Read strand UVs
+        EI_Seek(ioObject, header.offsetStrandUV);
+        m_strandUV = (TRESSFX::float2*)EI_Malloc(m_numTotalStrands * sizeof(float2)); // If we call GenerateFollowHairs to generate follow hairs, 
+                                                                                  // m_strandUV will be re-allocated. 
+
+        if (!m_strandUV)
+        {
+            // If we have failed to allocate memory, then clear all buffers and exit.
+            Clear();
+            return false;
+        }
+
+        EI_Read((void*)m_strandUV, numStrandsInFile * sizeof(float2), ioObject);
+
+        // Fill up the last empty space
+        AMD::int32 indexLastStrand = (numStrandsInFile - 1);
+
+        for (AMD::int32 i = 0; i < numStrandsToMakeUp; ++i)
+        {
+            AMD::int32 indexStrand = (numStrandsInFile + i);
+            m_strandUV[indexStrand] = m_strandUV[indexLastStrand];
+        }
+
+        m_followRootOffsets = (TRESSFX::float4*)EI_Malloc(m_numTotalStrands * sizeof(float4));
+
+        // Fill m_followRootOffsets with zeros
+        memset(m_followRootOffsets, 0, m_numTotalStrands * sizeof(float4));
+
+        // If we have failed to allocate buffers, then clear the allocated ones and exit. 
+        if (!m_followRootOffsets)
+        {
+            Clear();
+            return false;
+        }
+
+        return true;
+    }
+
+    // This generates follow hairs around loaded guide hairs procedually with random distribution within the max radius input. 
+    // Calling this is optional. 
+    bool TressFXAsset::GenerateFollowHairs(int numFollowHairsPerGuideHair, float tipSeparationFactor, float maxRadiusAroundGuideHair)
+    {
+        TRESSFX_ASSERT(numFollowHairsPerGuideHair >= 0);
+
+        m_numFollowStrandsPerGuide = numFollowHairsPerGuideHair;
+
+        // Nothing to do, just exit. 
+        if (numFollowHairsPerGuideHair == 0)
+            return false;
+
+        // Recompute total number of hair strands and vertices with considering number of follow hairs per a guide hair. 
+        m_numTotalStrands = m_numGuideStrands * (m_numFollowStrandsPerGuide + 1);
+        m_numTotalVertices = m_numTotalStrands * m_numVerticesPerStrand;
+
+        // keep the old buffers until the end of this function. 
+        TRESSFX::float4* positionsGuide = m_positions;
+        TRESSFX::float2* strandUVGuide = m_strandUV;
+
+        // re-allocate all buffers
+        m_positions = (TRESSFX::float4*)EI_Malloc(m_numTotalVertices * sizeof(float4));
+        m_strandUV = (TRESSFX::float2*)EI_Malloc(m_numTotalStrands * sizeof(float2));
+        
+        EI_Safe_Free(m_followRootOffsets);
+        m_followRootOffsets = (TRESSFX::float4*)EI_Malloc(m_numTotalStrands * sizeof(float4));
+
+        // If we have failed to allocate buffers, then clear the allocated ones and exit. 
+        if (!m_positions || !m_strandUV || !m_followRootOffsets)
+        {
+            Clear();
+            return false;
+        }
+
+        // type-cast to tressfx_vec3 to handle data easily. 
+        TRESSFX_ASSERT(sizeof(tressfx_vec3) == sizeof(TRESSFX::float4)); // sizeof(tressfx_vec3) is 4*sizeof(float)  
+        tressfx_vec3* pos = static_cast<tressfx_vec3*>((void*)m_positions);
+        tressfx_vec3* followOffset = static_cast<tressfx_vec3*>((void*)m_followRootOffsets);
+
+        // Generate follow hairs
+        for (int i = 0; i < m_numGuideStrands; i++)
+        {
+            int indexGuideStrand = i * (m_numFollowStrandsPerGuide + 1);
+            int indexRootVertMaster = indexGuideStrand * m_numVerticesPerStrand;
+
+            memcpy(&pos[indexRootVertMaster], &positionsGuide[i*m_numVerticesPerStrand], sizeof(tressfx_vec3)*m_numVerticesPerStrand);
+            m_strandUV[indexGuideStrand] = strandUVGuide[i];
+
+            followOffset[indexGuideStrand].Set(0, 0, 0);
+            followOffset[indexGuideStrand].w = (float)indexGuideStrand;
+            tressfx_vec3 v01 = pos[indexRootVertMaster + 1] - pos[indexRootVertMaster];
+            v01.Normalize();
+
+            // Find two orthogonal unit tangent vectors to v01
+            tressfx_vec3 t0, t1;
+            GetTangentVectors(v01, t0, t1);
+
+            for (int j = 0; j < m_numFollowStrandsPerGuide; j++)
             {
-                if ( bothEndsImmovable && (j == m_HairAsset.m_NumOfVerticesInStrand - 1 || j == m_HairAsset.m_NumOfVerticesInStrand - 2) )
+                int indexStrandFollow = indexGuideStrand + j + 1;
+                int indexRootVertFollow = indexStrandFollow * m_numVerticesPerStrand;
+
+                m_strandUV[indexStrandFollow] = m_strandUV[indexGuideStrand];
+
+                // offset vector from the guide strand's root vertex position
+                tressfx_vec3 offset = GetRandom(-maxRadiusAroundGuideHair, maxRadiusAroundGuideHair) * t0 + GetRandom(-maxRadiusAroundGuideHair, maxRadiusAroundGuideHair) * t1;
+                followOffset[indexStrandFollow] = offset;
+                followOffset[indexStrandFollow].w = (float)indexGuideStrand;
+
+                for (int k = 0; k < m_numVerticesPerStrand; k++)
                 {
-                    vert.invMass = 0;
+                    const tressfx_vec3* guideVert = &pos[indexRootVertMaster + k];
+                    tressfx_vec3* followVert = &pos[indexRootVertFollow + 1];
+
+                    float factor = tipSeparationFactor * ((float)k / ((float)m_numVerticesPerStrand)) + 1.0f;
+                    *followVert = *guideVert + offset * factor;
+                    (*followVert).w = guideVert->w;
                 }
             }
         }
 
-        if (m_usingPerStrandTexCoords)
+        EI_Safe_Free(positionsGuide);
+        EI_Safe_Free(strandUVGuide);
+
+        return true;
+    }
+
+    bool TressFXAsset::ProcessAsset()
+    {
+        EI_Safe_Free(m_strandTypes);
+        m_strandTypes = (AMD::int32*)EI_Malloc(m_numTotalStrands * sizeof(int));
+
+        EI_Safe_Free(m_tangents);
+        m_tangents = (TRESSFX::float4*)EI_Malloc(m_numTotalVertices * sizeof(float4));
+
+        EI_Safe_Free(m_restLengths);
+        m_restLengths = (AMD::real32*)EI_Malloc(m_numTotalVertices * sizeof(float));
+
+        EI_Safe_Free(m_refVectors);
+        m_refVectors = (TRESSFX::float4*)EI_Malloc(m_numTotalVertices * sizeof(float4));
+
+        EI_Safe_Free(m_globalRotations);
+        m_globalRotations = (TRESSFX::float4*)EI_Malloc(m_numTotalVertices * sizeof(float4));
+
+        EI_Safe_Free(m_localRotations);
+        m_localRotations = (TRESSFX::float4*)EI_Malloc(m_numTotalVertices * sizeof(float4));
+
+        EI_Safe_Free(m_thicknessCoeffs);
+        m_thicknessCoeffs = (AMD::real32*)EI_Malloc(m_numTotalVertices * sizeof(float));
+
+        EI_Safe_Free(m_triangleIndices);
+        m_triangleIndices = (AMD::int32*)EI_Malloc(GetNumHairTriangleIndices() * sizeof(int32));
+
+        // If we have failed to allocate buffers, then clear the allocated ones and exit. 
+        if (!m_strandTypes || !m_tangents || !m_restLengths || !m_refVectors || !m_globalRotations ||
+            !m_localRotations || !m_thicknessCoeffs || !m_triangleIndices)
         {
-            assert(pTexCoords);
-            guideStrand.m_texCoord.x = *pTexCoords++;
-            guideStrand.m_texCoord.y = *pTexCoords++;
+            Clear();
+            return false;
         }
-        else
+
+        // construct local and global transforms for each hair strand.
+        ComputeTransforms();
+
+        // compute tangent vectors
+        ComputeStrandTangent();
+
+        // compute thickness coefficients
+        ComputeThicknessCoeffs();
+
+        // compute rest lengths
+        ComputeRestLengths();
+
+        // triangle index
+        FillTriangleIndexArray();
+
+        for (int i = 0; i < m_numTotalStrands; i++)
+            m_strandTypes[i] = 0;
+
+        return true;
+    }
+
+    void TressFXAsset::FillTriangleIndexArray()
+    {
+        TRESSFX_ASSERT(m_numTotalVertices == m_numTotalStrands * m_numVerticesPerStrand);
+        TRESSFX_ASSERT(m_triangleIndices != nullptr);
+
+        AMD::int32 id = 0;
+        int iCount = 0;
+
+        for (int i = 0; i < m_numTotalStrands; i++)
         {
-            guideStrand.m_texCoord.x = 0;
-            guideStrand.m_texCoord.y = 0;
-        }
-
-        m_HairStrands.push_back(guideStrand);
-
-        // adding follow hair strands as placeholder.
-        for ( int j = 0; j < m_HairAsset.m_NumFollowHairsPerGuideHair; j++ )
-        {
-            TressFXStrand followStrand;
-            followStrand.m_bGuideHair = false;
-            followStrand.m_GroupID = groupId;
-            followStrand.m_texCoord.x = guideStrand.m_texCoord.x;
-            followStrand.m_texCoord.y = guideStrand.m_texCoord.y;
-
-            m_HairStrands.push_back(followStrand);
-
-            for ( int k = 0; k < m_HairAsset.m_NumOfVerticesInStrand; k++ )
+            for (int j = 0; j < m_numVerticesPerStrand - 1; j++)
             {
-                TressFXHairVertex v;
-                m_Vertices.push_back(v);
-                TressFXHairVertex& followVert = m_Vertices[m_Vertices.size() - 1];
+                m_triangleIndices[iCount++] = 2 * id;
+                m_triangleIndices[iCount++] = 2 * id + 1;
+                m_triangleIndices[iCount++] = 2 * id + 2;
+                m_triangleIndices[iCount++] = 2 * id + 2;
+                m_triangleIndices[iCount++] = 2 * id + 1;
+                m_triangleIndices[iCount++] = 2 * id + 3;
 
-                followVert.invMass = 0;
-                followVert.position.Set(0, 0, 0);
+                id++;
             }
-        }
-    }
 
-    // parse the hair skinning data
-    if (pRawHairBlob->animationSize != 0)
-    {
-        TressFXSkinFileObject tfxSkinObj;
-        memcpy((void *)&tfxSkinObj, pRawHairBlob->pAnimation, sizeof(TressFXSkinFileObject));
-        HairToTriangleMapping *pMapping = (HairToTriangleMapping *)((char *)pRawHairBlob->pAnimation + tfxSkinObj.hairToMeshMap_Offset);
-        m_HairAsset.m_pMapping = new HairToTriangleMapping[m_HairAsset.m_NumGuideHairStrands * (m_HairAsset.m_NumFollowHairsPerGuideHair + 1)];
-        memset(m_HairAsset.m_pMapping, 0, m_HairAsset.m_NumGuideHairStrands * (m_HairAsset.m_NumFollowHairsPerGuideHair + 1) * sizeof(HairToTriangleMapping));
-        mapping.resize(m_HairAsset.m_NumGuideHairStrands);
-
-        // mesh mapping.
-        for ( int i = 0; i < m_HairAsset.m_NumGuideHairStrands; i++ )
-        {
-            mapping[i].mesh = 0;
-            mapping[i].triangle = pMapping[i].triangle;
-            mapping[i].barycentricCoord[0] = pMapping[i].barycentricCoord[0];
-            mapping[i].barycentricCoord[1] = pMapping[i].barycentricCoord[1];
-            mapping[i].barycentricCoord[2] = pMapping[i].barycentricCoord[2];
-        }
-
-        float* pUVWCoord = (float*)((char *)pRawHairBlob->pAnimation + tfxSkinObj.perStrandUVCoordniate_Offset);
-
-        for ( int i = 0; i < m_HairAsset.m_NumGuideHairStrands; i++ )
-        {
-            float u = pUVWCoord[3 * i];
-            float v = pUVWCoord[3 * i + 1];
-
-            int indexGuideStrand = i * (m_HairAsset.m_NumFollowHairsPerGuideHair + 1);
-
-            m_HairStrands[indexGuideStrand].m_texCoord.x = u;
-            m_HairStrands[indexGuideStrand].m_texCoord.y = v;
-        }
-
-        m_usingPerStrandTexCoords = true;
-    }
-    else
-    {
-        m_HairAsset.m_pMapping = NULL;
-    }
-
-    return true;
-}
-
-// random number generator
-float GetRandom(float Min, float Max)
-{
-    return ((float(rand()) / float(RAND_MAX)) * (Max - Min)) + Min;
-}
-
-int myrandom(int i) { (void)i; return 0; }
-
-// Generates the follow hairs
-void TressFXAssetLoader::GenerateFollowHairs()
-{
-    assert(m_HairAsset.m_NumFollowHairsPerGuideHair >= 0);
-
-    m_SlaveOffset.resize(m_HairAsset.m_NumTotalHairStrands, tressfx_vec3(0, 0, 0));
-
-    // Shuffle hair strands for LOD and density. Without shuffling, hair can disappear unevenly.
-    srand(0);
-
-    // Shuffle elements by randomly exchanging each other.
-    for ( int i = 0; i < m_HairAsset.m_NumGuideHairStrands; i++ )
-    {
-        const int indexRand = rand() % m_HairAsset.m_NumGuideHairStrands;
-        const int indexGuideStrand = i * (m_HairAsset.m_NumFollowHairsPerGuideHair + 1);
-        const int indexGuideStrandRand = indexRand * (m_HairAsset.m_NumFollowHairsPerGuideHair + 1);
-
-        // shuffle strands
-        for ( int j = 0; j < m_HairAsset.m_NumFollowHairsPerGuideHair + 1; j++ )
-        {
-            TressFXStrand strandTemp = m_HairStrands[indexGuideStrand + j];
-            m_HairStrands[indexGuideStrand + j] = m_HairStrands[indexGuideStrandRand + j];
-            m_HairStrands[indexGuideStrandRand + j] = strandTemp;
-        }
-
-        // shuffle vertices
-        int indexGuideVertex = indexGuideStrand * m_HairAsset.m_NumOfVerticesInStrand;
-        int indexGuideVertexRand = indexGuideStrandRand * m_HairAsset.m_NumOfVerticesInStrand;
-
-        for ( int j = 0; j < m_HairAsset.m_NumOfVerticesInStrand; j++ )
-        {
-            TressFXHairVertex vertexTemp = m_Vertices[indexGuideVertex + j];
-            m_Vertices[indexGuideVertex + j] = m_Vertices[indexGuideVertexRand + j];
-            m_Vertices[indexGuideVertexRand + j] = vertexTemp;
-        }
-
-        // shuffle mapping
-        if ( m_HairAsset.m_pMapping )
-        {
-            HairToTriangleMapping map = mapping[i];
-            mapping[i] = mapping[indexRand];
-            mapping[indexRand] = map;
-        }
-    }
-
-    if ( m_HairAsset.m_pMapping )
-    {
-        for ( int i = 0; i < m_HairAsset.m_NumGuideHairStrands; i++ )
-        {
-            int index = i * (m_HairAsset.m_NumFollowHairsPerGuideHair + 1);
-            m_HairAsset.m_pMapping[index].mesh = 0;
-            m_HairAsset.m_pMapping[index].triangle = mapping[i].triangle;
-            m_HairAsset.m_pMapping[index].barycentricCoord[0] = mapping[i].barycentricCoord[0];
-            m_HairAsset.m_pMapping[index].barycentricCoord[1] = mapping[i].barycentricCoord[1];
-            m_HairAsset.m_pMapping[index].barycentricCoord[2] = mapping[i].barycentricCoord[2];
-
-            for ( int j = 1; j <= m_HairAsset.m_NumFollowHairsPerGuideHair; j++ )
-            {
-                m_HairAsset.m_pMapping[index + j].mesh = 0;
-                m_HairAsset.m_pMapping[index + j].triangle = mapping[i].triangle;
-                m_HairAsset.m_pMapping[index + j].barycentricCoord[0] = mapping[i].barycentricCoord[0];
-                m_HairAsset.m_pMapping[index + j].barycentricCoord[1] = mapping[i].barycentricCoord[1];
-                m_HairAsset.m_pMapping[index + j].barycentricCoord[2] = mapping[i].barycentricCoord[2];
-            }
-        }
-
-        mapping.clear();
-    }
-
-    if ( m_HairAsset.m_NumFollowHairsPerGuideHair == 0 )
-    {
-        return;
-    }
-
-    // Generate slave hairs from guide hairs
-    for ( int i = 0; i < m_HairAsset.m_NumGuideHairStrands; i++ )
-    {
-        int indexGuideStrand = i*(m_HairAsset.m_NumFollowHairsPerGuideHair + 1);
-        const TressFXStrand& guideStrand = m_HairStrands[indexGuideStrand];
-        int indexRootVertMaster = indexGuideStrand * m_HairAsset.m_NumOfVerticesInStrand;
-
-        m_SlaveOffset[indexGuideStrand].Set(0, 0, 0);
-
-        tressfx_vec3 v01 = m_Vertices[indexRootVertMaster + 1].position - m_Vertices[indexRootVertMaster].position;
-        v01.Normalize();
-
-        // Find two orthogonal unit tangent vectors to v01
-        tressfx_vec3 t0, t1;
-        GetTangentVectors(v01, t0, t1);
-
-        for ( int j = 0; j < m_HairAsset.m_NumFollowHairsPerGuideHair; j++ )
-        {
-            int indexStrandFollow = indexGuideStrand + j + 1;
-            TressFXStrand& followStrand = m_HairStrands[indexStrandFollow];
-            followStrand.m_bGuideHair = false;
-            followStrand.m_GroupID = guideStrand.m_GroupID;
-            followStrand.m_texCoord = guideStrand.m_texCoord;
-
-            int indexRootVertSlave = indexStrandFollow * m_HairAsset.m_NumOfVerticesInStrand;
-
-            // offset vector from the guide strand's root vertex position
-            tressfx_vec3 offset = GetRandom(-m_maxRadiusAroundGuideHair, m_maxRadiusAroundGuideHair)*t0 + GetRandom(-m_maxRadiusAroundGuideHair, m_maxRadiusAroundGuideHair)*t1;
-            m_SlaveOffset[indexStrandFollow] = offset;
-
-            for ( int k = 0; k < m_HairAsset.m_NumOfVerticesInStrand; k++ )
-            {
-                const TressFXHairVertex& guideVert = m_Vertices[indexRootVertMaster + k];
-                TressFXHairVertex& followVert = m_Vertices[indexRootVertSlave + k];
-
-                float factor = m_HairAsset.m_TipSeparationFactor*((float)k / ((float)m_HairAsset.m_NumOfVerticesInStrand)) + 1.0f;
-                followVert.position = guideVert.position + offset*factor;
-                followVert.invMass = guideVert.invMass;
-            }
-        }
-    }
-}
-
-// Clear the array of hair strands
-void TressFXAssetLoader::Clear()
-{
-    m_HairStrands.clear();
-    m_Vertices.clear();
-
-    m_HairAsset.m_LineIndices.clear();
-    m_HairAsset.m_TriangleIndices.clear();
-
-    DestroyAll();
-
-    m_HairAsset.m_pHairStrandType = NULL;
-    m_HairAsset.m_pRefVectors = NULL;
-    m_HairAsset.m_pTriangleVertices = NULL;
-    m_HairAsset.m_pGlobalRotations = NULL;
-    m_HairAsset.m_pLocalRotations = NULL;
-    m_HairAsset.m_pVertices = NULL;
-    m_HairAsset.m_pTangents = NULL;
-    m_HairAsset.m_pThicknessCoeffs = NULL;
-    m_HairAsset.m_pRestLengths = NULL;
-    m_HairAsset.m_pFollowRootOffset = NULL;
-    m_HairAsset.m_NumFollowHairsPerGuideHair = 4;
-    m_HairAsset.m_NumGuideHairStrands = 0;
-    m_HairAsset.m_NumOfVerticesInStrand = 0;
-    m_HairAsset.m_TipSeparationFactor = 0;
-
-    m_maxRadiusAroundGuideHair = 0.5;
-}
-
-// Calculates the tangent value for each vertices of the strand
-void TressFXAssetLoader::ComputeStrandTangent()
-{
-    for ( int iStrand = 0; iStrand < m_HairAsset.m_NumTotalHairStrands; ++iStrand )
-    {
-        //const TressFXStrand& strand = m_HairStrands[iStrand];
-        int indexRootVertMaster = iStrand * m_HairAsset.m_NumOfVerticesInStrand;
-
-        // vertex 0
-        {
-            TressFXHairVertex& vert_0 = m_Vertices[indexRootVertMaster];
-            TressFXHairVertex& vert_1 = m_Vertices[indexRootVertMaster + 1];
-
-            tressfx_vec3 tangent = vert_1.position - vert_0.position;
-            tangent.Normalize();
-            vert_0.tangent = tangent;
-        }
-
-        // vertex 1 through n-1
-        for ( int i = 1; i < (int)m_HairAsset.m_NumOfVerticesInStrand - 1; i++ )
-        {
-            TressFXHairVertex& vert_i_minus_1 = m_Vertices[indexRootVertMaster + i - 1];
-            TressFXHairVertex& vert_i = m_Vertices[indexRootVertMaster + i];
-            TressFXHairVertex& vert_i_plus_1 = m_Vertices[indexRootVertMaster + i + 1];
-
-            tressfx_vec3 tangent_pre = vert_i.position - vert_i_minus_1.position;
-            tangent_pre.Normalize();
-
-            tressfx_vec3 tangent_next = vert_i_plus_1.position - vert_i.position;
-            tangent_next.Normalize();
-
-            tressfx_vec3 tangent = tangent_pre + tangent_next;
-            tangent = tangent.Normalize();
-
-            vert_i.tangent = tangent;
-        }
-    }
-}
-
-void TressFXAssetLoader::ComputeDistanceToRoot()
-{
-    for ( int iStrand = 0; iStrand < m_HairAsset.m_NumTotalHairStrands; ++iStrand )
-    {
-        int indexRootVertMaster = iStrand * m_HairAsset.m_NumOfVerticesInStrand;
-
-        float strandLength = 0;
-        m_Vertices[indexRootVertMaster].texcoord.z = 0;
-
-        // vertex 1 through n
-        for ( int i = 1; i < (int)m_HairAsset.m_NumOfVerticesInStrand; ++i )
-        {
-            TressFXHairVertex& vert_i_minus_1 = m_Vertices[indexRootVertMaster + i - 1];
-            TressFXHairVertex& vert_i = m_Vertices[indexRootVertMaster + i];
-
-            tressfx_vec3 vec = vert_i.position - vert_i_minus_1.position;
-            float disSeg = vec.Length();
-
-            vert_i.texcoord.z = vert_i_minus_1.texcoord.z + disSeg;
-            strandLength += disSeg;
-        }
-
-        for ( int i = 0; i< (int)m_HairAsset.m_NumOfVerticesInStrand; ++i )
-        {
-            TressFXHairVertex& vert_i = m_Vertices[indexRootVertMaster + i];
-            vert_i.texcoord.z /= strandLength;
-        }
-    }
-}
-
-//--------------------------------------------------------------------------------------
-//
-// ProcessVertices
-//
-// After all of the vertices have been loaded ProcessVertices is called to create the
-// associated data with the hair vertices, which includes attributes like tangents,strand
-// length, and transformations. Also the hair type is stored with each vertex which
-// allows different simulation parameters for different sections of the hair.
-//
-//--------------------------------------------------------------------------------------
-void TressFXAssetLoader::ProcessVertices()
-{
-    // construct local and global transforms for each hair strand.
-    ConstructTransforms();
-
-    // compute tangent vectors
-    ComputeStrandTangent();
-
-    // compute distances to root vertices
-    ComputeDistanceToRoot();
-
-    m_HairAsset.m_pVertices = new XMFLOAT4[m_HairAsset.m_NumTotalHairVertices];
-    m_HairAsset.m_pHairStrandType = new int[m_HairAsset.m_NumTotalHairStrands];
-
-    if (m_usingPerStrandTexCoords)
-    {
-        m_HairAsset.m_pStrandTexCoords = new XMFLOAT2[m_HairAsset.m_NumTotalHairStrands];
-    }
-    else
-    {
-        m_HairAsset.m_pStrandTexCoords = NULL;
-    }
-
-    m_HairAsset.m_pTangents = new XMFLOAT4[m_HairAsset.m_NumTotalHairVertices];
-
-    // Initialize the hair strands and compute tangents
-    for ( int i = 0; i < m_HairAsset.m_NumTotalHairVertices; i++ )
-    {
-        m_HairAsset.m_pTangents[i].x = m_Vertices[i].tangent.x;
-        m_HairAsset.m_pTangents[i].y = m_Vertices[i].tangent.y;
-        m_HairAsset.m_pTangents[i].z = m_Vertices[i].tangent.z;
-    }
-
-    m_HairAsset.m_pRestLengths = new float[m_HairAsset.m_NumTotalHairVertices];
-    int index = 0;
-
-    // Calculate rest lengths
-    for ( int i = 0; i < m_HairAsset.m_NumTotalHairStrands; i++ )
-    {
-        int indexRootVert = i * m_HairAsset.m_NumOfVerticesInStrand;
-
-        for ( int j = 0; j < m_HairAsset.m_NumOfVerticesInStrand - 1; j++ )
-        {
-            m_HairAsset.m_pRestLengths[index++] = (m_Vertices[indexRootVert + j].position - m_Vertices[indexRootVert + j + 1].position).Length();
-        }
-
-        // Since number of edges are one less than number of vertices in hair strand, below line acts as a placeholder.
-        m_HairAsset.m_pRestLengths[index++] = 0;
-    }
-
-    assert(index == m_HairAsset.m_NumTotalHairVertices);
-
-    m_HairAsset.m_pRefVectors = new XMFLOAT4[m_HairAsset.m_NumTotalHairVertices];
-    m_HairAsset.m_pGlobalRotations = new XMFLOAT4[m_HairAsset.m_NumTotalHairVertices];
-    m_HairAsset.m_pLocalRotations = new XMFLOAT4[m_HairAsset.m_NumTotalHairVertices];
-    m_HairAsset.m_pTriangleVertices = new StrandVertex[m_HairAsset.m_NumTotalHairVertices];
-    m_HairAsset.m_pThicknessCoeffs = new float[m_HairAsset.m_NumTotalHairVertices];
-    m_HairAsset.m_pFollowRootOffset = new XMFLOAT4[m_HairAsset.m_NumTotalHairStrands];
-    m_HairAsset.m_LineIndices.reserve(m_HairAsset.m_NumTotalHairVertices * 2);
-    m_HairAsset.m_TriangleIndices.reserve(m_HairAsset.m_NumTotalHairVertices * 6);
-    int id=0;
-    index = 0;
-
-    TressFXStrand* pGuideHair = NULL;
-    int indexGuideHairStrand = -1;
-
-    // initialize the rest of the hair data
-    for ( int i = 0; i < m_HairAsset.m_NumTotalHairStrands; i++ )
-    {
-        int indexRootVert = i * m_HairAsset.m_NumOfVerticesInStrand;
-
-        for ( int j = 0; j < m_HairAsset.m_NumOfVerticesInStrand - 1; j++ )
-        {
-            // line indices
-            m_HairAsset.m_LineIndices.push_back(id);
-            m_HairAsset.m_LineIndices.push_back(id + 1);
-
-            // triangle indices
-            m_HairAsset.m_TriangleIndices.push_back(2 * id);
-            m_HairAsset.m_TriangleIndices.push_back(2 * id + 1);
-            m_HairAsset.m_TriangleIndices.push_back(2 * id + 2);
-            m_HairAsset.m_TriangleIndices.push_back(2 * id + 2);
-            m_HairAsset.m_TriangleIndices.push_back(2 * id + 1);
-            m_HairAsset.m_TriangleIndices.push_back(2 * id + 3);
             id++;
         }
 
-        id++;
+        TRESSFX_ASSERT(iCount == 6 * m_numTotalStrands * (m_numVerticesPerStrand - 1)); // iCount == GetNumHairTriangleIndices()
+    }
 
-        TressFXHairVertex* vertices = &m_Vertices[indexRootVert];
+    void TressFXAsset::ComputeStrandTangent()
+    {
+        tressfx_vec3* pos = (tressfx_vec3*)m_positions;
+        tressfx_vec3* tan  = (tressfx_vec3*)m_tangents;
 
-        for ( int j = 0; j < m_HairAsset.m_NumOfVerticesInStrand; j++ )
+        for (int iStrand = 0; iStrand < m_numTotalStrands; ++iStrand)
         {
-            // triangle vertices
-            StrandVertex strandVertex;
-            strandVertex.position = XMFLOAT3(vertices[j].position.x, vertices[j].position.y, vertices[j].position.z);
-            strandVertex.tangent = XMFLOAT3(vertices[j].tangent.x, vertices[j].tangent.y, vertices[j].tangent.z);
-            strandVertex.texcoord = XMFLOAT4(vertices[j].texcoord.x, vertices[j].texcoord.y, vertices[j].texcoord.z, 0);
-            m_HairAsset.m_pTriangleVertices[index] = strandVertex;
+            int indexRootVertMaster = iStrand * m_numVerticesPerStrand;
 
-            float tVal = m_HairAsset.m_pTriangleVertices[index].texcoord.z;
-            m_HairAsset.m_pThicknessCoeffs[index] = sqrt(1.f - tVal * tVal);
+            // vertex 0
+            {
+                tressfx_vec3& vert_0 = pos[indexRootVertMaster];
+                tressfx_vec3& vert_1 = pos[indexRootVertMaster + 1];
 
-            XMFLOAT4 v;
+                tressfx_vec3 tangent = vert_1 - vert_0;
+                tangent.Normalize();
+                tan[indexRootVertMaster] = tangent;
+            }
 
-            // temp vertices
-            v.x = vertices[j].position.x;
-            v.y = vertices[j].position.y;
-            v.z = vertices[j].position.z;
-            v.w = vertices[j].invMass;
-            m_HairAsset.m_pVertices[index] = v;
+            // vertex 1 through n-1
+            for (int i = 1; i < (int)m_numVerticesPerStrand - 1; i++)
+            {
+                tressfx_vec3& vert_i_minus_1 = pos[indexRootVertMaster + i - 1];
+                tressfx_vec3& vert_i         = pos[indexRootVertMaster + i];
+                tressfx_vec3& vert_i_plus_1  = pos[indexRootVertMaster + i + 1];
 
-            // global rotations
-            v.x = vertices[j].globalTransform.GetRotation().x;
-            v.y = vertices[j].globalTransform.GetRotation().y;
-            v.z = vertices[j].globalTransform.GetRotation().z;
-            v.w = vertices[j].globalTransform.GetRotation().w;
-            m_HairAsset.m_pGlobalRotations[index] = v;
+                tressfx_vec3 tangent_pre = vert_i - vert_i_minus_1;
+                tangent_pre.Normalize();
 
-            // local rotations
-            v.x = vertices[j].localTransform.GetRotation().x;
-            v.y = vertices[j].localTransform.GetRotation().y;
-            v.z = vertices[j].localTransform.GetRotation().z;
-            v.w = vertices[j].localTransform.GetRotation().w;
-            m_HairAsset.m_pLocalRotations[index] = v;
+                tressfx_vec3 tangent_next = vert_i_plus_1 - vert_i;
+                tangent_next.Normalize();
 
-            // ref vectors
-            v.x = vertices[j].referenceVector.x;
-            v.y = vertices[j].referenceVector.y;
-            v.z = vertices[j].referenceVector.z;
-            m_HairAsset.m_pRefVectors[index].x = v.x;
-            m_HairAsset.m_pRefVectors[index].y = v.y;
-            m_HairAsset.m_pRefVectors[index].z = v.z;
+                tressfx_vec3 tangent = tangent_pre + tangent_next;
+                tangent              = tangent.Normalize();
 
-            index++;
-        }
-
-        int groupId = m_HairStrands[i].m_GroupID;
-        m_HairAsset.m_pHairStrandType[i] = groupId;
-
-        if ( m_usingPerStrandTexCoords )
-        {
-            m_HairAsset.m_pStrandTexCoords[i] = m_HairStrands[i].m_texCoord;
-        }
-
-        if ( m_HairStrands[i].m_bGuideHair )
-        {
-            indexGuideHairStrand = i;
-            pGuideHair = &m_HairStrands[i];
-            m_HairAsset.m_pFollowRootOffset[i] = XMFLOAT4(0, 0, 0, (float)indexGuideHairStrand); // forth component is an index to the guide hair strand. For guide hair, it points itself.
-        }
-        else
-        {
-            assert(pGuideHair);
-            tressfx_vec3& offset = m_SlaveOffset[i];
-            m_HairAsset.m_pFollowRootOffset[i] = XMFLOAT4(offset.x, offset.y, offset.z, (float)indexGuideHairStrand);
+                tan[indexRootVertMaster + i] = tangent;
+            }
         }
     }
 
-    // Find the bounding sphere
-    BBox bBox;
-
-    for ( int i = 0; i < (int)m_Vertices.size(); ++i )
+    void TressFXAsset::ComputeThicknessCoeffs()
     {
-        const TressFXHairVertex& vertex = m_Vertices[i];
-        bBox = Union(bBox, Float3(vertex.position.x, vertex.position.y, vertex.position.z));
+        tressfx_vec3* pos = (tressfx_vec3*)m_positions;
+
+        int index = 0;
+
+        for (int iStrand = 0; iStrand < m_numTotalStrands; ++iStrand)
+        {
+            int   indexRootVertMaster = iStrand * m_numVerticesPerStrand;
+            float strandLength        = 0;
+            float tVal                = 0;
+
+            // vertex 1 through n
+            for (int i = 1; i < (int)m_numVerticesPerStrand; ++i)
+            {
+                tressfx_vec3& vert_i_minus_1 = pos[indexRootVertMaster + i - 1];
+                tressfx_vec3& vert_i         = pos[indexRootVertMaster + i];
+
+                tressfx_vec3 vec    = vert_i - vert_i_minus_1;
+                float        disSeg = vec.Length();
+
+                tVal += disSeg;
+                strandLength += disSeg;
+            }
+
+            for (int i = 0; i < (int)m_numVerticesPerStrand; ++i)
+            {
+                tVal /= strandLength;
+                m_thicknessCoeffs[index++] = sqrt(1.f - tVal * tVal);
+            }
+        }
     }
 
-    Float3 c; float radius;
-    bBox.BoundingSphere(&c, &radius);
-    m_HairAsset.m_bSphere.center = XMFLOAT3(c.x, c.y, c.z);
-    m_HairAsset.m_bSphere.radius = radius;
-}
-
-//--------------------------------------------------------------------------------------
-//
-// Serialize
-//
-// Serializes the hair asset into a TressFX_HairBlob structure which can be saved to disk
-// for faster loading.
-//
-//--------------------------------------------------------------------------------------
-bool TressFXAssetLoader::Serialize(TressFX_HairBlob* pTressFXHairBlob)
-{
-    stringbuf buffer;
-
-    buffer.sputn((char *)&m_HairAsset.m_NumTotalHairVertices, sizeof(int));
-    buffer.sputn((char *)&m_HairAsset.m_NumTotalHairStrands, sizeof(int));
-    buffer.sputn((char *)&m_HairAsset.m_NumOfVerticesInStrand, sizeof(int));
-    buffer.sputn((char *)&m_HairAsset.m_NumGuideHairVertices, sizeof(int));
-    buffer.sputn((char *)&m_HairAsset.m_NumGuideHairStrands, sizeof(int));
-    buffer.sputn((char *)&m_HairAsset.m_NumFollowHairsPerGuideHair, sizeof(int));
-    buffer.sputn((char *)&m_HairAsset.m_TipSeparationFactor, sizeof(float));
-
-    if (m_usingPerStrandTexCoords)
+    void TressFXAsset::ComputeRestLengths()
     {
-        m_HairAsset.m_NumPerStrandTexCoords = m_HairAsset.m_NumTotalHairStrands;
-    }
-    else
-    {
-        m_HairAsset.m_NumPerStrandTexCoords = 0;
+        tressfx_vec3* pos = (tressfx_vec3*)m_positions;
+        float*        restLen = (float*)m_restLengths;
+
+        int index = 0;
+
+        // Calculate rest lengths
+        for (int i = 0; i < m_numTotalStrands; i++)
+        {
+            int indexRootVert = i * m_numVerticesPerStrand;
+
+            for (int j = 0; j < m_numVerticesPerStrand - 1; j++)
+            {
+                restLen[index++] =
+                    (pos[indexRootVert + j] - pos[indexRootVert + j + 1]).Length();
+            }
+
+            // Since number of edges are one less than number of vertices in hair strand, below
+            // line acts as a placeholder.
+            restLen[index++] = 0;
+        }
     }
 
-    if (m_usingPerVertexColors)
+    void TressFXAsset::ComputeTransforms()
     {
-        m_HairAsset.m_NumPerVertexColors = m_HairAsset.m_NumTotalHairVertices;
+        tressfx_vec3* pos = (tressfx_vec3*)m_positions;
+        tressfx_quat* globalRot = (tressfx_quat*)m_globalRotations;
+        tressfx_quat* localRot  = (tressfx_quat*)m_localRotations;
+        tressfx_vec3* ref      = (tressfx_vec3*)m_refVectors;
+
+        // construct local and global transforms for all hair strands
+        for (int iStrand = 0; iStrand < m_numTotalStrands; ++iStrand)
+        {
+            int indexRootVertMaster = iStrand * m_numVerticesPerStrand;
+
+            // vertex 0
+            {
+                tressfx_vec3& vert_i = pos[indexRootVertMaster];
+                tressfx_vec3& vert_i_plus_1 = pos[indexRootVertMaster + 1];
+
+                const tressfx_vec3 vec  = vert_i_plus_1 - vert_i;
+                tressfx_vec3       vecX = vec.NormalizeOther();
+
+                tressfx_vec3 vecZ = vecX.Cross(tressfx_vec3(1.0, 0, 0));
+
+                if (vecZ.LengthSqr() < 0.0001)
+                {
+                    vecZ = vecX.Cross(tressfx_vec3(0, 1.0f, 0));
+                }
+
+                vecZ.Normalize();
+                tressfx_vec3 vecY = vecZ.Cross(vecX).Normalize();
+
+                tressfx_mat33 rotL2W;
+
+                rotL2W(0, 0) = vecX.x;
+                rotL2W(0, 1) = vecY.x;
+                rotL2W(0, 2) = vecZ.x;
+                rotL2W(1, 0) = vecX.y;
+                rotL2W(1, 1) = vecY.y;
+                rotL2W(1, 2) = vecZ.y;
+                rotL2W(2, 0) = vecX.z;
+                rotL2W(2, 1) = vecY.z;
+                rotL2W(2, 2) = vecZ.z;
+
+                tressfx_quat rot = rotL2W;
+                localRot[indexRootVertMaster] = globalRot[indexRootVertMaster] = rot;  // For vertex 0, local and global transforms are the same.
+            }
+
+            // vertex 1 through n-1
+            for (int i = 1; i < (int)m_numVerticesPerStrand; i++)
+            {
+                tressfx_vec3& vert_i_minus_1 = pos[indexRootVertMaster + i - 1];
+                tressfx_vec3& vert_i = pos[indexRootVertMaster + i];
+                tressfx_vec3  vec = vert_i - vert_i_minus_1;
+                vec = globalRot[indexRootVertMaster + i - 1].InverseOther() * vec;
+
+                tressfx_vec3 vecX = vec.NormalizeOther();
+                tressfx_vec3 X = tressfx_vec3(1.0f, 0, 0);
+                tressfx_vec3 rotAxis = X.Cross(vecX);
+                float angle = acos(X.Dot(vecX));
+
+                if (abs(angle) < 0.001 || rotAxis.LengthSqr() < 0.001)
+                {
+                    localRot[indexRootVertMaster + i].SetIdentity();
+                }
+                else
+                {
+                    rotAxis.Normalize();
+                    tressfx_quat rot = tressfx_quat(rotAxis, angle);
+                    localRot[indexRootVertMaster + i] = rot;
+                }
+
+                globalRot[indexRootVertMaster + i] = globalRot[indexRootVertMaster + i - 1] * localRot[indexRootVertMaster + i];
+                ref[indexRootVertMaster + i] = vec;
+            }
+        }
     }
-    else
+
+    bool TressFXAsset::LoadBoneData(const TressFXSkeletonInterface& skeletonData, EI_StreamRef ioObject)
     {
-        m_HairAsset.m_NumPerVertexColors = 0;
+        EI_Safe_Free(m_boneSkinningData);
+
+        AMD::int32 numOfBones = 0;
+        EI_Seek(ioObject, 0);
+        EI_Read((void*)&numOfBones, sizeof(AMD::int32), ioObject);
+
+        size_t startOfBoneNames = (sizeof(AMD::int32) * numOfBones);
+        size_t currentNamePosition = startOfBoneNames;
+        size_t currentOffSetPosition = 0;
+
+        std::vector<std::string> boneNames;
+        boneNames.resize(numOfBones);
+
+        for (int i = 0; i < numOfBones; i++)
+        {
+            AMD::int32 index = 0;
+            EI_Read((char*)&index, sizeof(AMD::int32), ioObject);
+
+            AMD::int32 charLen = 0;
+            EI_Read((char*)&charLen, sizeof(AMD::int32), ioObject); // character length includes null termination already.
+
+            boneNames[i].resize(charLen);
+            EI_Read(&boneNames[i][0], sizeof(char) * charLen, ioObject);
+        }
+
+        // Reading the number of strands 
+        AMD::int32 numOfStrandsInStream = 0;
+        EI_Read((char*)&numOfStrandsInStream, sizeof(AMD::int32), ioObject);
+
+        // If the number of strands from the input stream (tfxbone) is bigger than what we already know from tfx, something is wrong. 
+        //if (m_numGuideStrands < numOfStrandsInStream)
+        //    return 0;
+
+        AMD::int32 boneSkinningMemSize = m_numTotalStrands * sizeof(TressFXBoneSkinningData);
+        m_boneSkinningData = (TressFXBoneSkinningData*)EI_Malloc(boneSkinningMemSize);
+
+        // We failed to allocate memory. 
+        if (!m_boneSkinningData)
+        {
+            EI_Safe_Free(m_boneSkinningData);
+            return false;
+        }
+
+        for (AMD::int32 i = 0; i < m_numGuideStrands; ++i)
+        {
+            AMD::int32 index = 0; // Well, we don't really use this here. 
+            EI_Read((char*)&index, sizeof(AMD::int32), ioObject);
+
+            TressFXBoneSkinningData skinData;
+
+            for (AMD::int32 j = 0; j < TRESSFX_MAX_INFLUENTIAL_BONE_COUNT; ++j)
+            {
+                AMD::int32 boneIndex;
+                EI_Read((char*)&boneIndex, sizeof(AMD::int32), ioObject);
+                skinData.boneIndex[j] = (float)boneIndex;
+                skinData.boneIndex[j] = (float)skeletonData.GetBoneIndexByName(boneNames[(int)skinData.boneIndex[j]].c_str()); // Change the joint index to be what the engine wants
+                EI_Read((char*)&skinData.weight[j], sizeof(AMD::real32), ioObject);
+            }
+
+            // If bone index is -1, then it means that there is no bone associated to this. In this case we simply replace it with zero.
+            // This is safe because the corresonding weight should be zero anyway.
+            skinData.boneIndex[0] = skinData.boneIndex[0] == -1.f ? 0 : skinData.boneIndex[0];
+            skinData.boneIndex[1] = skinData.boneIndex[1] == -1.f ? 0 : skinData.boneIndex[1];
+            skinData.boneIndex[2] = skinData.boneIndex[2] == -1.f ? 0 : skinData.boneIndex[2];
+            skinData.boneIndex[3] = skinData.boneIndex[3] == -1.f ? 0 : skinData.boneIndex[3];
+
+            m_boneSkinningData[i * (m_numFollowStrandsPerGuide + 1)] = skinData;
+        }
+
+        return true;
     }
-
-    if (m_usingPerVertexTexCoords)
-    {
-        m_HairAsset.m_NumPerVertexTexCoords = m_HairAsset.m_NumTotalHairVertices;
-    }
-    else
-    {
-        m_HairAsset.m_NumPerVertexTexCoords = 0;
-    }
-
-    if (m_HairAsset.m_pMapping != NULL)
-    {
-        m_HairAsset.m_NumHairToTriangleMappings = m_HairAsset.m_NumTotalHairStrands;
-    }
-    else
-    {
-        m_HairAsset.m_NumHairToTriangleMappings = 0;
-    }
-
-    buffer.sputn((char *)&m_HairAsset.m_NumPerStrandTexCoords, sizeof(int));
-    buffer.sputn((char *)&m_HairAsset.m_NumPerVertexColors, sizeof(int));
-    buffer.sputn((char *)&m_HairAsset.m_NumPerVertexTexCoords, sizeof(int));
-    buffer.sputn((char *)&m_HairAsset.m_NumHairToTriangleMappings, sizeof(int));
-
-    buffer.sputn((char *)m_HairAsset.m_pHairStrandType, m_HairAsset.m_NumTotalHairStrands * sizeof(int));
-    buffer.sputn((char *)m_HairAsset.m_pRefVectors, m_HairAsset.m_NumTotalHairVertices * sizeof(DirectX::XMFLOAT4));
-    buffer.sputn((char *)m_HairAsset.m_pGlobalRotations, m_HairAsset.m_NumTotalHairVertices * sizeof(DirectX::XMFLOAT4));
-    buffer.sputn((char *)m_HairAsset.m_pLocalRotations, m_HairAsset.m_NumTotalHairVertices * sizeof(DirectX::XMFLOAT4));
-    buffer.sputn((char *)m_HairAsset.m_pVertices, m_HairAsset.m_NumTotalHairVertices * sizeof(DirectX::XMFLOAT4));
-    buffer.sputn((char *)m_HairAsset.m_pTangents, m_HairAsset.m_NumTotalHairVertices * sizeof(DirectX::XMFLOAT4));
-    buffer.sputn((char *)m_HairAsset.m_pTriangleVertices, m_HairAsset.m_NumTotalHairVertices * sizeof(StrandVertex));
-    buffer.sputn((char *)m_HairAsset.m_pThicknessCoeffs, m_HairAsset.m_NumTotalHairVertices * sizeof(float));
-    buffer.sputn((char *)m_HairAsset.m_pFollowRootOffset, m_HairAsset.m_NumTotalHairStrands * sizeof(XMFLOAT4));
-    buffer.sputn((char *)m_HairAsset.m_pRestLengths, m_HairAsset.m_NumTotalHairVertices * sizeof(float));
-    buffer.sputn((char *)&m_HairAsset.m_bSphere, sizeof(BSphere));
-    int size = (int)m_HairAsset.m_TriangleIndices.size();
-    buffer.sputn((char *)&size, sizeof(int));
-    buffer.sputn((char *)&m_HairAsset.m_TriangleIndices[0], m_HairAsset.m_TriangleIndices.size() * sizeof(int));
-    size = (int)m_HairAsset.m_LineIndices.size();
-    buffer.sputn((char *)&size, sizeof(int));
-    buffer.sputn((char *)&m_HairAsset.m_LineIndices[0], m_HairAsset.m_LineIndices.size() * sizeof(int));
-
-    if (m_usingPerStrandTexCoords)
-    {
-        buffer.sputn((char *)m_HairAsset.m_pStrandTexCoords, m_HairAsset.m_NumTotalHairStrands * sizeof(DirectX::XMFLOAT2));
-    }
-
-    // ToDo: put the per-vertex colors, per-vertex texture coordinates, and guide hair arrays here
-
-    // hair to skinned mesh mapping
-    if (m_HairAsset.m_pMapping != NULL)
-    {
-        buffer.sputn((char *)m_HairAsset.m_pMapping, m_HairAsset.m_NumTotalHairStrands * sizeof(HairToTriangleMapping));
-    }
-
-    string str = buffer.str();
-    pTressFXHairBlob->size = (unsigned)str.size();
-    pTressFXHairBlob->pHair = (void *) new char[pTressFXHairBlob->size];
-    str.copy((char *)pTressFXHairBlob->pHair, pTressFXHairBlob->size);
-
-    return true;
-}
-
-} // namespace AMD
+}  // Namespace AMD

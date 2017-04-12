@@ -48,7 +48,6 @@
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>AMD_TressFX</RootNamespace>
     <ProjectName>AMD_TressFX</ProjectName>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DLL_Debug|Win32'" Label="Configuration">
@@ -214,14 +213,12 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DLL_Debug|Win32'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <WarningLevel>Level4</WarningLevel>
+      <WarningLevel>Level3</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
       <PreprocessorDefinitions>_USRDLL;AMD_TRESSFX_COMPILE_DYNAMIC_LIB=1;WIN32;_DEBUG;_WINDOWS;_WIN32_WINNT=0x0601;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\inc;..\..\amd_lib\shared\common\inc;..\..\amd_lib\shared\d3d11\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
-      <ExceptionHandling>false</ExceptionHandling>
-      <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <AdditionalOptions>/EHsc %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -240,14 +237,12 @@ xcopy "..\lib\VS2015\Win32\DLL_Debug\$(TargetName).lib"  "..\lib" /H /R /Y &gt; 
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DLL_Debug|x64'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <WarningLevel>Level4</WarningLevel>
+      <WarningLevel>Level3</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
       <PreprocessorDefinitions>_USRDLL;AMD_TRESSFX_COMPILE_DYNAMIC_LIB=1;WIN32;_DEBUG;_WINDOWS;_WIN32_WINNT=0x0601;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\inc;..\..\amd_lib\shared\common\inc;..\..\amd_lib\shared\d3d11\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalIncludeDirectories>..\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
-      <ExceptionHandling>false</ExceptionHandling>
-      <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <AdditionalOptions>/EHsc %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -266,17 +261,16 @@ xcopy "..\lib\VS2015\x64\DLL_Debug\$(TargetName).lib"  "..\lib" /H /R /Y &gt; nu
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DLL_Release|Win32'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <WarningLevel>Level4</WarningLevel>
+      <WarningLevel>Level3</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
       <PreprocessorDefinitions>_USRDLL;AMD_TRESSFX_COMPILE_DYNAMIC_LIB=1;WIN32;NDEBUG;_WINDOWS;_WIN32_WINNT=0x0601;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\inc;..\..\amd_lib\shared\common\inc;..\..\amd_lib\shared\d3d11\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DebugInformationFormat>None</DebugInformationFormat>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <MinimalRebuild>false</MinimalRebuild>
       <StringPooling>true</StringPooling>
-      <ExceptionHandling>false</ExceptionHandling>
-      <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <AdditionalOptions>/EHsc %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -297,17 +291,16 @@ xcopy "..\lib\VS2015\Win32\DLL_Release\$(TargetName).lib"  "..\lib" /H /R /Y &gt
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DLL_Release|x64'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <WarningLevel>Level4</WarningLevel>
+      <WarningLevel>Level3</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
       <PreprocessorDefinitions>_USRDLL;AMD_TRESSFX_COMPILE_DYNAMIC_LIB=1;WIN32;NDEBUG;_WINDOWS;_WIN32_WINNT=0x0601;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\inc;..\..\amd_lib\shared\common\inc;..\..\amd_lib\shared\d3d11\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DebugInformationFormat>None</DebugInformationFormat>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <MinimalRebuild>false</MinimalRebuild>
       <StringPooling>true</StringPooling>
-      <ExceptionHandling>false</ExceptionHandling>
-      <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <AdditionalOptions>/EHsc %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -328,14 +321,12 @@ xcopy "..\lib\VS2015\x64\DLL_Release\$(TargetName).lib"  "..\lib" /H /R /Y &gt; 
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Lib_Debug|Win32'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <WarningLevel>Level4</WarningLevel>
+      <WarningLevel>Level3</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
       <PreprocessorDefinitions>_LIB;AMD_TRESSFX_COMPILE_DYNAMIC_LIB=0;WIN32;_DEBUG;_WINDOWS;_WIN32_WINNT=0x0601;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\inc;..\..\amd_lib\shared\common\inc;..\..\amd_lib\shared\d3d11\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
-      <ExceptionHandling>false</ExceptionHandling>
-      <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <AdditionalOptions>/EHsc %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -349,14 +340,12 @@ xcopy "..\lib\VS2015\x64\DLL_Release\$(TargetName).lib"  "..\lib" /H /R /Y &gt; 
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Lib_Debug|x64'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <WarningLevel>Level4</WarningLevel>
+      <WarningLevel>Level3</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
       <PreprocessorDefinitions>_LIB;AMD_TRESSFX_COMPILE_DYNAMIC_LIB=0;WIN32;_DEBUG;_WINDOWS;_WIN32_WINNT=0x0601;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\inc;..\..\amd_lib\shared\common\inc;..\..\amd_lib\shared\d3d11\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalIncludeDirectories>..\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
-      <ExceptionHandling>false</ExceptionHandling>
-      <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <AdditionalOptions>/EHsc %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -370,17 +359,16 @@ xcopy "..\lib\VS2015\x64\DLL_Release\$(TargetName).lib"  "..\lib" /H /R /Y &gt; 
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Lib_Release|Win32'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <WarningLevel>Level4</WarningLevel>
+      <WarningLevel>Level3</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
       <PreprocessorDefinitions>_LIB;AMD_TRESSFX_COMPILE_DYNAMIC_LIB=0;WIN32;NDEBUG;_WINDOWS;_WIN32_WINNT=0x0601;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\inc;..\..\amd_lib\shared\common\inc;..\..\amd_lib\shared\d3d11\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DebugInformationFormat>None</DebugInformationFormat>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <MinimalRebuild>false</MinimalRebuild>
       <StringPooling>true</StringPooling>
-      <ExceptionHandling>false</ExceptionHandling>
-      <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <AdditionalOptions>/EHsc %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -396,17 +384,16 @@ xcopy "..\lib\VS2015\x64\DLL_Release\$(TargetName).lib"  "..\lib" /H /R /Y &gt; 
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Lib_Release|x64'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <WarningLevel>Level4</WarningLevel>
+      <WarningLevel>Level3</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
       <PreprocessorDefinitions>_LIB;AMD_TRESSFX_COMPILE_DYNAMIC_LIB=0;WIN32;NDEBUG;_WINDOWS;_WIN32_WINNT=0x0601;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\inc;..\..\amd_lib\shared\common\inc;..\..\amd_lib\shared\d3d11\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DebugInformationFormat>None</DebugInformationFormat>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <MinimalRebuild>false</MinimalRebuild>
       <StringPooling>true</StringPooling>
-      <ExceptionHandling>false</ExceptionHandling>
-      <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <AdditionalOptions>/EHsc %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -422,18 +409,17 @@ xcopy "..\lib\VS2015\x64\DLL_Release\$(TargetName).lib"  "..\lib" /H /R /Y &gt; 
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DLL_Release_MT|Win32'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <WarningLevel>Level4</WarningLevel>
+      <WarningLevel>Level3</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
       <PreprocessorDefinitions>_USRDLL;AMD_TRESSFX_COMPILE_DYNAMIC_LIB=1;WIN32;NDEBUG;_WINDOWS;_WIN32_WINNT=0x0601;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\inc;..\..\amd_lib\shared\common\inc;..\..\amd_lib\shared\d3d11\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DebugInformationFormat>None</DebugInformationFormat>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <MinimalRebuild>false</MinimalRebuild>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <ExceptionHandling>false</ExceptionHandling>
-      <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <AdditionalOptions>/EHsc %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -454,18 +440,17 @@ xcopy "..\lib\VS2015\Win32\DLL_Release_MT\$(TargetName).lib"  "..\lib" /H /R /Y 
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DLL_Release_MT|x64'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <WarningLevel>Level4</WarningLevel>
+      <WarningLevel>Level3</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
       <PreprocessorDefinitions>_USRDLL;AMD_TRESSFX_COMPILE_DYNAMIC_LIB=1;WIN32;NDEBUG;_WINDOWS;_WIN32_WINNT=0x0601;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\inc;..\..\amd_lib\shared\common\inc;..\..\amd_lib\shared\d3d11\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DebugInformationFormat>None</DebugInformationFormat>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <MinimalRebuild>false</MinimalRebuild>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <ExceptionHandling>false</ExceptionHandling>
-      <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <AdditionalOptions>/EHsc %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -485,45 +470,50 @@ xcopy "..\lib\VS2015\x64\DLL_Release_MT\$(TargetName).lib"  "..\lib" /H /R /Y &g
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\inc\AMD_TressFX.h" />
-    <ClInclude Include="..\src\Math\Matrix33.h" />
-    <ClInclude Include="..\src\Math\Matrix44.h" />
-    <ClInclude Include="..\src\Math\Quaternion.h" />
-    <ClInclude Include="..\src\Math\Transform.h" />
-    <ClInclude Include="..\src\Math\Vector3D.h" />
-    <ClInclude Include="..\src\TressFXAsset.h" />
+    <ClInclude Include="..\inc\AMD_Types.h" />
+    <ClInclude Include="..\inc\Math\Matrix33.h" />
+    <ClInclude Include="..\inc\Math\Matrix44.h" />
+    <ClInclude Include="..\inc\Math\Quaternion.h" />
+    <ClInclude Include="..\inc\Math\Transform.h" />
+    <ClInclude Include="..\inc\Math\Vector3D.h" />
+    <ClInclude Include="..\inc\TressFXAsset.h" />
+    <ClInclude Include="..\inc\TressFXBoneSkeletonInterface.h" />
+    <ClInclude Include="..\inc\TressFXCommon.h" />
+    <ClInclude Include="..\inc\TressFXConstantBuffers.h" />
+    <ClInclude Include="..\inc\TressFXGPUInterface.h" />
+    <ClInclude Include="..\inc\TressFXHairObject.h" />
+    <ClInclude Include="..\inc\TressFXLayouts.h" />
+    <ClInclude Include="..\inc\TressFXPPLL.h" />
+    <ClInclude Include="..\inc\TressFXSDFCollision.h" />
+    <ClInclude Include="..\inc\TressFXSDFInputMeshInterface.h" />
+    <ClInclude Include="..\inc\TressFXSettings.h" />
+    <ClInclude Include="..\inc\TressFXShortCut.h" />
+    <ClInclude Include="..\inc\TressFXSimulation.h" />
+    <ClInclude Include="..\src\TressFXEngineInterface.h" />
     <ClInclude Include="..\src\TressFXFileFormat.h" />
-    <ClInclude Include="..\src\TressFXMesh.h" />
-    <ClInclude Include="..\src\TressFXOpaque.h" />
-    <ClInclude Include="..\src\TressFXPrecompiledShaders.h" />
-    <ClInclude Include="..\src\TressFXRenderer.h" />
-    <ClInclude Include="..\src\TressFXShortCut.h" />
-    <ClInclude Include="..\src\TressFXSimulation.h" />
-    <ClInclude Include="..\src\TressFXSkinFormat.h" />
-    <ClInclude Include="..\src\Util.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\AMD_TressFX.cpp" />
     <ClCompile Include="..\src\Math\Matrix33.cpp" />
     <ClCompile Include="..\src\Math\Matrix44.cpp" />
     <ClCompile Include="..\src\Math\Quaternion.cpp" />
     <ClCompile Include="..\src\Math\Transform.cpp" />
     <ClCompile Include="..\src\Math\Vector3D.cpp" />
-    <ClCompile Include="..\src\TressFX.cpp" />
     <ClCompile Include="..\src\TressFXAsset.cpp" />
-    <ClCompile Include="..\src\TressFXMesh.cpp" />
-    <ClCompile Include="..\src\TressFXOpaque.cpp" />
-    <ClCompile Include="..\src\TressFXRenderer.cpp" />
+    <ClCompile Include="..\src\TressFXHairObject.cpp" />
+    <ClCompile Include="..\src\TressFXLayouts.cpp" />
+    <ClCompile Include="..\src\TressFXPPLL.cpp" />
+    <ClCompile Include="..\src\TressFXSDFCollision.cpp" />
     <ClCompile Include="..\src\TressFXShortCut.cpp" />
     <ClCompile Include="..\src\TressFXSimulation.cpp" />
-    <ClCompile Include="..\src\Util.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\src\Shaders\TressFXRender.hlsl" />
+    <None Include="..\src\Shaders\TressFXPPLL.hlsl" />
+    <None Include="..\src\Shaders\TressFXRendering.hlsl" />
+    <None Include="..\src\Shaders\TressFXSDFCollision.hlsl" />
+    <None Include="..\src\Shaders\TressFXShortCut.hlsl" />
     <None Include="..\src\Shaders\TressFXSimulation.hlsl" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\amd_lib\shared\d3d11\build\AMD_LIB_Minimal_2015.vcxproj">
-      <Project>{0D2AEA47-7909-69E3-8221-F4B9EE7FCF44}</Project>
-    </ProjectReference>
+    <None Include="..\src\Shaders\TressFXStrands.hlsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

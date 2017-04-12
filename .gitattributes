@@ -22,6 +22,10 @@
 *.py        eol=crlf
 *.svg       eol=crlf
 *.mtl       eol=crlf
+*.pkg       eol=crlf
+*.ini       eol=crlf
+*.shl       eol=crlf
+*.sufx      eol=crlf
 *.pdf       binary
 *.pps       binary
 *.ppsx      binary
@@ -31,9 +35,16 @@
 *.dds       binary
 *.DDS       binary
 *.chm       binary
+*.exp       binary
+*.pdb       binary
 *.lib       binary
 *.dll       binary
 *.exe       binary
+*.sua2      binary
+*.suc2      binary
+*.suf2      binary
+*.sul2      binary
+*.suo2      binary
 
 # Some model formats might be ASCII, but treating them as such
 # can slow down GitHub Desktop if the model file is large. Just
@@ -49,8 +60,10 @@
 
 # The TressFX file formats that contain more data are binary, for
 # faster loading. Others are plain text, for convenience.
+*.tfxmesh       eol=crlf
 *.tfxproj       eol=crlf
 *.tfxsim        eol=crlf
+*.tfxbone       binary
 *.tfxskin       binary
 *.tfx           binary
 

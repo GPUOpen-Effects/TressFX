@@ -1,8 +1,11 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="inc">
       <UniqueIdentifier>{1F80880B-8B89-887C-1405-9F7C800D947C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="inc\Math">
+      <UniqueIdentifier>{58D0A660-449D-016C-6DB6-EF1359E236FA}</UniqueIdentifier>
     </Filter>
     <Filter Include="src">
       <UniqueIdentifier>{2DAB880B-99B4-887C-2230-9F7C8E38947C}</UniqueIdentifier>
@@ -15,64 +18,77 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\src\Shaders\TressFXRender.hlsl">
-      <Filter>src\Shaders</Filter>
-    </None>
-    <None Include="..\src\Shaders\TressFXSimulation.hlsl">
-      <Filter>src\Shaders</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="..\inc\AMD_TressFX.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\Math\Matrix33.h">
-      <Filter>src\Math</Filter>
+    <ClInclude Include="..\inc\AMD_Types.h">
+      <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\Math\Matrix44.h">
-      <Filter>src\Math</Filter>
+    <ClInclude Include="..\inc\Math\Matrix33.h">
+      <Filter>inc\Math</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\Math\Quaternion.h">
-      <Filter>src\Math</Filter>
+    <ClInclude Include="..\inc\Math\Matrix44.h">
+      <Filter>inc\Math</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\Math\Transform.h">
-      <Filter>src\Math</Filter>
+    <ClInclude Include="..\inc\Math\Quaternion.h">
+      <Filter>inc\Math</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\Math\Vector3D.h">
-      <Filter>src\Math</Filter>
+    <ClInclude Include="..\inc\Math\Transform.h">
+      <Filter>inc\Math</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\TressFXAsset.h">
+    <ClInclude Include="..\inc\Math\Vector3D.h">
+      <Filter>inc\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\inc\TressFXAsset.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\inc\TressFXBoneSkeletonInterface.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\inc\TressFXCommon.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\inc\TressFXConstantBuffers.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\inc\TressFXGPUInterface.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\inc\TressFXHairObject.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\inc\TressFXLayouts.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\inc\TressFXPPLL.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\inc\TressFXSDFCollision.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\inc\TressFXSDFInputMeshInterface.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\inc\TressFXSettings.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\inc\TressFXShortCut.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\inc\TressFXSimulation.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\TressFXEngineInterface.h">
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="..\src\TressFXFileFormat.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\TressFXMesh.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\TressFXOpaque.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\TressFXPrecompiledShaders.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\TressFXRenderer.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\TressFXShortCut.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\TressFXSimulation.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\TressFXSkinFormat.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\Util.h">
-      <Filter>src</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\AMD_TressFX.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
     <ClCompile Include="..\src\Math\Matrix33.cpp">
       <Filter>src\Math</Filter>
     </ClCompile>
@@ -88,19 +104,19 @@
     <ClCompile Include="..\src\Math\Vector3D.cpp">
       <Filter>src\Math</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\TressFX.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\TressFXAsset.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\TressFXMesh.cpp">
+    <ClCompile Include="..\src\TressFXHairObject.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\TressFXOpaque.cpp">
+    <ClCompile Include="..\src\TressFXLayouts.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\TressFXRenderer.cpp">
+    <ClCompile Include="..\src\TressFXPPLL.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\TressFXSDFCollision.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="..\src\TressFXShortCut.cpp">
@@ -109,8 +125,25 @@
     <ClCompile Include="..\src\TressFXSimulation.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\Util.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\src\Shaders\TressFXPPLL.hlsl">
+      <Filter>src\Shaders</Filter>
+    </None>
+    <None Include="..\src\Shaders\TressFXRendering.hlsl">
+      <Filter>src\Shaders</Filter>
+    </None>
+    <None Include="..\src\Shaders\TressFXSDFCollision.hlsl">
+      <Filter>src\Shaders</Filter>
+    </None>
+    <None Include="..\src\Shaders\TressFXShortCut.hlsl">
+      <Filter>src\Shaders</Filter>
+    </None>
+    <None Include="..\src\Shaders\TressFXSimulation.hlsl">
+      <Filter>src\Shaders</Filter>
+    </None>
+    <None Include="..\src\Shaders\TressFXStrands.hlsl">
+      <Filter>src\Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

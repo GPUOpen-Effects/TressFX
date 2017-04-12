@@ -3,34 +3,14 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AMD_TressFX", "AMD_TressFX_2015.vcxproj", "{252C0AF0-91E1-82E5-1AD6-7CBC868A79E9}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AMD_LIB_Minimal", "..\..\amd_lib\shared\d3d11\build\AMD_LIB_Minimal_2015.vcxproj", "{0D2AEA47-7909-69E3-8221-F4B9EE7FCF44}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		DLL_Debug|Win32 = DLL_Debug|Win32
-		DLL_Debug|x64 = DLL_Debug|x64
-		DLL_Release_MT|Win32 = DLL_Release_MT|Win32
-		DLL_Release_MT|x64 = DLL_Release_MT|x64
-		DLL_Release|Win32 = DLL_Release|Win32
-		DLL_Release|x64 = DLL_Release|x64
 		Lib_Debug|Win32 = Lib_Debug|Win32
 		Lib_Debug|x64 = Lib_Debug|x64
 		Lib_Release|Win32 = Lib_Release|Win32
 		Lib_Release|x64 = Lib_Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{252C0AF0-91E1-82E5-1AD6-7CBC868A79E9}.DLL_Debug|Win32.ActiveCfg = DLL_Debug|Win32
-		{252C0AF0-91E1-82E5-1AD6-7CBC868A79E9}.DLL_Debug|Win32.Build.0 = DLL_Debug|Win32
-		{252C0AF0-91E1-82E5-1AD6-7CBC868A79E9}.DLL_Debug|x64.ActiveCfg = DLL_Debug|x64
-		{252C0AF0-91E1-82E5-1AD6-7CBC868A79E9}.DLL_Debug|x64.Build.0 = DLL_Debug|x64
-		{252C0AF0-91E1-82E5-1AD6-7CBC868A79E9}.DLL_Release_MT|Win32.ActiveCfg = DLL_Release_MT|Win32
-		{252C0AF0-91E1-82E5-1AD6-7CBC868A79E9}.DLL_Release_MT|Win32.Build.0 = DLL_Release_MT|Win32
-		{252C0AF0-91E1-82E5-1AD6-7CBC868A79E9}.DLL_Release_MT|x64.ActiveCfg = DLL_Release_MT|x64
-		{252C0AF0-91E1-82E5-1AD6-7CBC868A79E9}.DLL_Release_MT|x64.Build.0 = DLL_Release_MT|x64
-		{252C0AF0-91E1-82E5-1AD6-7CBC868A79E9}.DLL_Release|Win32.ActiveCfg = DLL_Release|Win32
-		{252C0AF0-91E1-82E5-1AD6-7CBC868A79E9}.DLL_Release|Win32.Build.0 = DLL_Release|Win32
-		{252C0AF0-91E1-82E5-1AD6-7CBC868A79E9}.DLL_Release|x64.ActiveCfg = DLL_Release|x64
-		{252C0AF0-91E1-82E5-1AD6-7CBC868A79E9}.DLL_Release|x64.Build.0 = DLL_Release|x64
 		{252C0AF0-91E1-82E5-1AD6-7CBC868A79E9}.Lib_Debug|Win32.ActiveCfg = Lib_Debug|Win32
 		{252C0AF0-91E1-82E5-1AD6-7CBC868A79E9}.Lib_Debug|Win32.Build.0 = Lib_Debug|Win32
 		{252C0AF0-91E1-82E5-1AD6-7CBC868A79E9}.Lib_Debug|x64.ActiveCfg = Lib_Debug|x64
@@ -39,26 +19,6 @@ Global
 		{252C0AF0-91E1-82E5-1AD6-7CBC868A79E9}.Lib_Release|Win32.Build.0 = Lib_Release|Win32
 		{252C0AF0-91E1-82E5-1AD6-7CBC868A79E9}.Lib_Release|x64.ActiveCfg = Lib_Release|x64
 		{252C0AF0-91E1-82E5-1AD6-7CBC868A79E9}.Lib_Release|x64.Build.0 = Lib_Release|x64
-		{0D2AEA47-7909-69E3-8221-F4B9EE7FCF44}.DLL_Debug|Win32.ActiveCfg = Debug|Win32
-		{0D2AEA47-7909-69E3-8221-F4B9EE7FCF44}.DLL_Debug|Win32.Build.0 = Debug|Win32
-		{0D2AEA47-7909-69E3-8221-F4B9EE7FCF44}.DLL_Debug|x64.ActiveCfg = Debug|x64
-		{0D2AEA47-7909-69E3-8221-F4B9EE7FCF44}.DLL_Debug|x64.Build.0 = Debug|x64
-		{0D2AEA47-7909-69E3-8221-F4B9EE7FCF44}.DLL_Release_MT|Win32.ActiveCfg = Release_MT|Win32
-		{0D2AEA47-7909-69E3-8221-F4B9EE7FCF44}.DLL_Release_MT|Win32.Build.0 = Release_MT|Win32
-		{0D2AEA47-7909-69E3-8221-F4B9EE7FCF44}.DLL_Release_MT|x64.ActiveCfg = Release_MT|x64
-		{0D2AEA47-7909-69E3-8221-F4B9EE7FCF44}.DLL_Release_MT|x64.Build.0 = Release_MT|x64
-		{0D2AEA47-7909-69E3-8221-F4B9EE7FCF44}.DLL_Release|Win32.ActiveCfg = Release|Win32
-		{0D2AEA47-7909-69E3-8221-F4B9EE7FCF44}.DLL_Release|Win32.Build.0 = Release|Win32
-		{0D2AEA47-7909-69E3-8221-F4B9EE7FCF44}.DLL_Release|x64.ActiveCfg = Release|x64
-		{0D2AEA47-7909-69E3-8221-F4B9EE7FCF44}.DLL_Release|x64.Build.0 = Release|x64
-		{0D2AEA47-7909-69E3-8221-F4B9EE7FCF44}.Lib_Debug|Win32.ActiveCfg = Debug|Win32
-		{0D2AEA47-7909-69E3-8221-F4B9EE7FCF44}.Lib_Debug|Win32.Build.0 = Debug|Win32
-		{0D2AEA47-7909-69E3-8221-F4B9EE7FCF44}.Lib_Debug|x64.ActiveCfg = Debug|x64
-		{0D2AEA47-7909-69E3-8221-F4B9EE7FCF44}.Lib_Debug|x64.Build.0 = Debug|x64
-		{0D2AEA47-7909-69E3-8221-F4B9EE7FCF44}.Lib_Release|Win32.ActiveCfg = Release|Win32
-		{0D2AEA47-7909-69E3-8221-F4B9EE7FCF44}.Lib_Release|Win32.Build.0 = Release|Win32
-		{0D2AEA47-7909-69E3-8221-F4B9EE7FCF44}.Lib_Release|x64.ActiveCfg = Release|x64
-		{0D2AEA47-7909-69E3-8221-F4B9EE7FCF44}.Lib_Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

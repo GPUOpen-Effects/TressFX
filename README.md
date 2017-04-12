@@ -1,8 +1,8 @@
 # AMD TressFX
 
-![AMD TressFX](http://gpuopen-effects.github.io/media/effects/tressfx_thumbnail.png)
+![AMD TressFX](http://gpuopen-effects.github.io/media/effects/tressfx4_screenshot.jpg)
 
-The TressFX library implements AMD's TressFX hair/fur rendering and simulation technology for DirectX 11. The TressFX technology uses the GPU to simulate and render high-quality, realistic hair and fur. TressFX makes use of the processing power of high-performance GPUs to do realistic rendering and utilizes DirectCompute to physically simulate each individual strand of hair.
+The TressFX library implements AMD's TressFX hair/fur rendering and simulation technology. The TressFX technology uses the GPU to simulate and render high-quality, realistic hair and fur. TressFX makes use of the processing power of high-performance GPUs to do realistic rendering and utilizes DirectCompute to physically simulate each individual strand of hair.
 
 <div>
   <a href="https://github.com/GPUOpen-Effects/TressFX/releases/latest/"><img src="http://gpuopen-effects.github.io/media/latest-release-button.svg" alt="Latest release" title="Latest release"></a>
@@ -10,61 +10,64 @@ The TressFX library implements AMD's TressFX hair/fur rendering and simulation t
 
 Highlights include the following:
 * GCN-optimized rendering and simulation
-* Full source code provided
-* Hair and fur support
-* Animation/skinning support
+* Hair and fur (skinning) support with high quality anti-aliasing
+* Two options for order-independent transparency
 * Maya plugin provided for authoring
-* Viewer provided for preview
-* PPLL and "ShortCut" OIT methods
+* Full source code provided
+
+### Integrating TressFX
+
+TressFX is our largest GPUOpen effect to date. Integration with a game engine for use in production is a substantial undertaking.  This release moves us a lot closer to what we've done in production for specific engine integrations.  You'll see some items (such as integration with a lighting system) will look more complicated than in previous releases. This release also tries to introduce some reusability across engines and APIs.  
+
+We're aware that there are still plenty of improvements we can make for the sake of usability in production.  Some of the approaches to make this release more portable are experimental, and will potentially change in future releases.
+
+### New in TressFX 4
+* Hair is skinned directly, rather than through triangle stream-out.
+* Signed distance field (SDF) collision, including compute shaders to generate the SDF from a dynamic mesh.
+* New system for handling fast motion.
+* Refactored to be more engine / API agnostic.
+* Example code includes compute-based skinning and marching cubes generation.
+* DirectX 12 support
+
+### DirectX 12
+Although DirectX 12 support is included, it hasn't been properly optimized.
+
 
 ### Prerequisites
 * AMD Radeon&trade; GCN-based GPU (HD 7000 series or newer)
-  * Or other DirectX&reg; 11 compatible discrete GPU with Shader Model 5 support 
-* 64-bit Windows&reg; 7 (SP1 with the [Platform Update](https://msdn.microsoft.com/en-us/library/windows/desktop/jj863687.aspx)), Windows&reg; 8.1, or Windows&reg; 10
-* Visual Studio&reg; 2012, Visual Studio&reg; 2013, or Visual Studio&reg; 2015
+  * Or other DirectX&reg; 11 or DirectX 12 compatible discrete GPU with Shader Model 5 support
+* 64-bit Windows&reg; 7 (SP1 with the [Platform Update](https://msdn.microsoft.com/en-us/library/windows/desktop/jj863687.aspx)), Windows 8.1, or Windows 10
+* Visual Studio&reg; 2013 or Visual Studio 2015
+* Visual Studio 2015 and Windows 10 required for DirectX 12
 
 ### Getting started
-Start with the TressFX viewer to see example content or to check out the code.
 
-* Visual Studio solutions for VS2012, VS2013, and VS2015 can be found in the `amd_tressfx_viewer\build` directory.
+#### Running the demo
+* Visual studio solutions for VS2015, DX11 and DX12, can be found in the `amd_tressfx_sample\build` directory.
 * There are also solutions for just the core library in the `amd_tressfx\build` directory.
-* Additional documentation is available in the `amd_tressfx\doc` and `amd_tressfx_viewer\doc` directories.
-* Pre-exported example models ready for use in the viewer can be found in the `amd_tressfx_viewer\media` directory.
-  * Look for `DEFAULT_TFXPROJFILENAME` near the top of main.cpp to start up with a different model.
-  * Or you can load a different model after start-up with the "(O)pen project" button.
+* Change settings such as fullscreen/windowed and enable/disable D3D debug layer in `amd_tressfx_sample\bin\sushi.ini`
+* Run `SushiD3D11.exe` or `SushiD3D12.exe` in `amd_tressfx_sample\bin`.
 
-For authoring new content, documentation for the Maya exporter is available in the `amd_tressfx_tools\MayaPlugin\doc` directory.
+#### Where to find things
+* Documentation is in the `doc` subdirectory.
+* TressFX source code is in the `amd_tressfx` subdirectory.  
+* The Maya plugin, written in python, is in `tools\Maya`.
+* Example code and content is in the `amd_tressfx_sample` directory. `amd_tressfx_sample\src` shows how to use TressFX.
 
-### ShortCut
-ShortCut is our new Order Independent Transparency (OIT) option. It is inspired by the method presented by Eidos-Montréal and Hybrid Transparency. Whereas our original method focused on the front k = 8 layers of hair, ShortCut is good for cases when you can get away with k = 2 or 3, and you’re more concerned about memory usage.
-
-It does require some forethought on how to build your models, however, as it comes with different performance characteristics, and a quality trade-off.  But between the simpler memory bounds and the potential for higher performance, we expect it to be a popular choice.
-
-The four main steps are outlined below:
-
-1. Render hair geometry, using a sequence of  InterlockedMin calls to update the list of k nearest fragments while computing an overall alpha.
-2. Screen space pass that puts the kth nearest depth in the depth buffer for early z culling in the next step.
-3. Render hair geometry again.  Shade the fragment and write or blend the color (depending on variant).   [earlydepthstencil]  focuses shading cost on the front k.
-4. Screen space pass that does the final blending.
-
-### Learn More
-* [TressFX 3.1 blog post on GPUOpen](http://gpuopen.com/tressfx-3-1/)
 
 ### Premake
 The Visual Studio solutions and projects in this repo were generated with Premake. If you need to regenerate the Visual Studio files, double-click on `gpuopen_tressfx_update_vs_files.bat` in the `premake` directory.
 
 This version of Premake has been modified from the stock version to use the property sheet technique for the Windows SDK from this [Visual C++ Team blog post](http://blogs.msdn.com/b/vcblog/archive/2012/11/23/using-the-windows-8-sdk-with-visual-studio-2010-configuring-multiple-projects.aspx). The technique was originally described for using the Windows 8.0 SDK with Visual Studio 2010, but it applies more generally to using newer versions of the Windows SDK with older versions of Visual Studio.
 
-The default SDK for a particular version of Visual Studio (for 2012 or higher) is installed as part of Visual Studio installation. This default (Windows 8.0 SDK for Visual Studio 2012 and Windows 8.1 SDK for Visual Studio 2013) will be used if newer SDKs do not exist on the user's machine. However, the projects generated with this version of Premake will use the next higher SDK (Windows 8.1 SDK for Visual Studio 2012 and Windows 10 SDK with Visual Studio 2013), if the newer SDKs exist on the user's machine.
+By default, Visual Studio 2013 projects will compile against the Windows 8.1 SDK. However, the VS2013 projects generated with this version of Premake will use the next higher SDK (i.e. the Windows 10 SDK), if the newer SDK exists on the user's machine.
 
-For Visual Studio 2015, this version of Premake adds the `WindowsTargetPlatformVersion` element to the project file to specify which version of the Windows SDK will be used. To change `WindowsTargetPlatformVersion` for Visual Studio 2015, change the value for `_AMD_WIN_SDK_VERSION` in `premake\amd_premake_util.lua` and regenerate the Visual Studio files.
+For Visual Studio 2015, the `systemversion` Premake function is used to add the `WindowsTargetPlatformVersion` element to the project file, to specify which version of the Windows SDK will be used. To change `WindowsTargetPlatformVersion` for Visual Studio 2015, change the value for `WINDOWS_TARGET_SDK` in `amd_tressfx_sample\premake` and regenerate the Visual Studio files.
 
 ### Third-Party Software
-* DXUT is distributed under the terms of the MIT License. See `framework\d3d11\dxut\MIT.txt`.
-* ContentExporter is distributed under the terms of the MIT License. See `amd_tressfx_tools\ContentExporter\src\LICENSE`
-* Premake is distributed under the terms of the BSD License. See `premake\LICENSE.txt`.
-
-DXUT and ContentExporter are only needed for the viewer, not the core library. Only first-party software (specifically `amd_tressfx`, and `amd_lib`) is needed to build the TressFX library.
+* TressFX is distributed as source code, licensed under MIT.  It contains no third-party code.
+* Premake is used to generate project files.  It is distributed under the terms of the BSD License. See `premake\LICENSE.txt`.
+* The sample makes use of some third-party code.  See `amd_tressfx_sample\prebuilt\LICENSE.txt` for further details.
 
 ### Attribution
 * AMD, the AMD Arrow logo, Radeon, and combinations thereof are either registered trademarks or trademarks of Advanced Micro Devices, Inc. in the United States and/or other countries.
