@@ -7,10 +7,9 @@
 # Build results
 VS*/
 [Dd]esktop_*/
-TressFX_Viewer_Debug_*.*
-TressFX_Viewer_Release_*.*
 amd_tressfx/lib/GPUOpen_TressFX_*.*
-amd_tressfx_viewer/bin/
+amd_tressfx_sample/bin/*.dll
+amd_tressfx_sample/bin/*.exe
 
 # Visual Studo 2015 cache/options directory
 .vs/
@@ -42,5 +41,8 @@ UpgradeLog*.XML
 UpgradeLog*.htm
 
 # Shader cache
-[Bb]in/Shaders/Cache/
+amd_tressfx_sample/[Bb]in/ShaderCache/
 HashDigest.html
+
+# Temp files
+SushiLog.txt
