@@ -69,6 +69,12 @@ For Visual Studio 2015, the `systemversion` Premake function is used to add the 
 * Premake is used to generate project files.  It is distributed under the terms of the BSD License. See `premake\LICENSE.txt`.
 * The sample makes use of some third-party code.  See `amd_tressfx_sample\prebuilt\LICENSE.txt` for further details.
 
+### Previous releases
+TressFX 4 is a big change from the prior 3.1.1 release. A separate
+branch for 3.1.1 has been created for the convenience of users that have
+been working with TressFX 3.
+* [TressFX 3.1.1 branch](https://github.com/GPUOpen-Effects/TressFX/tree/3.1.1)
+
 ### Attribution
 * AMD, the AMD Arrow logo, Radeon, and combinations thereof are either registered trademarks or trademarks of Advanced Micro Devices, Inc. in the United States and/or other countries.
 * Microsoft, DirectX, Visual Studio, and Windows are either registered trademarks or trademarks of Microsoft Corporation in the United States and/or other countries.
