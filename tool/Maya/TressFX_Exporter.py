@@ -161,6 +161,7 @@ def UI():
 	cmds.checkBox("bothEndsImmovable", label='Both ends immovable')
 	cmds.separator (style='none', width=10)
 	cmds.checkBox("InvertZ", label='Invert Z-axis of Hairs', value = False)
+	cmds.checkBox("InvertY", label='Invert Y-axis of Hairs', value = False)
 	cmds.checkBox("InvertYForUVs", label='Invert Y-axis of UV coordinates', value = False)
 	cmds.checkBox("randomStrandCheckBox", label='Randomize strands for LOD', value = True)
 
@@ -169,7 +170,7 @@ def UI():
 	cmds.checkBox("exportHairCheckBox", label='Export hair data (*.tfx)', value = True)
 	cmds.checkBox("exportSkinCheckBox", label='Export skin data (*.tfxskin)', value = False)
 	cmds.checkBox("exportBoneCheckBox", label='Export bone data (*.tfxbone)', value = False)
-
+	
 	cmds.separator(style='none',h=15)
 
 	cmds.button(label="Set the base mesh", w=120, h=25, command=SetBaseMesh)
@@ -719,14 +720,18 @@ def SaveTFXBoneBinaryFile(filepath, selected_mesh_shape_name, meshShapedagPath, 
 
 		# Index, the rest should be self explanatory.
 		f.write(ctypes.c_int(i))
-		f.write(ctypes.c_int(weightJointIndexPairs[0].joint_index))
-		f.write(ctypes.c_float(weightJointIndexPairs[0].weight))
-		f.write(ctypes.c_int(weightJointIndexPairs[1].joint_index))
-		f.write(ctypes.c_float(weightJointIndexPairs[1].weight))
-		f.write(ctypes.c_int(weightJointIndexPairs[2].joint_index))
-		f.write(ctypes.c_float(weightJointIndexPairs[2].weight))
-		f.write(ctypes.c_int(weightJointIndexPairs[3].joint_index))
-		f.write(ctypes.c_float(weightJointIndexPairs[3].weight))
+		for j in range(4):
+			joint_index = 0
+			weight = 0.0
+
+			try:
+				joint_index = weightJointIndexPairs[j].joint_index
+				weight = weightJointIndexPairs[j].weight
+			except:
+				pass
+
+			f.write(ctypes.c_int(joint_index))
+			f.write(ctypes.c_float(weight))
 		progressBar.Increment()
 
 	f.close()
@@ -792,7 +797,7 @@ def SaveTFXBinaryFile(filepath, curves, meshShapedagPath):
 
 	bothEndsImmovable = cmds.checkBox("bothEndsImmovable",q = True, v = True)
 	invertZ = cmds.checkBox("InvertZ",q = True, v = True)
-
+	invertY = cmds.checkBox("InvertY",q = True, v = True)
 	rootPositions = []
 
 	tfxHeader = TressFXTFXFileHeader()
@@ -850,12 +855,17 @@ def SaveTFXBinaryFile(filepath, curves, meshShapedagPath):
 
 			p = tressfx_float4()
 			p.x = pos.x
-			p.y = pos.y
+			
 
 			if invertZ:
 				p.z = -pos.z # flip in z-axis
 			else:
 				p.z = pos.z
+				
+			if invertY:
+				p.y = -pos.y
+			else:
+				p.y = pos.y
 
 			# w component is an inverse mass
 			if j == 0 or j == 1: # the first two vertices are immovable always. 
