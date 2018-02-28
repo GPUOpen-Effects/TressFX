@@ -34,12 +34,15 @@ goto :EOF
 :createvsfiles
 ..\..\premake\premake5.exe vs2013
 ..\..\premake\premake5.exe vs2015
+..\..\premake\premake5.exe vs2017
 goto :EOF
 
 
 :createvsfilesforallapis
 ..\..\premake\premake5.exe --gfxapi=d3d11 vs2015
+..\..\premake\premake5.exe --gfxapi=d3d11 vs2017
 ..\..\premake\premake5.exe --gfxapi=d3d12 vs2015
+..\..\premake\premake5.exe --gfxapi=d3d12 vs2017
 goto :EOF
 
 
