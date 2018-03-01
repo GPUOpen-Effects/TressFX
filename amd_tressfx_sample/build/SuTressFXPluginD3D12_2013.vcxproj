@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|x64">
       <Configuration>Debug</Configuration>
@@ -16,42 +16,43 @@
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>SuTressFXPluginD3D12</RootNamespace>
     <ProjectName>SuTressFXPluginD3D12</ProjectName>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="Windows10SDKVS13_x64.props" Condition="exists('$(ProgramFiles)\Windows Kits\10\Include\10.0.10240.0\um\Windows.h')" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="Windows10SDKVS13_x64.props" Condition="exists('$(ProgramFiles)\Windows Kits\10\Include\10.0.10240.0\um\Windows.h')" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>VS2017\x64\</OutDir>
-    <IntDir>VS2017\d3d12\x64\Debug\</IntDir>
+    <OutDir>VS2013\x64\</OutDir>
+    <IntDir>VS2013\d3d12\x64\Debug\</IntDir>
     <TargetName>SuTressFXPluginD3D12_d</TargetName>
     <TargetExt>.dll</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>VS2017\x64\</OutDir>
-    <IntDir>VS2017\d3d12\x64\Release\</IntDir>
+    <OutDir>VS2013\x64\</OutDir>
+    <IntDir>VS2013\d3d12\x64\Release\</IntDir>
     <TargetName>SuTressFXPluginD3D12</TargetName>
     <TargetExt>.dll</TargetExt>
   </PropertyGroup>
@@ -61,7 +62,7 @@
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>WIN32;WINDOWS;_WINDOWS;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_WARNINGS;_DEBUG;SU_3D_API_D3D12;SUSHI_DLL_IMPORT;LUA_BUILD_AS_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\..\amd_tressfx\inc;..\premake;..\prebuilt\include\Common\include;..\prebuilt\include\PluginManager\include;..\prebuilt\include\ObjectManager\include;..\prebuilt\include\ObjectManager;..\prebuilt\include\ParticleSystem;..\prebuilt\include\ParticleSystem\include;..\prebuilt\include\WindowManager\include;..\prebuilt\include\EffectManager\include;..\prebuilt\include\ScriptManager\include;..\prebuilt\include\RenderManager\include;..\prebuilt\include\GPUResourceManager\include;..\prebuilt\include\GUI\include;..\prebuilt\include\Thirdparty\toluapp-master\include;..\prebuilt\include\Thirdparty\lua-5.1.5\src;..\src;..;..\src\Lights;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <MinimalRebuild>false</MinimalRebuild>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -70,15 +71,15 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>SushiCoreD3D12_d.lib;tolualibD3D12_d.lib;luaD3D12_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>\Lib\x64;..\prebuilt\bin\VS2017\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <ImportLibrary>VS2017\x64\SuTressFXPluginD3D12_d.lib</ImportLibrary>
+      <AdditionalLibraryDirectories>\Lib\x64;..\prebuilt\bin\VS2013\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ImportLibrary>VS2013\x64\SuTressFXPluginD3D12_d.lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
-      <Command>IF EXIST VS2017\x64\SuTressFXPluginD3D12_d.dll\ (xcopy /Q /E /Y /I VS2017\x64\SuTressFXPluginD3D12_d.dll ..\..\amd_tressfx_sample\bin\ &gt; nul) ELSE (xcopy /Q /Y /I VS2017\x64\SuTressFXPluginD3D12_d.dll ..\..\amd_tressfx_sample\bin\ &gt; nul)
-IF EXIST ..\build\VS2017\x64\$(TargetName).dll\ (xcopy /Q /E /Y /I ..\build\VS2017\x64\$(TargetName).dll ..\..\amd_tressfx_sample\bin\ &gt; nul) ELSE (xcopy /Q /Y /I ..\build\VS2017\x64\$(TargetName).dll ..\..\amd_tressfx_sample\bin\ &gt; nul)
-IF EXIST ..\prebuilt\bin\VS2017\x64\SushiCoreD3D12_d.dll\ (xcopy /Q /E /Y /I ..\prebuilt\bin\VS2017\x64\SushiCoreD3D12_d.dll ..\..\amd_tressfx_sample\bin\ &gt; nul) ELSE (xcopy /Q /Y /I ..\prebuilt\bin\VS2017\x64\SushiCoreD3D12_d.dll ..\..\amd_tressfx_sample\bin\ &gt; nul)
-IF EXIST ..\prebuilt\bin\VS2017\x64\luaD3D12_d.dll\ (xcopy /Q /E /Y /I ..\prebuilt\bin\VS2017\x64\luaD3D12_d.dll ..\..\amd_tressfx_sample\bin\ &gt; nul) ELSE (xcopy /Q /Y /I ..\prebuilt\bin\VS2017\x64\luaD3D12_d.dll ..\..\amd_tressfx_sample\bin\ &gt; nul)
-IF EXIST ..\prebuilt\bin\VS2017\x64\SushiD3D12_d.exe\ (xcopy /Q /E /Y /I ..\prebuilt\bin\VS2017\x64\SushiD3D12_d.exe ..\..\amd_tressfx_sample\bin\ &gt; nul) ELSE (xcopy /Q /Y /I ..\prebuilt\bin\VS2017\x64\SushiD3D12_d.exe ..\..\amd_tressfx_sample\bin\ &gt; nul)</Command>
+      <Command>IF EXIST VS2013\x64\SuTressFXPluginD3D12_d.dll\ (xcopy /Q /E /Y /I VS2013\x64\SuTressFXPluginD3D12_d.dll ..\..\amd_tressfx_sample\bin\ &gt; nul) ELSE (xcopy /Q /Y /I VS2013\x64\SuTressFXPluginD3D12_d.dll ..\..\amd_tressfx_sample\bin\ &gt; nul)
+IF EXIST ..\build\VS2013\x64\$(TargetName).dll\ (xcopy /Q /E /Y /I ..\build\VS2013\x64\$(TargetName).dll ..\..\amd_tressfx_sample\bin\ &gt; nul) ELSE (xcopy /Q /Y /I ..\build\VS2013\x64\$(TargetName).dll ..\..\amd_tressfx_sample\bin\ &gt; nul)
+IF EXIST ..\prebuilt\bin\VS2013\x64\SushiCoreD3D12_d.dll\ (xcopy /Q /E /Y /I ..\prebuilt\bin\VS2013\x64\SushiCoreD3D12_d.dll ..\..\amd_tressfx_sample\bin\ &gt; nul) ELSE (xcopy /Q /Y /I ..\prebuilt\bin\VS2013\x64\SushiCoreD3D12_d.dll ..\..\amd_tressfx_sample\bin\ &gt; nul)
+IF EXIST ..\prebuilt\bin\VS2013\x64\luaD3D12_d.dll\ (xcopy /Q /E /Y /I ..\prebuilt\bin\VS2013\x64\luaD3D12_d.dll ..\..\amd_tressfx_sample\bin\ &gt; nul) ELSE (xcopy /Q /Y /I ..\prebuilt\bin\VS2013\x64\luaD3D12_d.dll ..\..\amd_tressfx_sample\bin\ &gt; nul)
+IF EXIST ..\prebuilt\bin\VS2013\x64\SushiD3D12_d.exe\ (xcopy /Q /E /Y /I ..\prebuilt\bin\VS2013\x64\SushiD3D12_d.exe ..\..\amd_tressfx_sample\bin\ &gt; nul) ELSE (xcopy /Q /Y /I ..\prebuilt\bin\VS2013\x64\SushiD3D12_d.exe ..\..\amd_tressfx_sample\bin\ &gt; nul)</Command>
       <Message>Copying SuTressFXPlugin to Rel</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -102,15 +103,15 @@ IF EXIST ..\prebuilt\bin\VS2017\x64\SushiD3D12_d.exe\ (xcopy /Q /E /Y /I ..\preb
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>SushiCoreD3D12.lib;tolualibD3D12.lib;luaD3D12.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>\Lib\x64;..\prebuilt\bin\VS2017\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <ImportLibrary>VS2017\x64\SuTressFXPluginD3D12.lib</ImportLibrary>
+      <AdditionalLibraryDirectories>\Lib\x64;..\prebuilt\bin\VS2013\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ImportLibrary>VS2013\x64\SuTressFXPluginD3D12.lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
-      <Command>IF EXIST VS2017\x64\SuTressFXPluginD3D12.dll\ (xcopy /Q /E /Y /I VS2017\x64\SuTressFXPluginD3D12.dll ..\..\amd_tressfx_sample\bin\ &gt; nul) ELSE (xcopy /Q /Y /I VS2017\x64\SuTressFXPluginD3D12.dll ..\..\amd_tressfx_sample\bin\ &gt; nul)
-IF EXIST ..\build\VS2017\x64\$(TargetName).dll\ (xcopy /Q /E /Y /I ..\build\VS2017\x64\$(TargetName).dll ..\..\amd_tressfx_sample\bin\ &gt; nul) ELSE (xcopy /Q /Y /I ..\build\VS2017\x64\$(TargetName).dll ..\..\amd_tressfx_sample\bin\ &gt; nul)
-IF EXIST ..\prebuilt\bin\VS2017\x64\SushiCoreD3D12.dll\ (xcopy /Q /E /Y /I ..\prebuilt\bin\VS2017\x64\SushiCoreD3D12.dll ..\..\amd_tressfx_sample\bin\ &gt; nul) ELSE (xcopy /Q /Y /I ..\prebuilt\bin\VS2017\x64\SushiCoreD3D12.dll ..\..\amd_tressfx_sample\bin\ &gt; nul)
-IF EXIST ..\prebuilt\bin\VS2017\x64\luaD3D12.dll\ (xcopy /Q /E /Y /I ..\prebuilt\bin\VS2017\x64\luaD3D12.dll ..\..\amd_tressfx_sample\bin\ &gt; nul) ELSE (xcopy /Q /Y /I ..\prebuilt\bin\VS2017\x64\luaD3D12.dll ..\..\amd_tressfx_sample\bin\ &gt; nul)
-IF EXIST ..\prebuilt\bin\VS2017\x64\SushiD3D12.exe\ (xcopy /Q /E /Y /I ..\prebuilt\bin\VS2017\x64\SushiD3D12.exe ..\..\amd_tressfx_sample\bin\ &gt; nul) ELSE (xcopy /Q /Y /I ..\prebuilt\bin\VS2017\x64\SushiD3D12.exe ..\..\amd_tressfx_sample\bin\ &gt; nul)</Command>
+      <Command>IF EXIST VS2013\x64\SuTressFXPluginD3D12.dll\ (xcopy /Q /E /Y /I VS2013\x64\SuTressFXPluginD3D12.dll ..\..\amd_tressfx_sample\bin\ &gt; nul) ELSE (xcopy /Q /Y /I VS2013\x64\SuTressFXPluginD3D12.dll ..\..\amd_tressfx_sample\bin\ &gt; nul)
+IF EXIST ..\build\VS2013\x64\$(TargetName).dll\ (xcopy /Q /E /Y /I ..\build\VS2013\x64\$(TargetName).dll ..\..\amd_tressfx_sample\bin\ &gt; nul) ELSE (xcopy /Q /Y /I ..\build\VS2013\x64\$(TargetName).dll ..\..\amd_tressfx_sample\bin\ &gt; nul)
+IF EXIST ..\prebuilt\bin\VS2013\x64\SushiCoreD3D12.dll\ (xcopy /Q /E /Y /I ..\prebuilt\bin\VS2013\x64\SushiCoreD3D12.dll ..\..\amd_tressfx_sample\bin\ &gt; nul) ELSE (xcopy /Q /Y /I ..\prebuilt\bin\VS2013\x64\SushiCoreD3D12.dll ..\..\amd_tressfx_sample\bin\ &gt; nul)
+IF EXIST ..\prebuilt\bin\VS2013\x64\luaD3D12.dll\ (xcopy /Q /E /Y /I ..\prebuilt\bin\VS2013\x64\luaD3D12.dll ..\..\amd_tressfx_sample\bin\ &gt; nul) ELSE (xcopy /Q /Y /I ..\prebuilt\bin\VS2013\x64\luaD3D12.dll ..\..\amd_tressfx_sample\bin\ &gt; nul)
+IF EXIST ..\prebuilt\bin\VS2013\x64\SushiD3D12.exe\ (xcopy /Q /E /Y /I ..\prebuilt\bin\VS2013\x64\SushiD3D12.exe ..\..\amd_tressfx_sample\bin\ &gt; nul) ELSE (xcopy /Q /Y /I ..\prebuilt\bin\VS2013\x64\SushiD3D12.exe ..\..\amd_tressfx_sample\bin\ &gt; nul)</Command>
       <Message>Copying SuTressFXPlugin to Rel</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -177,7 +178,7 @@ IF EXIST ..\prebuilt\bin\VS2017\x64\SushiD3D12.exe\ (xcopy /Q /E /Y /I ..\prebui
     <ClCompile Include="..\src\TressFXSample.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\amd_tressfx\build\AMD_TressFX_2017.vcxproj">
+    <ProjectReference Include="..\..\amd_tressfx\build\AMD_TressFX_2013.vcxproj">
       <Project>{252C0AF0-91E1-82E5-1AD6-7CBC868A79E9}</Project>
     </ProjectReference>
   </ItemGroup>

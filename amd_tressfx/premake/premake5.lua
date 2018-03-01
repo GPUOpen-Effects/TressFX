@@ -36,8 +36,8 @@ project (_AMD_LIBRARY_PROJECT_NAME)
    --exceptionhandling "Off"
    --rtti "Off"
 
-   -- Specify WindowsTargetPlatformVersion here for VS2015
-   --windowstarget (_AMD_WIN_SDK_VERSION)
+   -- Specify WindowsTargetPlatformVersion here for VS2015 and VS2017
+   systemversion (_AMD_WIN_SDK_VERSION)
 
    files { "../inc/**.h", "../src/**.h", "../src/**.cpp", "../src/Shaders/**.hlsl" }
    includedirs { "../inc" }

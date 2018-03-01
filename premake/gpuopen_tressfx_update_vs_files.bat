@@ -30,7 +30,7 @@ goto :EOF
 
 
 
-:: run premake for vs2013 and vs2015
+:: run premake for vs2013, vs2015 and vs2017
 :createvsfiles
 ..\..\premake\premake5.exe vs2013
 ..\..\premake\premake5.exe vs2015
