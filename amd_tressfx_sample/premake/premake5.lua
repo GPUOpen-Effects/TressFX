@@ -83,7 +83,7 @@ workspace ("AMD_" .. _AMD_SAMPLE_NAME .. API_SUFFIX)
 
 	filter "configurations:Release"
 		defines { "NDEBUG" }
-		flags { "OptimizeSpeed" }
+		optimize "Speed"
 	  
 	filter "options:gfxapi=d3d11"
 		defines { "SU_3D_API_D3D11" }
