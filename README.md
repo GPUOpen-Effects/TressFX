@@ -37,13 +37,13 @@ Although DirectX 12 support is included, it hasn't been properly optimized.
 * AMD Radeon&trade; GCN-based GPU (HD 7000 series or newer)
   * Or other DirectX&reg; 11 or DirectX 12 compatible discrete GPU with Shader Model 5 support
 * 64-bit Windows&reg; 7 (SP1 with the [Platform Update](https://msdn.microsoft.com/en-us/library/windows/desktop/jj863687.aspx)), Windows 8.1, or Windows 10
-* Visual Studio&reg; 2013 or Visual Studio 2015
-* Visual Studio 2015 and Windows 10 required for DirectX 12
+* Visual Studio 2015 or Visual Studio 2017
+* Visual Studio 2015 or 2017, and Windows 10 required for DirectX 12
 
 ### Getting started
 
 #### Running the demo
-* Visual studio solutions for VS2015, DX11 and DX12, can be found in the `amd_tressfx_sample\build` directory.
+* Visual studio solutions for VS2015, VS2017, DX11 and DX12, can be found in the `amd_tressfx_sample\build` directory.
 * There are also solutions for just the core library in the `amd_tressfx\build` directory.
 * Change settings such as fullscreen/windowed and enable/disable D3D debug layer in `amd_tressfx_sample\bin\sushi.ini`
 * Run `SushiD3D11.exe` or `SushiD3D12.exe` in `amd_tressfx_sample\bin`.
@@ -56,13 +56,9 @@ Although DirectX 12 support is included, it hasn't been properly optimized.
 
 
 ### Premake
-The Visual Studio solutions and projects in this repo were generated with Premake. If you need to regenerate the Visual Studio files, double-click on `gpuopen_tressfx_update_vs_files.bat` in the `premake` directory.
+The Visual Studio solutions and projects in this repo were generated with Premake. If you need to regenerate the Visual Studio files, double-click on `gpuopen_geometryfx_update_vs_files.bat` in the `premake` directory.
 
-This version of Premake has been modified from the stock version to use the property sheet technique for the Windows SDK from this [Visual C++ Team blog post](http://blogs.msdn.com/b/vcblog/archive/2012/11/23/using-the-windows-8-sdk-with-visual-studio-2010-configuring-multiple-projects.aspx). The technique was originally described for using the Windows 8.0 SDK with Visual Studio 2010, but it applies more generally to using newer versions of the Windows SDK with older versions of Visual Studio.
-
-By default, Visual Studio 2013 projects will compile against the Windows 8.1 SDK. However, the VS2013 projects generated with this version of Premake will use the next higher SDK (i.e. the Windows 10 SDK), if the newer SDK exists on the user's machine.
-
-For Visual Studio 2015, the `systemversion` Premake function is used to add the `WindowsTargetPlatformVersion` element to the project file, to specify which version of the Windows SDK will be used. To change `WindowsTargetPlatformVersion` for Visual Studio 2015, change the value for `WINDOWS_TARGET_SDK` in `amd_tressfx_sample\premake` and regenerate the Visual Studio files.
+For Visual Studio 2015 and 2017, this version of Premake adds the `WindowsTargetPlatformVersion` element to the project file to specify which version of the Windows SDK will be used. To change `WindowsTargetPlatformVersion` for Visual Studio 2015 and 2017, change the value for `_AMD_WIN_SDK_VERSION` in `premake\amd_premake_util.lua` and regenerate the Visual Studio files.
 
 ### Third-Party Software
 * TressFX is distributed as source code, licensed under MIT.  It contains no third-party code.

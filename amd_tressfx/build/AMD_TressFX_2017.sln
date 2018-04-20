@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AMD_TressFX", "AMD_TressFX_2013.vcxproj", "{252C0AF0-91E1-82E5-1AD6-7CBC868A79E9}"
+# Visual Studio 15
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AMD_TressFX", "AMD_TressFX_2017.vcxproj", "{252C0AF0-91E1-82E5-1AD6-7CBC868A79E9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -14,11 +14,9 @@ if not _OPTIONS["gfxapi"] then
 	_OPTIONS["gfxapi"] = "d3d12"
 end
 
-WINDOWS_TARGET_SDK = "10.0.10240.0"
 API_SUFFIX = "D3D12"
 
 if _OPTIONS["gfxapi"] == "d3d11" then
-	WINDOWS_TARGET_SDK = "8.1"
 	API_SUFFIX = "D3D11"
 end
 
@@ -45,7 +43,7 @@ PLUGIN_DIR = "../"
 PLUGIN_SRC_DIR = PLUGIN_DIR.."src/"
 SUSHI_ROOT = "../prebuilt/"
 SUSHI_INCLUDE = "../prebuilt/include/"
-SUSHI_BIN = "../prebuilt/bin/".._AMD_SHORT_DIR_LAYOUT.."/"
+SUSHI_BIN = "../prebuilt/bin/VS2015/%{cfg.platform}/"
 EFFECT_ROOT = "..\\..\\"
 WORKING_DIR = EFFECT_ROOT.."amd_tressfx_sample\\bin\\"
 SUFFIX = API_SUFFIX
@@ -60,7 +58,7 @@ workspace ("AMD_" .. _AMD_SAMPLE_NAME .. API_SUFFIX)
 	symbols "On"
 	architecture "x86_64"
 	flags { "MultiProcessorCompile" }
-	systemversion (WINDOWS_TARGET_SDK)
+	systemversion (_AMD_WIN_SDK_VERSION)
 	characterset "MBCS"
 	location ("../build")
 	startproject ("AMD_" .. _AMD_LIBRARY_NAME)
@@ -85,7 +83,7 @@ workspace ("AMD_" .. _AMD_SAMPLE_NAME .. API_SUFFIX)
 
 	filter "configurations:Release"
 		defines { "NDEBUG" }
-		flags { "OptimizeSpeed" }
+		optimize "Speed"
 	  
 	filter "options:gfxapi=d3d11"
 		defines { "SU_3D_API_D3D11" }

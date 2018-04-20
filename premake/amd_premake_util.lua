@@ -22,6 +22,9 @@ _AMD_LIBRARY_DIR_LAYOUT_BACKSLASH = "%{_AMD_ACTION_ALL_CAPS}\\%{cfg.platform}\\%
 _AMD_SAMPLE_DIR_LAYOUT_MINIMAL  = "Desktop%{_AMD_VS_SUFFIX}/minimal/%{cfg.platform}/%{cfg.buildcfg}"
 _AMD_LIBRARY_DIR_LAYOUT_MINIMAL = "%{_AMD_ACTION_ALL_CAPS}/minimal/%{cfg.platform}/%{cfg.buildcfg}"
 
+-- Specify WindowsTargetPlatformVersion here for VS2015 and VS2017
+_AMD_WIN_SDK_VERSION = "8.1"
+
 _AMD_COPY_WIN_10_SDK_REDIST_TO_BIN = "if not exist \"..\\bin\\d3dcompiler_47.dll\" if exist \"$(ProgramFiles)\\Windows Kits\\10\\Redist\\D3D\\x64\\d3dcompiler_47.dll\" xcopy \"$(ProgramFiles)\\Windows Kits\\10\\Redist\\D3D\\x64\\d3dcompiler_47.dll\" \"..\\bin\" /H /R /Y > nul"
 
 -- touch the import lib so that the sample build will know the library was updated
