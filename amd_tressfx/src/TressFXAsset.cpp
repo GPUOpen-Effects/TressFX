@@ -299,7 +299,7 @@ namespace AMD
                 for (int k = 0; k < m_numVerticesPerStrand; k++)
                 {
                     const tressfx_vec3* guideVert = &pos[indexRootVertMaster + k];
-                    tressfx_vec3* followVert = &pos[indexRootVertFollow + 1];
+                    tressfx_vec3* followVert = &pos[indexRootVertFollow + k];
 
                     float factor = tipSeparationFactor * ((float)k / ((float)m_numVerticesPerStrand)) + 1.0f;
                     *followVert = *guideVert + offset * factor;
