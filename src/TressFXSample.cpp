@@ -47,11 +47,7 @@
 #include <Windows.h>
 #include <commdlg.h>
 
-#if defined NDEBUG
 const bool VALIDATION_ENABLED = false;
-#else
-const bool VALIDATION_ENABLED = true;
-#endif
 const uint32_t NUMBER_OF_BACK_BUFFERS = 3;
 
 // This could instead be retrieved as a variable from the
