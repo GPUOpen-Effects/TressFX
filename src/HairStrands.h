@@ -54,7 +54,7 @@ public:
         int               numFollowHairsPerGuideHair,
         float             tipSeparationFactor,
         int               skinNumber,
-		int				  renderIndex);
+        int				  renderIndex);
 
     TressFXHairObject* GetTressFXHandle() { return m_pStrands.get(); }
     void TransitionSimToRendering(EI_CommandContext& context);

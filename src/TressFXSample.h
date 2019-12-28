@@ -114,13 +114,13 @@ public:
 
     void DrawHairShadows();
 
-	void OnCreate(HWND hWnd);
-	void OnDestroy();
-	void OnRender();
-	bool OnEvent(MSG msg);
-	void OnResize(uint32_t Width, uint32_t Height);
+    void OnCreate(HWND hWnd);
+    void OnDestroy();
+    void OnRender();
+    bool OnEvent(MSG msg);
+    void OnResize(uint32_t Width, uint32_t Height);
     void RecreateSizeDependentResources();
-	void SetFullScreen(bool fullscreen);
+    void SetFullScreen(bool fullscreen);
     void DrawHair();
     // Simulation and collision
     void Simulate(double fTime, bool bUpdateCollMesh, bool bSDFCollisionResponse, bool bAsyncCompute);
@@ -128,7 +128,7 @@ public:
     void SetSDFCollisionMargin(float collisionMargin);
     void UpdateSimulationParameters();
     void UpdateRenderingParameters();
-	void UpdateRenderShadowParameters(AMD::float4& CameraPos);
+    void UpdateRenderShadowParameters(AMD::float4& CameraPos);
     void ToggleShortCut();
 
     // debug drawing
@@ -187,6 +187,6 @@ private:
     bool    m_drawMarchingCubes = false;
     bool    m_generateSDF = true;
     bool    m_collisionResponse = true;
-	bool	m_useDepthApproximation = true;
+    bool	m_useDepthApproximation = true;
     bool    m_vSync = false;
 };

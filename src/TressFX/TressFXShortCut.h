@@ -47,7 +47,7 @@ public:
 
     void Initialize(int width, int height);
     void Draw(EI_CommandContext& commandContext, int numHairStrands, HairStrands** hairStrands, EI_BindSet* viewBindSet, EI_BindSet* lightBindSet);
-	void UpdateShadeParameters(std::vector<const TressFXRenderingSettings*>& renderSettings);
+    void UpdateShadeParameters(std::vector<const TressFXRenderingSettings*>& renderSettings);
 
 private:
     // node size should include room for UINT next pointer.
@@ -75,7 +75,7 @@ private:
     void CreateColorReadBindSet(EI_Device* pDevice);
 
     // RenderPass set creation functions
-	void CreateDepthsAlphaRenderTargetSet(EI_Device* pDevice);
+    void CreateDepthsAlphaRenderTargetSet(EI_Device* pDevice);
     void CreateDepthResolveRenderTargetSet(EI_Device* pDevice);
     void CreateHairColorRenderTargetSet(EI_Device* pDevice);
     void CreateColorResolveRenderTargetSet(EI_Device* pDevice);
@@ -103,8 +103,8 @@ private:
     std::unique_ptr<EI_PSO> m_pHairColorPSO = nullptr;
     std::unique_ptr<EI_PSO> m_pHairResolvePSO = nullptr;
 
-	TressFXUniformBuffer<TressFXShadeParams> m_ShadeParamsConstantBuffer;
-	std::unique_ptr<EI_BindSet> m_ShadeParamsBindSet = nullptr;
+    TressFXUniformBuffer<TressFXShadeParams> m_ShadeParamsConstantBuffer;
+    std::unique_ptr<EI_BindSet> m_ShadeParamsBindSet = nullptr;
 };
 
 #endif

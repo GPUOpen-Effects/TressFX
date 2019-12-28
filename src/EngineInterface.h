@@ -102,14 +102,14 @@ struct EI_BindSetDescription
 // Add more pso control enums as necessary
 enum class EI_CompareFunc
 {
-	Never = 0,
-	Less,
-	Equal,
-	LessEqual,
-	Greater,
-	NotEqual,
-	GreaterEqual,
-	Always,
+    Never = 0,
+    Less,
+    Equal,
+    LessEqual,
+    Greater,
+    NotEqual,
+    GreaterEqual,
+    Always,
 };
 
 enum class EI_BlendOp
@@ -278,9 +278,9 @@ enum EI_BufferFlags {
 #define EI_LogWarning(msg) printf("%s", msg)
 
 #ifdef TRESSFX_VK
-	#include "VK/VKEngineInterfaceImpl.h"
+    #include "VK/VKEngineInterfaceImpl.h"
 #else
-	#include "DX12/DX12EngineInterfaceImpl.h"
+    #include "DX12/DX12EngineInterfaceImpl.h"
 #endif
 
 #include "SceneGLTFImpl.h"

@@ -46,8 +46,8 @@ TressFXPPLL::TressFXPPLL() :
     m_pPPLLFillBindSet(nullptr), 
     m_pPPLLResolveBindSet(nullptr),
     m_PPLLRenderTargetSet(nullptr),
-	m_PPLLFillPSO(nullptr),
-	m_ShadeParamsBindSet(nullptr)
+    m_PPLLFillPSO(nullptr),
+    m_ShadeParamsBindSet(nullptr)
 {
 }
 
@@ -55,10 +55,10 @@ void TressFXPPLL::Initialize(int width, int height, int nNodes, int nodeSize)
 {
     Create(GetDevice(), width, height, nNodes, nodeSize);
 
-	// Create constant buffer and bind set
-	m_ShadeParamsConstantBuffer.CreateBufferResource("TressFXShadeParams");
-	EI_BindSetDescription set = { { m_ShadeParamsConstantBuffer.GetBufferResource() } };
-	m_ShadeParamsBindSet = GetDevice()->CreateBindSet(GetShortCutShadeParamLayout(), set);
+    // Create constant buffer and bind set
+    m_ShadeParamsConstantBuffer.CreateBufferResource("TressFXShadeParams");
+    EI_BindSetDescription set = { { m_ShadeParamsConstantBuffer.GetBufferResource() } };
+    m_ShadeParamsBindSet = GetDevice()->CreateBindSet(GetShortCutShadeParamLayout(), set);
 
     // Setup PSOs
 
@@ -111,7 +111,7 @@ void TressFXPPLL::Initialize(int width, int height, int nNodes, int nodeSize)
         psoParams.colorBlendParams.colorSrcBlend = EI_BlendFactor::One; //::One;
         psoParams.colorBlendParams.colorDstBlend = EI_BlendFactor::SrcAlpha; //::SrcAlpha;
         psoParams.colorBlendParams.alphaBlendOp = EI_BlendOp::Add;
-		psoParams.colorBlendParams.alphaSrcBlend = EI_BlendFactor::Zero;
+        psoParams.colorBlendParams.alphaSrcBlend = EI_BlendFactor::Zero;
         psoParams.colorBlendParams.alphaDstBlend = EI_BlendFactor::Zero;
 
         EI_BindLayout* layouts[] = { GetPPLLResolveLayout(), GetPPLLShadeParamLayout(), GetViewLayout(), GetLightLayout(), GetSamplerLayout() };
@@ -284,7 +284,7 @@ void TressFXPPLL::Draw(EI_CommandContext& commandContext, int numHairStrands, Ha
         DrawHairStrands(commandContext, numHairStrands, hairStrands, m_PPLLFillPSO.get(), ExtraBindSets, 3);
     }
     EndFill(commandContext);
-	GetDevice()->GetTimeStamp("PPLL Fill");
+    GetDevice()->GetTimeStamp("PPLL Fill");
 
     // Hair Resolve pass
     BeginResolve(commandContext);
@@ -293,23 +293,23 @@ void TressFXPPLL::Draw(EI_CommandContext& commandContext, int numHairStrands, Ha
         GetDevice()->DrawFullScreenQuad(commandContext, *m_PPLLResolvePSO, BindSets, 5);
     }
     EndResolve(commandContext);
-	GetDevice()->GetTimeStamp("PPLL Resolve");
+    GetDevice()->GetTimeStamp("PPLL Resolve");
 
     m_firstRun = false;
 }
 
 void TressFXPPLL::UpdateShadeParameters(std::vector<const TressFXRenderingSettings*>& renderSettings)
 {
-	// Update Render Parameters
-	for (int i = 0; i < renderSettings.size(); ++i)
-	{
-		m_ShadeParamsConstantBuffer->HairShadeParams[i].FiberRadius = renderSettings[i]->m_FiberRadius; // Don't modify radius by LOD multiplier as this one is used to calculate shadowing and that calculation should remain unaffected
-		m_ShadeParamsConstantBuffer->HairShadeParams[i].ShadowAlpha = renderSettings[i]->m_HairShadowAlpha;
-		m_ShadeParamsConstantBuffer->HairShadeParams[i].FiberSpacing = renderSettings[i]->m_HairFiberSpacing;
-		m_ShadeParamsConstantBuffer->HairShadeParams[i].HairEx2 = renderSettings[i]->m_HairSpecExp2;
-		m_ShadeParamsConstantBuffer->HairShadeParams[i].HairKs2 = renderSettings[i]->m_HairKSpec2;
-		m_ShadeParamsConstantBuffer->HairShadeParams[i].MatKValue = { 0.f, renderSettings[i]->m_HairKDiffuse, renderSettings[i]->m_HairKSpec1, renderSettings[i]->m_HairSpecExp1 }; // no ambient
-	}
+    // Update Render Parameters
+    for (int i = 0; i < renderSettings.size(); ++i)
+    {
+        m_ShadeParamsConstantBuffer->HairShadeParams[i].FiberRadius = renderSettings[i]->m_FiberRadius; // Don't modify radius by LOD multiplier as this one is used to calculate shadowing and that calculation should remain unaffected
+        m_ShadeParamsConstantBuffer->HairShadeParams[i].ShadowAlpha = renderSettings[i]->m_HairShadowAlpha;
+        m_ShadeParamsConstantBuffer->HairShadeParams[i].FiberSpacing = renderSettings[i]->m_HairFiberSpacing;
+        m_ShadeParamsConstantBuffer->HairShadeParams[i].HairEx2 = renderSettings[i]->m_HairSpecExp2;
+        m_ShadeParamsConstantBuffer->HairShadeParams[i].HairKs2 = renderSettings[i]->m_HairKSpec2;
+        m_ShadeParamsConstantBuffer->HairShadeParams[i].MatKValue = { 0.f, renderSettings[i]->m_HairKDiffuse, renderSettings[i]->m_HairKSpec1, renderSettings[i]->m_HairSpecExp1 }; // no ambient
+    }
 
-	m_ShadeParamsConstantBuffer.Update(GetDevice()->GetCurrentCommandContext());
+    m_ShadeParamsConstantBuffer.Update(GetDevice()->GetCurrentCommandContext());
 }

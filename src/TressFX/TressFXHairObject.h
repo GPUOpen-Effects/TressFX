@@ -106,8 +106,8 @@ public:
     // Rendering
     void DrawStrands(EI_CommandContext& commandContext,
                      EI_PSO&            pso,
-					 EI_BindSet**		extraBindSets = nullptr,
-					 uint32_t			numExtraBindSets = 0);
+                     EI_BindSet**		extraBindSets = nullptr,
+                     uint32_t			numExtraBindSets = 0);
 
     TressFXDynamicState& GetDynamicState() { return m_DynamicState; }
 
@@ -150,10 +150,10 @@ private:
     // frame counter for wind effect
     int m_SimulationFrame;
 
-	// for parameter indexing
-	int m_RenderIndex;
+    // for parameter indexing
+    int m_RenderIndex;
 
-	// For LOD calculations
+    // For LOD calculations
     float m_LODHairDensity = 1.0f;
 
     // simulation control params

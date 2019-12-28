@@ -43,12 +43,12 @@
 
 // Max number of bones in a skeleton
 #ifndef AMD_TRESSFX_MAX_NUM_BONES
-	#define AMD_TRESSFX_MAX_NUM_BONES 512
+    #define AMD_TRESSFX_MAX_NUM_BONES 512
 #endif
 
 // Max number of hair render groups (bump up as needed)
 #ifndef AMD_TRESSFX_MAX_HAIR_GROUP_RENDER
-	#define AMD_TRESSFX_MAX_HAIR_GROUP_RENDER 16
+    #define AMD_TRESSFX_MAX_HAIR_GROUP_RENDER 16
 #endif
 
 #endif

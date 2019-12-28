@@ -28,7 +28,7 @@
 
 [[vk::binding(0, 2)]] cbuffer viewConstants : register(b0, space2)
 {
-	float4x4    g_mVP;
+    float4x4    g_mVP;
     float4      g_vEye;
     float4      g_vViewport;
     float4x4    cInvViewProjMatrix;
@@ -37,26 +37,26 @@
 // Hair input structure to Pixel shaders
 struct PS_INPUT_HAIR
 {
-	float4 Position    : SV_POSITION;
-	float4 Tangent     : Tangent;
-	float4 p0p1        : TEXCOORD0;
-	float4 StrandColor : TEXCOORD1;
+    float4 Position    : SV_POSITION;
+    float4 Tangent     : Tangent;
+    float4 p0p1        : TEXCOORD0;
+    float4 StrandColor : TEXCOORD1;
 };
 
 //////////////////////////////////////////////////////////////
 // Hair Render VS (for depth alpha and color fill passes)
 PS_INPUT_HAIR RenderHairDepthAlphaVS(uint vertexId : SV_VertexID)
 {
-	TressFXVertex tressfxVert =	GetExpandedTressFXVert(vertexId, g_vEye, g_vViewport.zw, g_mVP);
+    TressFXVertex tressfxVert =	GetExpandedTressFXVert(vertexId, g_vEye, g_vViewport.zw, g_mVP);
 
-	PS_INPUT_HAIR Output;
+    PS_INPUT_HAIR Output;
 
-	Output.Position     = tressfxVert.Position;
-	Output.Tangent      = float4(1, 1, 1, tressfxVert.Tangent.w);   // Only need to preserve the Strand U coordinate as the tangent is not used in this pass. Operations should be compiled out
-	Output.p0p1         = tressfxVert.p0p1;
-	Output.StrandColor  = float4(1, 1, 1, tressfxVert.StrandColor.a); // Don't use the color as it's not needed. This way we can compile out the computation of strand color (Just need the Strand V coordinate)
+    Output.Position     = tressfxVert.Position;
+    Output.Tangent      = float4(1, 1, 1, tressfxVert.Tangent.w);   // Only need to preserve the Strand U coordinate as the tangent is not used in this pass. Operations should be compiled out
+    Output.p0p1         = tressfxVert.p0p1;
+    Output.StrandColor  = float4(1, 1, 1, tressfxVert.StrandColor.a); // Don't use the color as it's not needed. This way we can compile out the computation of strand color (Just need the Strand V coordinate)
 
-	return Output;
+    return Output;
 }
 
 PS_INPUT_HAIR RenderHairColorVS(uint vertexId : SV_VertexID)
@@ -82,37 +82,37 @@ PS_INPUT_HAIR RenderHairColorVS(uint vertexId : SV_VertexID)
 [earlydepthstencil]
 float DepthsAlphaPS(PS_INPUT_HAIR input) : SV_Target
 {
-	float3 vNDC = ScreenPosToNDC(input.Position.xyz, g_vViewport);
-	float coverage = ComputeCoverage(input.p0p1.xy, input.p0p1.zw, vNDC.xy, g_vViewport.zw);
-	float alpha = coverage * MatBaseColor.a;
+    float3 vNDC = ScreenPosToNDC(input.Position.xyz, g_vViewport);
+    float coverage = ComputeCoverage(input.p0p1.xy, input.p0p1.zw, vNDC.xy, g_vViewport.zw);
+    float alpha = coverage * MatBaseColor.a;
 
-	if (alpha < SHORTCUT_MIN_ALPHA)
-		return 1.0;
+    if (alpha < SHORTCUT_MIN_ALPHA)
+        return 1.0;
 
-	int2 vScreenAddress = int2(input.Position.xy);
+    int2 vScreenAddress = int2(input.Position.xy);
 
-	uint uDepth = asuint(input.Position.z);
-	uint uDepth0Prev, uDepth1Prev;
+    uint uDepth = asuint(input.Position.z);
+    uint uDepth0Prev, uDepth1Prev;
 
-	// Min of depth 0 and input depth
-	// Original value is uDepth0Prev
-	InterlockedMin(RWFragmentDepthsTexture[uint3(vScreenAddress, 0)], uDepth, uDepth0Prev);
+    // Min of depth 0 and input depth
+    // Original value is uDepth0Prev
+    InterlockedMin(RWFragmentDepthsTexture[uint3(vScreenAddress, 0)], uDepth, uDepth0Prev);
 
-	// Min of depth 1 and greater of the last compare
-	// If fragment opaque, always use input depth (don't need greater depths)
-	uDepth = (alpha > 0.98) ? uDepth : max(uDepth, uDepth0Prev);
+    // Min of depth 1 and greater of the last compare
+    // If fragment opaque, always use input depth (don't need greater depths)
+    uDepth = (alpha > 0.98) ? uDepth : max(uDepth, uDepth0Prev);
 
-	InterlockedMin(RWFragmentDepthsTexture[uint3(vScreenAddress, 1)], uDepth, uDepth1Prev);
+    InterlockedMin(RWFragmentDepthsTexture[uint3(vScreenAddress, 1)], uDepth, uDepth1Prev);
 
-	uint uDepth2Prev;
+    uint uDepth2Prev;
 
-	// Min of depth 2 and greater of the last compare
-	// If fragment opaque, always use input depth (don't need greater depths)
-	uDepth = (alpha > 0.98) ? uDepth : max(uDepth, uDepth1Prev);
+    // Min of depth 2 and greater of the last compare
+    // If fragment opaque, always use input depth (don't need greater depths)
+    uDepth = (alpha > 0.98) ? uDepth : max(uDepth, uDepth1Prev);
 
-	InterlockedMin(RWFragmentDepthsTexture[uint3(vScreenAddress, 2)], uDepth, uDepth2Prev);
+    InterlockedMin(RWFragmentDepthsTexture[uint3(vScreenAddress, 2)], uDepth, uDepth2Prev);
 
-	return 1.0 - alpha;
+    return 1.0 - alpha;
 }
 
 //////////////////////////////////////////////////////////////
@@ -150,14 +150,14 @@ VS_OUTPUT_SCREENQUAD FullScreenVS(uint vertexID : SV_VertexID)
 // Full-screen pass that writes the farthest of the near depths for depth culling.
 float ResolveDepthPS(VS_OUTPUT_SCREENQUAD input) : SV_Depth
 {
-	// Blend the layers of fragments from back to front
-	int2 vScreenAddress = int2(input.vPosition.xy);
+    // Blend the layers of fragments from back to front
+    int2 vScreenAddress = int2(input.vPosition.xy);
 
-	// Write farthest depth value for culling in the next pass.
-	// It may be the initial value of 1.0 if there were not enough fragments to write all depths, but then culling not important.
-	uint uDepth = FragmentDepthsTexture[uint3(vScreenAddress, 2)];
+    // Write farthest depth value for culling in the next pass.
+    // It may be the initial value of 1.0 if there were not enough fragments to write all depths, but then culling not important.
+    uint uDepth = FragmentDepthsTexture[uint3(vScreenAddress, 2)];
 
-	return asfloat(uDepth);
+    return asfloat(uDepth);
 }
 
 //////////////////////////////////////////////////////////////
@@ -168,23 +168,23 @@ float ResolveDepthPS(VS_OUTPUT_SCREENQUAD input) : SV_Depth
 // If you change this, you MUST also change TressFXShadeParams in TressFXConstantBuffers.h and ShadeParams in TressFXPPLL.hlsl
 struct ShadeParams
 {
-	// General information
-	float       FiberRadius;
-	// For deep approximated shadow lookup
-	float       ShadowAlpha;
-	float       FiberSpacing;
-	// For lighting/shading
-	float       HairEx2;
-	float4		MatKValue;   // KAmbient, KDiffuse, KSpec1, Exp1
-	float       HairKs2;
-	float		fPadding0;
-	float		fPadding1;
-	float		fPadding2;
+    // General information
+    float       FiberRadius;
+    // For deep approximated shadow lookup
+    float       ShadowAlpha;
+    float       FiberSpacing;
+    // For lighting/shading
+    float       HairEx2;
+    float4		MatKValue;   // KAmbient, KDiffuse, KSpec1, Exp1
+    float       HairKs2;
+    float		fPadding0;
+    float		fPadding1;
+    float		fPadding2;
 };
 
 [[vk::binding(0, 5)]] cbuffer TressFXShadeParams  : register(b0, space5)
 {
-	ShadeParams HairParams[AMD_TRESSFX_MAX_HAIR_GROUP_RENDER];
+    ShadeParams HairParams[AMD_TRESSFX_MAX_HAIR_GROUP_RENDER];
 };
 
 float3 TressFXShading(float3 WorldPos, float3 vNDC, float3 vTangentCoverage, float2 uv, float2 strandUV, float3 baseColor, PS_INPUT_HAIR input)
@@ -215,7 +215,7 @@ float3 TressFXShading(float3 WorldPos, float3 vNDC, float3 vTangentCoverage, flo
 [earlydepthstencil]
 float4 HairColorPS(PS_INPUT_HAIR input) : SV_Target
 {
-	// Strand Color read in is either the BaseMatColor, or BaseMatColor modulated with a color read from texture on vertex shader for base color;
+    // Strand Color read in is either the BaseMatColor, or BaseMatColor modulated with a color read from texture on vertex shader for base color;
     //along with modulation by the tip color  
     float4 strandColor = float4(input.StrandColor.rgb, MatBaseColor.a);
 
@@ -241,9 +241,9 @@ float4 HairColorPS(PS_INPUT_HAIR input) : SV_Target
 
 #ifndef TRESSFX_DEBUG_UAV
 
-	// Early out
-	if (alpha < SHORTCUT_MIN_ALPHA)
-		return float4(0, 0, 0, 0);
+    // Early out
+    if (alpha < SHORTCUT_MIN_ALPHA)
+        return float4(0, 0, 0, 0);
 
 #endif // TRESSFX_DEBUG_UAV
 

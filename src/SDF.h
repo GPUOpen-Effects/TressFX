@@ -47,14 +47,14 @@ class CollisionMesh
 {
 public:
     CollisionMesh(
-        EI_Scene * gltfImplementation,
-        EI_RenderTargetSet * renderPass,
-        const char *      name,
-        const char *      tfxmeshFilePath,
+        EI_Scene* gltfImplementation,
+        EI_RenderTargetSet* renderPass,
+        const char* name,
+        const char* tfxmeshFilePath,
         int               numCellsInXAxis,
         float             SDFCollMargin,
         int               skinNumber,
-        const char *      followBone);
+        const char* followBone);
 
     void SkinTheMesh(EI_CommandContext& context, double fTime);
     void AccumulateSDF(EI_CommandContext& context, TressFXSDFCollisionSystem& sdfCollisionSystem);

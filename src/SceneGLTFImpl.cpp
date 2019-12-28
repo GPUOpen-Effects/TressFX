@@ -32,22 +32,22 @@ void EI_Scene::OnCreate(EI_Device* pDevice, EI_RenderTargetSet * renderTargetSet
 
     m_startOffset = startOffset;
     
-	m_pGLTFTexturesAndBuffers = m_pDevice->CreateGLTFTexturesAndBuffers(m_pGLTFCommon);
+    m_pGLTFTexturesAndBuffers = m_pDevice->CreateGLTFTexturesAndBuffers(m_pGLTFCommon);
     // here we are loading onto the GPU all the textures and the inverse matrices
     // this data will be used to create the PBR and Depth passes       
     m_pGLTFTexturesAndBuffers->LoadTextures();
 
     // same thing as above but for the PBR pass
-	m_gltfPBR = m_pDevice->CreateGLTFPbrPass(m_pGLTFTexturesAndBuffers.get(), renderTargetSet);
+    m_gltfPBR = m_pDevice->CreateGLTFPbrPass(m_pGLTFTexturesAndBuffers.get(), renderTargetSet);
     
-	m_pDevice->GetVidMemBufferPool()->UploadData(m_pDevice->GetUploadHeap()->GetCommandList());
-	m_pDevice->GetUploadHeap()->FlushAndFinish();
+    m_pDevice->GetVidMemBufferPool()->UploadData(m_pDevice->GetUploadHeap()->GetCommandList());
+    m_pDevice->GetUploadHeap()->FlushAndFinish();
 
     // Create a depth GLTF pass to render shadows
-	m_gltfDepth = m_pDevice->CreateGLTFDepthPass(m_pGLTFTexturesAndBuffers.get(), shadowRenderTargetSet);
+    m_gltfDepth = m_pDevice->CreateGLTFDepthPass(m_pGLTFTexturesAndBuffers.get(), shadowRenderTargetSet);
     
-	m_pDevice->GetVidMemBufferPool()->UploadData(m_pDevice->GetUploadHeap()->GetCommandList());
-	m_pDevice->GetUploadHeap()->FlushAndFinish();
+    m_pDevice->GetVidMemBufferPool()->UploadData(m_pDevice->GetUploadHeap()->GetCommandList());
+    m_pDevice->GetUploadHeap()->FlushAndFinish();
 
     // Init Camera, looking at the origin
     m_roll = 0.0f;
@@ -61,7 +61,7 @@ void EI_Scene::OnCreate(EI_Device* pDevice, EI_RenderTargetSet * renderTargetSet
 
     m_bonePrefix = bonePrefix;
     m_state.camera.SetSpeed(0.5f);
-	ComputeGlobalIdxToSkinIdx();
+    ComputeGlobalIdxToSkinIdx();
 }
 
 void EI_Scene::OnDestroy()
@@ -79,7 +79,7 @@ void EI_Scene::OnDestroy()
         m_gltfDepth->OnDestroy();
 
     if (m_gltfPBR)
-		m_gltfPBR->OnDestroy();
+        m_gltfPBR->OnDestroy();
 }
 
 void EI_Scene::OnBeginFrame(float deltaTime, float aspect)
@@ -158,11 +158,11 @@ void EI_Scene::OnBeginFrame(float deltaTime, float aspect)
         uint32_t shadowMapIndex = 0;
         for (uint32_t i = 0; i < pPerFrame->lightCount; i++)
         {
-			assert(shadowMapIndex < 4 && "Too many shadows are enabled, ignoring all shadows after 4th shadow casting light.");
-			if ((shadowMapIndex < 4) && (pPerFrame->lights[i].type == LightType_Spot || pPerFrame->lights[i].type == LightType_Directional))
-				pPerFrame->lights[i].shadowMapIndex = shadowMapIndex++; //set the shadow map index so the color pass knows which shadow map to use
-			else
-				pPerFrame->lights[i].shadowMapIndex = -1;
+            assert(shadowMapIndex < 4 && "Too many shadows are enabled, ignoring all shadows after 4th shadow casting light.");
+            if ((shadowMapIndex < 4) && (pPerFrame->lights[i].type == LightType_Spot || pPerFrame->lights[i].type == LightType_Directional))
+                pPerFrame->lights[i].shadowMapIndex = shadowMapIndex++; //set the shadow map index so the color pass knows which shadow map to use
+            else
+                pPerFrame->lights[i].shadowMapIndex = -1;
 
             // Store this information
             m_SceneLightInfo[i] = pPerFrame->lights[i];
@@ -178,7 +178,7 @@ void EI_Scene::OnRender()
 #if TRESSFX_VK
     m_gltfPBR->Draw(GetDevice()->GetCurrentCommandContext().commandBuffer);
 #else
-	m_gltfPBR->Draw(GetDevice()->GetCurrentCommandContext().commandBuffer.Get(), GetDevice()->GetShadowBufferResource()->SRView);
+    m_gltfPBR->Draw(GetDevice()->GetCurrentCommandContext().commandBuffer.Get(), GetDevice()->GetShadowBufferResource()->SRView);
 #endif // TRESSFX_VK
 }
 
@@ -187,12 +187,12 @@ void EI_Scene::OnRenderLight(uint32_t LightIndex)
     // Set per frame constant buffer values
 #if TRESSFX_VK
     CAULDRON_VK::GltfDepthPass::per_frame* cbPerFrame = m_gltfDepth->SetPerFrameConstants();
-	cbPerFrame->mViewProj = m_SceneLightInfo[LightIndex].mLightViewProj;
-	m_gltfDepth->Draw(GetDevice()->GetCurrentCommandContext().commandBuffer);
+    cbPerFrame->mViewProj = m_SceneLightInfo[LightIndex].mLightViewProj;
+    m_gltfDepth->Draw(GetDevice()->GetCurrentCommandContext().commandBuffer);
 #else 
-	CAULDRON_DX12::GltfDepthPass::per_frame* cbPerFrame = m_gltfDepth->SetPerFrameConstants();
-	cbPerFrame->mViewProj = m_SceneLightInfo[LightIndex].mLightViewProj;
-	m_gltfDepth->Draw(GetDevice()->GetCurrentCommandContext().commandBuffer.Get());
+    CAULDRON_DX12::GltfDepthPass::per_frame* cbPerFrame = m_gltfDepth->SetPerFrameConstants();
+    cbPerFrame->mViewProj = m_SceneLightInfo[LightIndex].mLightViewProj;
+    m_gltfDepth->Draw(GetDevice()->GetCurrentCommandContext().commandBuffer.Get());
 #endif // TRESSFX_VK
 }
 

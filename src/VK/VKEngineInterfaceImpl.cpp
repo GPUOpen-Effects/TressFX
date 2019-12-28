@@ -113,7 +113,7 @@ EI_Device::EI_Device() :
 
 EI_Device::~EI_Device()
 {
-	
+    
 }
 
 VkPipelineBindPoint VulkanBindPoint(EI_BindPoint bp) {
@@ -223,29 +223,29 @@ std::unique_ptr<EI_Resource> EI_Device::CreateUint32Resource(const int width, co
     res->m_ResourceType = EI_ResourceType::Texture;
     res->m_pTexture = new CAULDRON_VK::Texture();
 
-	VkImageCreateInfo image_info = {};
-	image_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-	image_info.pNext = NULL;
-	image_info.imageType = VK_IMAGE_TYPE_2D;
-	image_info.format = VK_FORMAT_R32_UINT;
-	image_info.extent.width = width;
-	image_info.extent.height = height;
-	image_info.extent.depth = 1;
-	image_info.mipLevels = 1;
-	image_info.arrayLayers = (uint32_t)arraySize;
-	image_info.samples = VK_SAMPLE_COUNT_1_BIT;
+    VkImageCreateInfo image_info = {};
+    image_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+    image_info.pNext = NULL;
+    image_info.imageType = VK_IMAGE_TYPE_2D;
+    image_info.format = VK_FORMAT_R32_UINT;
+    image_info.extent.width = width;
+    image_info.extent.height = height;
+    image_info.extent.depth = 1;
+    image_info.mipLevels = 1;
+    image_info.arrayLayers = (uint32_t)arraySize;
+    image_info.samples = VK_SAMPLE_COUNT_1_BIT;
     image_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	image_info.queueFamilyIndexCount = 0;
-	image_info.pQueueFamilyIndices = NULL;
-	image_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-	image_info.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-	image_info.flags = 0;
-	image_info.tiling = VK_IMAGE_TILING_OPTIMAL;
+    image_info.queueFamilyIndexCount = 0;
+    image_info.pQueueFamilyIndices = NULL;
+    image_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    image_info.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+    image_info.flags = 0;
+    image_info.tiling = VK_IMAGE_TILING_OPTIMAL;
 
 
-	res->m_pTexture->Init(GetDevice()->GetCauldronDevice(), &image_info, const_cast<char*>(name));	// Note, Init should really be changed to take a const char* instead of char.
+    res->m_pTexture->Init(GetDevice()->GetCauldronDevice(), &image_info, const_cast<char*>(name));	// Note, Init should really be changed to take a const char* instead of char.
 
-	// Need to make my own CreateSRV & RTV that will take an array (current functions only assume 2D Textures - hard coded)
+    // Need to make my own CreateSRV & RTV that will take an array (current functions only assume 2D Textures - hard coded)
     res->m_pTexture->CreateSRV(&res->srv, 0);
     res->m_pTexture->CreateRTV(&res->rtv, 0);
     return std::unique_ptr<EI_Resource>(res);
@@ -285,7 +285,7 @@ std::unique_ptr<EI_Resource> EI_Device::CreateRenderTargetResource(const int wid
 
 std::unique_ptr<EI_Resource> EI_Device::CreateDepthResource(const int width, const int height, const char* name)
 {
-	EI_Resource* res = new EI_Resource;
+    EI_Resource* res = new EI_Resource;
     res->m_ResourceType = EI_ResourceType::Texture;
     res->m_pTexture = new CAULDRON_VK::Texture();
 
@@ -315,7 +315,7 @@ std::unique_ptr<EI_Resource> EI_Device::CreateDepthResource(const int width, con
     EI_Barrier barrier = { res, EI_STATE_UNDEFINED, EI_STATE_DEPTH_STENCIL };
     GetDevice()->GetCurrentCommandContext().SubmitBarrier(1, &barrier);
 
-	return std::unique_ptr<EI_Resource>(res);
+    return std::unique_ptr<EI_Resource>(res);
 }
 
 std::unique_ptr<EI_Resource> EI_Device::CreateResourceFromFile(const char* szFilename, bool useSRGB/*= false*/)
@@ -360,7 +360,7 @@ std::unique_ptr<EI_BindSet> EI_Device::CreateBindSet(EI_BindLayout * layout, EI_
     m_resourceViewHeaps.AllocDescriptor(layout->m_descriptorSetLayout, &result->m_descriptorSet);
     
     std::vector<VkWriteDescriptorSet> writes;
-	std::vector<std::unique_ptr<VkDescriptorImageInfo>> DescriptorImageInfos;
+    std::vector<std::unique_ptr<VkDescriptorImageInfo>> DescriptorImageInfos;
 
     int numResources = (int)bindSet.resources.size();
     for (int i = 0; i < numResources; ++i)
@@ -434,7 +434,7 @@ std::unique_ptr<EI_BindSet> EI_Device::CreateBindSet(EI_BindLayout * layout, EI_
         writes.push_back(w);
     }
 
-	assert(writes.size() == layout->layoutBindings.size());
+    assert(writes.size() == layout->layoutBindings.size());
  
     vkUpdateDescriptorSets(m_device.GetDevice(), (uint32_t)writes.size(), writes.data(), 0, nullptr);
 
@@ -500,31 +500,31 @@ std::unique_ptr<EI_RenderTargetSet> EI_Device::CreateRenderTargetSet(const EI_Re
 
 std::unique_ptr<EI_GLTFTexturesAndBuffers> EI_Device::CreateGLTFTexturesAndBuffers(GLTFCommon* pGLTFCommon)
 {
-	EI_GLTFTexturesAndBuffers* GLTFBuffersAndTextures = new CAULDRON_VK::GLTFTexturesAndBuffers();
-	GLTFBuffersAndTextures->OnCreate(GetCauldronDevice(), pGLTFCommon, &m_uploadHeap, &m_vidMemBufferPool, &m_constantBufferRing);
+    EI_GLTFTexturesAndBuffers* GLTFBuffersAndTextures = new CAULDRON_VK::GLTFTexturesAndBuffers();
+    GLTFBuffersAndTextures->OnCreate(GetCauldronDevice(), pGLTFCommon, &m_uploadHeap, &m_vidMemBufferPool, &m_constantBufferRing);
 
-	return std::unique_ptr<EI_GLTFTexturesAndBuffers>(GLTFBuffersAndTextures);
+    return std::unique_ptr<EI_GLTFTexturesAndBuffers>(GLTFBuffersAndTextures);
 }
 
 std::unique_ptr<EI_GltfPbrPass> EI_Device::CreateGLTFPbrPass(EI_GLTFTexturesAndBuffers* pGLTFTexturesAndBuffers, EI_RenderTargetSet* renderTargetSet)
 {
-	EI_GltfPbrPass* GLTFPbr = new CAULDRON_VK::GltfPbrPass();
-	GLTFPbr->OnCreate(GetCauldronDevice(), renderTargetSet != nullptr ? renderTargetSet->m_RenderPass : GetSwapChainRenderPass(),
-						&m_uploadHeap, &m_resourceViewHeaps, &m_constantBufferRing, &m_vidMemBufferPool, pGLTFTexturesAndBuffers,
-						NULL, GetShadowBufferResource()->srv, VK_SAMPLE_COUNT_1_BIT);
+    EI_GltfPbrPass* GLTFPbr = new CAULDRON_VK::GltfPbrPass();
+    GLTFPbr->OnCreate(GetCauldronDevice(), renderTargetSet != nullptr ? renderTargetSet->m_RenderPass : GetSwapChainRenderPass(),
+                        &m_uploadHeap, &m_resourceViewHeaps, &m_constantBufferRing, &m_vidMemBufferPool, pGLTFTexturesAndBuffers,
+                        NULL, GetShadowBufferResource()->srv, VK_SAMPLE_COUNT_1_BIT);
 
-	return std::unique_ptr<EI_GltfPbrPass>(GLTFPbr);
+    return std::unique_ptr<EI_GltfPbrPass>(GLTFPbr);
 }
 
 std::unique_ptr<EI_GltfDepthPass> EI_Device::CreateGLTFDepthPass(EI_GLTFTexturesAndBuffers* pGLTFTexturesAndBuffers, EI_RenderTargetSet* renderTargetSet)
 {
-	EI_GltfDepthPass* GLTFDepth = new CAULDRON_VK::GltfDepthPass();
-	assert(renderTargetSet);
+    EI_GltfDepthPass* GLTFDepth = new CAULDRON_VK::GltfDepthPass();
+    assert(renderTargetSet);
 
-	GLTFDepth->OnCreate(GetCauldronDevice(), renderTargetSet->m_RenderPass, &m_uploadHeap, &m_resourceViewHeaps, 
-						&m_constantBufferRing, &m_vidMemBufferPool, pGLTFTexturesAndBuffers);
+    GLTFDepth->OnCreate(GetCauldronDevice(), renderTargetSet->m_RenderPass, &m_uploadHeap, &m_resourceViewHeaps, 
+                        &m_constantBufferRing, &m_vidMemBufferPool, pGLTFTexturesAndBuffers);
 
-	return std::unique_ptr<EI_GltfDepthPass>(GLTFDepth);
+    return std::unique_ptr<EI_GltfDepthPass>(GLTFDepth);
 }
 
 void EI_RenderTargetSet::SetResources(const EI_Resource** pResourcesArray)
@@ -637,20 +637,20 @@ EI_RenderTargetSet::~EI_RenderTargetSet()
 
 void EI_Device::BeginRenderPass(EI_CommandContext& commandContext, const EI_RenderTargetSet* pRenderTargetSet, const wchar_t* pPassName, uint32_t width /*= 0*/, uint32_t height /*= 0*/)
 {
-	VkRenderPassBeginInfo rp_begin = {};
+    VkRenderPassBeginInfo rp_begin = {};
 
-	rp_begin.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-	rp_begin.pNext = NULL;
+    rp_begin.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    rp_begin.pNext = NULL;
     rp_begin.renderPass = pRenderTargetSet->m_RenderPass;
-	rp_begin.framebuffer = pRenderTargetSet->m_FrameBuffer;
-	rp_begin.renderArea.offset.x = 0;
-	rp_begin.renderArea.offset.y = 0;
-	rp_begin.renderArea.extent.width = width? width : m_width;
-	rp_begin.renderArea.extent.height = height? height : m_height;
-	rp_begin.clearValueCount = pRenderTargetSet->m_NumResources;
-	rp_begin.pClearValues = pRenderTargetSet->m_ClearValues;
+    rp_begin.framebuffer = pRenderTargetSet->m_FrameBuffer;
+    rp_begin.renderArea.offset.x = 0;
+    rp_begin.renderArea.offset.y = 0;
+    rp_begin.renderArea.extent.width = width? width : m_width;
+    rp_begin.renderArea.extent.height = height? height : m_height;
+    rp_begin.clearValueCount = pRenderTargetSet->m_NumResources;
+    rp_begin.pClearValues = pRenderTargetSet->m_ClearValues;
 
-	vkCmdBeginRenderPass(commandContext.commandBuffer, &rp_begin, VK_SUBPASS_CONTENTS_INLINE);
+    vkCmdBeginRenderPass(commandContext.commandBuffer, &rp_begin, VK_SUBPASS_CONTENTS_INLINE);
 
     // NOTE: This should probably in it's own stand-alone call
     CAULDRON_VK::SetViewportAndScissor(commandContext.commandBuffer, 0, 0, width ? width : m_width, height ? height : m_height);
@@ -658,7 +658,7 @@ void EI_Device::BeginRenderPass(EI_CommandContext& commandContext, const EI_Rend
 
 void EI_Device::EndRenderPass(EI_CommandContext& commandContext)
 {
-	vkCmdEndRenderPass(commandContext.commandBuffer);
+    vkCmdEndRenderPass(commandContext.commandBuffer);
 }
 
 void EI_Device::SetViewportAndScissor(EI_CommandContext& commandContext, uint32_t topX, uint32_t topY, uint32_t width, uint32_t height)
@@ -668,15 +668,15 @@ void EI_Device::SetViewportAndScissor(EI_CommandContext& commandContext, uint32_
 
 void EI_Device::OnCreate(HWND hWnd, uint32_t numBackBuffers, bool enableValidation, const char* appName)
 {
-	// Create Device
-	m_device.OnCreate(appName, "Cauldron", enableValidation, hWnd);
-	m_device.CreatePipelineCache();
+    // Create Device
+    m_device.OnCreate(appName, "Cauldron", enableValidation, hWnd);
+    m_device.CreatePipelineCache();
 
-	//init the shader compiler
-	CAULDRON_VK::CreateShaderCache();
+    //init the shader compiler
+    CAULDRON_VK::CreateShaderCache();
 
-	// Create Swapchain
-	m_swapChain.OnCreate(&m_device, numBackBuffers, hWnd, CAULDRON_VK::DISPLAYMODE_SDR);
+    // Create Swapchain
+    m_swapChain.OnCreate(&m_device, numBackBuffers, hWnd, CAULDRON_VK::DISPLAYMODE_SDR);
 
     m_resourceViewHeaps.OnCreate(&m_device, 256, 256, 256, 256);
 
@@ -813,12 +813,12 @@ void EI_Device::OnDestroy()
     m_pEndFrameResolveBindLayout.reset();
 
     m_pFullscreenIndexBuffer.reset();
-	m_shadowBuffer.reset();
+    m_shadowBuffer.reset();
     m_depthBuffer.reset();
     m_colorBuffer.reset();
 
 #if TRESSFX_DEBUG_UAV
-	m_pDebugUAV.reset();
+    m_pDebugUAV.reset();
 #endif // TRESSFX_DEBUG_UAV
 
     m_toneMapping.OnDestroy();
@@ -1215,24 +1215,24 @@ void EI_Device::BeginBackbufferRenderPass()
     ClearValues[1].depthStencil.stencil = 0;
 
     VkRenderPassBeginInfo rp_begin = {};
-	rp_begin.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-	rp_begin.pNext = NULL;
+    rp_begin.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    rp_begin.pNext = NULL;
     rp_begin.renderPass = m_swapChain.GetRenderPass();
     rp_begin.framebuffer = m_swapChain.GetFramebuffer(m_currentImageIndex);
-	rp_begin.renderArea.offset.x = 0;
-	rp_begin.renderArea.offset.y = 0;
-	rp_begin.renderArea.extent.width = m_width;
-	rp_begin.renderArea.extent.height = m_height;
+    rp_begin.renderArea.offset.x = 0;
+    rp_begin.renderArea.offset.y = 0;
+    rp_begin.renderArea.extent.width = m_width;
+    rp_begin.renderArea.extent.height = m_height;
     rp_begin.pClearValues = ClearValues;
     rp_begin.clearValueCount = 2;
-	vkCmdBeginRenderPass(m_currentCommandBuffer.commandBuffer, &rp_begin, VK_SUBPASS_CONTENTS_INLINE);
+    vkCmdBeginRenderPass(m_currentCommandBuffer.commandBuffer, &rp_begin, VK_SUBPASS_CONTENTS_INLINE);
 
-	CAULDRON_VK::SetViewportAndScissor(m_currentCommandBuffer.commandBuffer, 0, 0, m_width, m_height);
+    CAULDRON_VK::SetViewportAndScissor(m_currentCommandBuffer.commandBuffer, 0, 0, m_width, m_height);
 }
 
 void EI_Device::EndRenderPass()
 {
-	vkCmdEndRenderPass(m_currentCommandBuffer.commandBuffer);
+    vkCmdEndRenderPass(m_currentCommandBuffer.commandBuffer);
 }
 
 void EI_Device::GetTimeStamp(char * name)
@@ -1404,7 +1404,7 @@ void EI_Device::OnEndFrame()
         m_currentCommandBuffer.SubmitBarrier(AMD_ARRAY_SIZE(barrier), barrier);
     }
 
-	m_gpuTimer.OnEndFrame();
+    m_gpuTimer.OnEndFrame();
     EndAndSubmitCommandBufferWithFences();
     m_swapChain.Present();
 }
@@ -1607,17 +1607,17 @@ void EI_CommandContext::ClearUint32Image(EI_Resource* res, uint32_t value)
 
 void EI_CommandContext::ClearFloat32Image(EI_Resource* res, float value)
 {
-	assert(res->m_ResourceType == EI_ResourceType::Texture);
-	VkClearColorValue clearValue;
-	clearValue.float32[0] = value;
-	clearValue.float32[1] = value;
-	clearValue.float32[2] = value;
-	clearValue.float32[3] = value;
-	VkImageSubresourceRange range;
-	range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	range.baseArrayLayer = 0;
-	range.baseMipLevel = 0;
-	range.layerCount = res->m_pTexture->GetArraySize();
-	range.levelCount = 1;
-	vkCmdClearColorImage(commandBuffer, res->m_pTexture->Resource(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clearValue, 1, &range);
+    assert(res->m_ResourceType == EI_ResourceType::Texture);
+    VkClearColorValue clearValue;
+    clearValue.float32[0] = value;
+    clearValue.float32[1] = value;
+    clearValue.float32[2] = value;
+    clearValue.float32[3] = value;
+    VkImageSubresourceRange range;
+    range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    range.baseArrayLayer = 0;
+    range.baseMipLevel = 0;
+    range.layerCount = res->m_pTexture->GetArraySize();
+    range.levelCount = 1;
+    vkCmdClearColorImage(commandBuffer, res->m_pTexture->Resource(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clearValue, 1, &range);
 }

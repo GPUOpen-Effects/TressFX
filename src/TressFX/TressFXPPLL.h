@@ -49,7 +49,7 @@ public:
     void Initialize(int width, int height, int nNodes, int nodeSize);
     void Draw(EI_CommandContext& commandContext, int numHairStrands, HairStrands** hairStrands, EI_BindSet* viewBindSet, EI_BindSet* lightBindSet);
 
-	void UpdateShadeParameters(std::vector<const TressFXRenderingSettings*>& renderSettings);
+    void UpdateShadeParameters(std::vector<const TressFXRenderingSettings*>& renderSettings);
 
 private:
     // Node size should include room for UINT next pointer.
@@ -91,8 +91,8 @@ private:
     std::unique_ptr<EI_PSO> m_PPLLFillPSO = nullptr;
     std::unique_ptr<EI_PSO> m_PPLLResolvePSO = nullptr;
 
-	TressFXUniformBuffer<TressFXShadeParams> m_ShadeParamsConstantBuffer;
-	std::unique_ptr<EI_BindSet> m_ShadeParamsBindSet = nullptr;
+    TressFXUniformBuffer<TressFXShadeParams> m_ShadeParamsConstantBuffer;
+    std::unique_ptr<EI_BindSet> m_ShadeParamsBindSet = nullptr;
 };
 
 #endif

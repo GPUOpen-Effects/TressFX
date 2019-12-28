@@ -38,19 +38,19 @@
 // Hair input structure to Pixel shaders
 struct PS_INPUT_HAIR
 {
-	float4 Position    : SV_POSITION;
+    float4 Position    : SV_POSITION;
 };
 
 //////////////////////////////////////////////////////////////
 // Hair Render VS (for depth alpha and color fill passes)
 PS_INPUT_HAIR HairShadowVS(uint vertexId : SV_VertexID)
 {
-	TressFXVertex tressfxVert = GetExpandedTressFXShadowVert(vertexId, g_vEye, g_vViewport.zw, g_mVP);
+    TressFXVertex tressfxVert = GetExpandedTressFXShadowVert(vertexId, g_vEye, g_vViewport.zw, g_mVP);
 
-	PS_INPUT_HAIR Output;
+    PS_INPUT_HAIR Output;
 
-	Output.Position     = tressfxVert.Position;
-	return Output;
+    Output.Position     = tressfxVert.Position;
+    return Output;
 }
 
 [earlydepthstencil]

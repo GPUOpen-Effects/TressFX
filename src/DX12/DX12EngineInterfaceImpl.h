@@ -92,9 +92,9 @@ public:
 
 namespace CAULDRON_DX12
 {
-	class GLTFTexturesAndBuffers;
-	class GltfPbrPass;
-	class GltfDepthPass;
+    class GLTFTexturesAndBuffers;
+    class GltfPbrPass;
+    class GltfDepthPass;
 }
 
 typedef CAULDRON_DX12::GLTFTexturesAndBuffers EI_GLTFTexturesAndBuffers;
@@ -122,7 +122,7 @@ public:
     std::unique_ptr<EI_Resource>    CreateBufferResource(const int structSize, const int structCount, const unsigned int flags, const char* name);
     std::unique_ptr<EI_Resource>    CreateUint32Resource(const int width, const int height, const int arraySize, const char* name, uint32_t ClearValue = 0);
 #ifdef TRESSFX_DEBUG_UAV
-	std::unique_ptr<EI_Resource>    CreateDebugUAVResource(const int width, const int height, const size_t channels, const int arraySize, const char* name, float ClearValue = 0.f);
+    std::unique_ptr<EI_Resource>    CreateDebugUAVResource(const int width, const int height, const size_t channels, const int arraySize, const char* name, float ClearValue = 0.f);
 #endif // TRESSFX_DEBUG_UAV
     std::unique_ptr<EI_Resource>    CreateRenderTargetResource(const int width, const int height, const size_t channels, const size_t channelSize, const char* name, AMD::float4* ClearValues = nullptr);
     std::unique_ptr<EI_Resource>    CreateDepthResource(const int width, const int height, const char* name);
@@ -136,9 +136,9 @@ public:
     std::unique_ptr<EI_RenderTargetSet>   CreateRenderTargetSet(const EI_ResourceFormat* pResourceFormats, const uint32_t numResources, const EI_AttachmentParams* AttachmentParams, float* clearValues);
     std::unique_ptr<EI_RenderTargetSet>   CreateRenderTargetSet(const EI_Resource** pResourcesArray, const uint32_t numResources, const EI_AttachmentParams* AttachmentParams, float* clearValues);
 
-	std::unique_ptr<EI_GLTFTexturesAndBuffers> CreateGLTFTexturesAndBuffers(GLTFCommon* pGLTFCommon);
-	std::unique_ptr<EI_GltfPbrPass> CreateGLTFPbrPass(EI_GLTFTexturesAndBuffers* pGLTFTexturesAndBuffers, EI_RenderTargetSet* renderTargetSet);
-	std::unique_ptr<EI_GltfDepthPass> CreateGLTFDepthPass(EI_GLTFTexturesAndBuffers* pGLTFTexturesAndBuffers, EI_RenderTargetSet* renderTargetSet);
+    std::unique_ptr<EI_GLTFTexturesAndBuffers> CreateGLTFTexturesAndBuffers(GLTFCommon* pGLTFCommon);
+    std::unique_ptr<EI_GltfPbrPass> CreateGLTFPbrPass(EI_GLTFTexturesAndBuffers* pGLTFTexturesAndBuffers, EI_RenderTargetSet* renderTargetSet);
+    std::unique_ptr<EI_GltfDepthPass> CreateGLTFDepthPass(EI_GLTFTexturesAndBuffers* pGLTFTexturesAndBuffers, EI_RenderTargetSet* renderTargetSet);
 
     void			BeginRenderPass(EI_CommandContext& commandContext, const EI_RenderTargetSet* pRenderPassSet, const wchar_t* pPassName, uint32_t width = 0, uint32_t height = 0);
     void			EndRenderPass(EI_CommandContext& commandContext);
@@ -173,9 +173,9 @@ public:
 
     CAULDRON_DX12::Device* GetCauldronDevice() { return &m_device; }
 
-	CAULDRON_DX12::UploadHeap* GetUploadHeap() { return &m_uploadHeap; }
-	CAULDRON_DX12::StaticBufferPool* GetVidMemBufferPool() { return &m_vidMemBufferPool; }
-	CAULDRON_DX12::DynamicBufferRing* GetConstantBufferRing() { return &m_constantBufferRing; }
+    CAULDRON_DX12::UploadHeap* GetUploadHeap() { return &m_uploadHeap; }
+    CAULDRON_DX12::StaticBufferPool* GetVidMemBufferPool() { return &m_vidMemBufferPool; }
+    CAULDRON_DX12::DynamicBufferRing* GetConstantBufferRing() { return &m_constantBufferRing; }
 
     // Find a better place to put this ...
     EI_Resource* GetDepthBufferResource() { return m_depthBuffer.get(); }
@@ -188,7 +188,7 @@ public:
     EI_BindSet* GetSamplerBindSet() { return m_pSamplerBindSet.get(); }
 
 #ifdef TRESSFX_DEBUG_UAV
-	EI_Resource* GetDebugUAVResource() { return m_pDebugUAV.get(); }
+    EI_Resource* GetDebugUAVResource() { return m_pDebugUAV.get(); }
 #endif // TRESSFX_DEBUG_UAV
 
     // for the client code to set timestamps
@@ -217,7 +217,7 @@ private:
     std::unique_ptr<EI_Resource> m_shadowBuffer;
 
 #ifdef TRESSFX_DEBUG_UAV
-	std::unique_ptr<EI_Resource> m_pDebugUAV;	// Debug UAV
+    std::unique_ptr<EI_Resource> m_pDebugUAV;	// Debug UAV
 #endif // TRESSFX_DEBUG_UAV
 
     // Default resource to use when a resource is missing

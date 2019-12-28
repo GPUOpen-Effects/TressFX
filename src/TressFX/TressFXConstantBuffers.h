@@ -156,23 +156,23 @@ struct TressFXRenderParams // TressFXParameters
 
 struct ShadeParams
 {
-	// General information
-	float       FiberRadius = 0.002f;
-	// For deep approximated shadow lookup
-	float       ShadowAlpha = 0.35f;
-	float       FiberSpacing = 0.4f;
-	// For lighting/shading
-	float       HairEx2 = 11.80f;
-	AMD::float4 MatKValue = { 0.f, 0.07f, 0.0017f, 14.40f };   // KAmbient, KDiffuse, KSpec1, Exp1
-	float       HairKs2 = 0.072f;
-	float		fPadding0;
-	float		fPadding1;
-	float		fPadding2;
+    // General information
+    float       FiberRadius = 0.002f;
+    // For deep approximated shadow lookup
+    float       ShadowAlpha = 0.35f;
+    float       FiberSpacing = 0.4f;
+    // For lighting/shading
+    float       HairEx2 = 11.80f;
+    AMD::float4 MatKValue = { 0.f, 0.07f, 0.0017f, 14.40f };   // KAmbient, KDiffuse, KSpec1, Exp1
+    float       HairKs2 = 0.072f;
+    float		fPadding0;
+    float		fPadding1;
+    float		fPadding2;
 };
 
 struct TressFXShadeParams
 {
-	ShadeParams HairShadeParams[AMD_TRESSFX_MAX_HAIR_GROUP_RENDER];
+    ShadeParams HairShadeParams[AMD_TRESSFX_MAX_HAIR_GROUP_RENDER];
 };
 
 // If you change this, you MUST also change TressFXStrandParameters in TressFXRendering.hlsl
@@ -227,7 +227,7 @@ struct LightParams
 struct TressFXLightParams
 {
     int         NumLights;
-	int			UseDepthApproximation;
+    int			UseDepthApproximation;
     AMD::sint2  Padding;
     LightParams LightInfo[AMD_TRESSFX_MAX_LIGHTS];
 };

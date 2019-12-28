@@ -196,37 +196,37 @@ void TressFXSample::UpdateSimulationParameters()
 
 void TressFXSample::UpdateRenderingParameters()
 {
-	std::vector<const TressFXRenderingSettings*> RenderSettings;
+    std::vector<const TressFXRenderingSettings*> RenderSettings;
     for (int i = 0; i < m_activeScene.objects.size(); ++i)
     {
-		// For now, just using distance of camera to 0, 0, 0, but should be passing in a root position for the hair object we want to LOD
-		float Distance = sqrtf(m_activeScene.scene->GetCameraPos().x * m_activeScene.scene->GetCameraPos().x + m_activeScene.scene->GetCameraPos().y * m_activeScene.scene->GetCameraPos().y + m_activeScene.scene->GetCameraPos().z * m_activeScene.scene->GetCameraPos().z);
+        // For now, just using distance of camera to 0, 0, 0, but should be passing in a root position for the hair object we want to LOD
+        float Distance = sqrtf(m_activeScene.scene->GetCameraPos().x * m_activeScene.scene->GetCameraPos().x + m_activeScene.scene->GetCameraPos().y * m_activeScene.scene->GetCameraPos().y + m_activeScene.scene->GetCameraPos().z * m_activeScene.scene->GetCameraPos().z);
         m_activeScene.objects[i].hairStrands->GetTressFXHandle()->UpdateRenderingParameters(&m_activeScene.objects[i].renderingSettings, m_nScreenWidth * m_nScreenHeight * AVE_FRAGS_PER_PIXEL, m_deltaTime, Distance);
-		RenderSettings.push_back(&m_activeScene.objects[i].renderingSettings);
+        RenderSettings.push_back(&m_activeScene.objects[i].renderingSettings);
     }
 
-	// Update shade parameters for correct implementation
-	switch (m_eOITMethod)
-	{
-	case OIT_METHOD_SHORTCUT:
-		m_pShortCut->UpdateShadeParameters(RenderSettings);
-		break;
-	case OIT_METHOD_PPLL:
-		m_pPPLL->UpdateShadeParameters(RenderSettings);
-		break;
-	default:
-		break;
-	}
+    // Update shade parameters for correct implementation
+    switch (m_eOITMethod)
+    {
+    case OIT_METHOD_SHORTCUT:
+        m_pShortCut->UpdateShadeParameters(RenderSettings);
+        break;
+    case OIT_METHOD_PPLL:
+        m_pPPLL->UpdateShadeParameters(RenderSettings);
+        break;
+    default:
+        break;
+    }
 }
 
 void TressFXSample::UpdateRenderShadowParameters(AMD::float4& CameraPos)
 {
-	for (int i = 0; i < m_activeScene.objects.size(); ++i)
-	{
-		// For now, just using distance of camera to 0, 0, 0, but should be passing in a root position for the hair object we want to LOD
-		float Distance = sqrtf(CameraPos.x * CameraPos.x + CameraPos.y * CameraPos.y + CameraPos.z * CameraPos.z);
-		m_activeScene.objects[i].hairStrands->GetTressFXHandle()->UpdateRenderingParameters(&m_activeScene.objects[i].renderingSettings, m_nScreenWidth * m_nScreenHeight * AVE_FRAGS_PER_PIXEL, m_deltaTime, Distance, true);
-	}
+    for (int i = 0; i < m_activeScene.objects.size(); ++i)
+    {
+        // For now, just using distance of camera to 0, 0, 0, but should be passing in a root position for the hair object we want to LOD
+        float Distance = sqrtf(CameraPos.x * CameraPos.x + CameraPos.y * CameraPos.y + CameraPos.z * CameraPos.z);
+        m_activeScene.objects[i].hairStrands->GetTressFXHandle()->UpdateRenderingParameters(&m_activeScene.objects[i].renderingSettings, m_nScreenWidth * m_nScreenHeight * AVE_FRAGS_PER_PIXEL, m_deltaTime, Distance, true);
+    }
 }
 
 void TressFXSample::OnResize(uint32_t width, uint32_t height)
@@ -557,7 +557,7 @@ void TressFXSample::OnDestroy()
     m_pDebugRenderTargetSet.reset();
     m_pShadowRenderTargetSet.reset();
 
-	m_pHairShadowPSO.reset();
+    m_pHairShadowPSO.reset();
 
     DestroyLayouts();
 
@@ -639,11 +639,11 @@ void TressFXSample::DisplayRenderingParameters(const char* name, TressFXHairObje
         // Geometry
         if (ImGui::CollapsingHeader("Geometry Params", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Leaf))
         {
-			ImGui::Checkbox("Enable Hair LOD", &RenderSettings->m_EnableHairLOD);
-			ImGui::SliderFloat("LOD Start Distance", &RenderSettings->m_LODStartDistance, 0.0f, 25.0f);
-			ImGui::SliderFloat("LOD End Distance", &RenderSettings->m_LODEndDistance, 0.0f, 25.0f);
-			ImGui::SliderFloat("LOD Strand Reduction", &RenderSettings->m_LODPercent, 0.0f, 1.0f);
-			ImGui::SliderFloat("LOD Width Multiplier", &RenderSettings->m_LODWidthMultiplier, 1.0f, 5.0f);
+            ImGui::Checkbox("Enable Hair LOD", &RenderSettings->m_EnableHairLOD);
+            ImGui::SliderFloat("LOD Start Distance", &RenderSettings->m_LODStartDistance, 0.0f, 25.0f);
+            ImGui::SliderFloat("LOD End Distance", &RenderSettings->m_LODEndDistance, 0.0f, 25.0f);
+            ImGui::SliderFloat("LOD Strand Reduction", &RenderSettings->m_LODPercent, 0.0f, 1.0f);
+            ImGui::SliderFloat("LOD Width Multiplier", &RenderSettings->m_LODWidthMultiplier, 1.0f, 5.0f);
 
             ImGui::SliderFloat("Fiber Radius", &RenderSettings->m_FiberRadius, 0.0005f, 0.005f);
             ImGui::Checkbox("Enable Thin Tip", &RenderSettings->m_EnableThinTip);
@@ -667,11 +667,11 @@ void TressFXSample::DisplayRenderingParameters(const char* name, TressFXHairObje
             ImGui::SliderFloat("Shadow Alpha", &RenderSettings->m_HairShadowAlpha, 0.0f, 1.0f);
             ImGui::SliderFloat("Fiber Spacing", &RenderSettings->m_HairFiberSpacing, 0.000001f, 1.f, "%.6f", 2.f);
 
-			ImGui::Checkbox("Enable Hair Shadow LOD", &RenderSettings->m_EnableShadowLOD);
-			ImGui::SliderFloat("Shadow LOD Start Distance", &RenderSettings->m_ShadowLODStartDistance, 0.0f, 25.0f);
-			ImGui::SliderFloat("Shadow LOD End Distance", &RenderSettings->m_ShadowLODEndDistance, 0.0f, 25.0f);
-			ImGui::SliderFloat("Shadow LOD Strand Reduction", &RenderSettings->m_ShadowLODPercent, 0.0f, 1.0f);
-			ImGui::SliderFloat("Shadow LOD Width Multiplier", &RenderSettings->m_ShadowLODWidthMultiplier, 1.0f, 5.0f);
+            ImGui::Checkbox("Enable Hair Shadow LOD", &RenderSettings->m_EnableShadowLOD);
+            ImGui::SliderFloat("Shadow LOD Start Distance", &RenderSettings->m_ShadowLODStartDistance, 0.0f, 25.0f);
+            ImGui::SliderFloat("Shadow LOD End Distance", &RenderSettings->m_ShadowLODEndDistance, 0.0f, 25.0f);
+            ImGui::SliderFloat("Shadow LOD Strand Reduction", &RenderSettings->m_ShadowLODPercent, 0.0f, 1.0f);
+            ImGui::SliderFloat("Shadow LOD Width Multiplier", &RenderSettings->m_ShadowLODWidthMultiplier, 1.0f, 5.0f);
         }
         // Texturing
         if (ImGui::CollapsingHeader("Texturing", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Leaf))
@@ -790,7 +790,7 @@ void TressFXSample::OnRender()
 
     }
     ImGui::End();
-	GetDevice()->GetTimeStamp("Gui Updates");
+    GetDevice()->GetTimeStamp("Gui Updates");
 
     UpdateSimulationParameters();
     m_activeScene.viewConstantBuffer->vEye = m_activeScene.scene->GetCameraPos();
@@ -835,7 +835,7 @@ void TressFXSample::OnRender()
         m_activeScene.lightConstantBuffer->LightInfo[i].ShadowProjection = *(AMD::float4x4*)&lightInfo.mLightViewProj; // ugh .. need a proper math library
         m_activeScene.lightConstantBuffer->LightInfo[i].ShadowParams = { lightInfo.depthBias, .1f, 100.0f, 0.f };	// Near and Far are currently hard-coded because we are hard-coding them elsewhere
         m_activeScene.lightConstantBuffer->LightInfo[i].ShadowMapSize = GetDevice()->GetShadowBufferResource()->GetWidth() / 2;
-		m_activeScene.lightConstantBuffer->UseDepthApproximation = m_useDepthApproximation;
+        m_activeScene.lightConstantBuffer->UseDepthApproximation = m_useDepthApproximation;
     }
     m_activeScene.lightConstantBuffer.Update(GetDevice()->GetCurrentCommandContext());
 
@@ -859,14 +859,14 @@ void TressFXSample::OnRender()
         m_activeScene.shadowViewConstantBuffer->vViewport = { 0, 0, (float)viewportWidth, (float)viewportHeight };
         m_activeScene.shadowViewConstantBuffer.Update(GetDevice()->GetCurrentCommandContext());
 
-		// Update parameters (updates LOD shadow params)
-		AMD::float4 ShadowCam = { LightInfo.position[0], LightInfo.position[1], LightInfo.position[2], 0 };
-		UpdateRenderShadowParameters(ShadowCam);
-		for (int i = 0; i < m_activeScene.objects.size(); ++i)
-		{
-			if (m_activeScene.objects[i].hairStrands->GetTressFXHandle())
-				m_activeScene.objects[i].hairStrands->GetTressFXHandle()->UpdatePerObjectRenderParams(GetDevice()->GetCurrentCommandContext());
-		}
+        // Update parameters (updates LOD shadow params)
+        AMD::float4 ShadowCam = { LightInfo.position[0], LightInfo.position[1], LightInfo.position[2], 0 };
+        UpdateRenderShadowParameters(ShadowCam);
+        for (int i = 0; i < m_activeScene.objects.size(); ++i)
+        {
+            if (m_activeScene.objects[i].hairStrands->GetTressFXHandle())
+                m_activeScene.objects[i].hairStrands->GetTressFXHandle()->UpdatePerObjectRenderParams(GetDevice()->GetCurrentCommandContext());
+        }
         GetDevice()->BeginRenderPass(GetDevice()->GetCurrentCommandContext(), m_pShadowRenderTargetSet.get(), L"ShadowPass", GetDevice()->GetShadowBufferResource()->GetWidth(), GetDevice()->GetShadowBufferResource()->GetHeight());
 
         // Set the RT's quadrant where to render the shadow map (these viewport offsets need to match the ones in shadowFiltering.h)
@@ -876,13 +876,13 @@ void TressFXSample::OnRender()
         if (m_drawModel)
             m_activeScene.scene->OnRenderLight(i);
 
-		GetDevice()->GetTimeStamp("Render GLTF Shadows");
+        GetDevice()->GetTimeStamp("Render GLTF Shadows");
 
         // Render Hair
         if (m_drawHair)
             DrawHairShadows();
 
-		GetDevice()->GetTimeStamp("Render Hair Shadows");
+        GetDevice()->GetTimeStamp("Render Hair Shadows");
 
         GetDevice()->EndRenderPass(GetDevice()->GetCurrentCommandContext());
         shadowMapIndex++;
@@ -899,17 +899,17 @@ void TressFXSample::OnRender()
         m_activeScene.scene->OnRender();
     }
     GetDevice()->EndRenderPass(GetDevice()->GetCurrentCommandContext());
-	GetDevice()->GetTimeStamp("glTF Render");
+    GetDevice()->GetTimeStamp("glTF Render");
 
-	// Update rendering parameters (updates hair LOD params)
-	UpdateRenderingParameters();
-	for (int i = 0; i < m_activeScene.objects.size(); ++i)
-	{
-		if (m_activeScene.objects[i].hairStrands->GetTressFXHandle())
-			m_activeScene.objects[i].hairStrands->GetTressFXHandle()->UpdatePerObjectRenderParams(GetDevice()->GetCurrentCommandContext());
-	}
+    // Update rendering parameters (updates hair LOD params)
+    UpdateRenderingParameters();
+    for (int i = 0; i < m_activeScene.objects.size(); ++i)
+    {
+        if (m_activeScene.objects[i].hairStrands->GetTressFXHandle())
+            m_activeScene.objects[i].hairStrands->GetTressFXHandle()->UpdatePerObjectRenderParams(GetDevice()->GetCurrentCommandContext());
+    }
 
-	// Do hair draw - will pick correct render approach
+    // Do hair draw - will pick correct render approach
     if (m_drawHair)
     {
         DrawHair();
@@ -943,18 +943,18 @@ void TressFXSample::OnRender()
 }
 
 int WINAPI WinMain(HINSTANCE hInstance,
-	HINSTANCE hPrevInstance,
-	LPSTR lpCmdLine,
-	int nCmdShow)
+    HINSTANCE hPrevInstance,
+    LPSTR lpCmdLine,
+    int nCmdShow)
 {
 #if defined(TRESSFX_DX12)
-	LPCSTR Name = "TressFX v4.1 DX12";
+    LPCSTR Name = "TressFX v4.1 DX12";
 #else
     LPCSTR Name = "TressFX v4.1 Vulkan";
 #endif
-	uint32_t Width = 1280;
-	uint32_t Height = 800;
+    uint32_t Width = 1280;
+    uint32_t Height = 800;
 
-	// create new DX sample
-	return RunFramework(hInstance, lpCmdLine, nCmdShow, Width, Height, new TressFXSample(Name));
+    // create new DX sample
+    return RunFramework(hInstance, lpCmdLine, nCmdShow, Width, Height, new TressFXSample(Name));
 }

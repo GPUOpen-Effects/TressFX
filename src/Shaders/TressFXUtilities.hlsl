@@ -35,52 +35,52 @@
 //--------------------------------------------------------------------------------------
 float4 MatrixMult(float4x4 m, float4 v)
 {
-	return mul(m, v);
+    return mul(m, v);
 }
 
 // Calculate screen UV from XY NDC pair
 float2 NDCToScreenUV(float2 vNDC)
 {
-	float2 ScreenUV = (vNDC + 1) / 2;
-	ScreenUV.y = 1 - ScreenUV.y;
-	return ScreenUV;
+    float2 ScreenUV = (vNDC + 1) / 2;
+    ScreenUV.y = 1 - ScreenUV.y;
+    return ScreenUV;
 }
 
 // Get world position from NDC coordinates
 float3 NDCToWorld(float3 vNDC, float4x4 mInvViewProj)
 {
-	float4 pos = MatrixMult(mInvViewProj, float4(vNDC, 1));
-	return pos.xyz / pos.w;
+    float4 pos = MatrixMult(mInvViewProj, float4(vNDC, 1));
+    return pos.xyz / pos.w;
 }
 
 // Get NDC from screen position (and depth)
 float3 ScreenPosToNDC(float3 vScreenPos, float4 viewport)
 {
-	float2 xy = vScreenPos.xy;
+    float2 xy = vScreenPos.xy;
 
-	// add viewport offset.
-	xy += viewport.xy;
+    // add viewport offset.
+    xy += viewport.xy;
 
-	// scale by viewport to put in 0 to 1
-	xy /= viewport.zw;
+    // scale by viewport to put in 0 to 1
+    xy /= viewport.zw;
 
-	// shift and scale to put in -1 to 1. y is also being flipped.
-	xy.x = (2 * xy.x) - 1;
-	xy.y = 1 - (2 * xy.y);
+    // shift and scale to put in -1 to 1. y is also being flipped.
+    xy.x = (2 * xy.x) - 1;
+    xy.y = 1 - (2 * xy.y);
 
-	return float3(xy, vScreenPos.z);
+    return float3(xy, vScreenPos.z);
 }
 
 // Pack a float4 into an uint
 uint PackFloat4IntoUint(float4 vValue)
 {
-	return (((uint)(vValue.x * 255)) << 24) | (((uint)(vValue.y * 255)) << 16) | (((uint)(vValue.z * 255)) << 8) | (uint)(vValue.w * 255);
+    return (((uint)(vValue.x * 255)) << 24) | (((uint)(vValue.y * 255)) << 16) | (((uint)(vValue.z * 255)) << 8) | (uint)(vValue.w * 255);
 }
 
 // Unpack a uint into a float4 value
 float4 UnpackUintIntoFloat4(uint uValue)
 {
-	return float4(((uValue & 0xFF000000) >> 24) / 255.0, ((uValue & 0x00FF0000) >> 16) / 255.0, ((uValue & 0x0000FF00) >> 8) / 255.0, ((uValue & 0x000000FF)) / 255.0);
+    return float4(((uValue & 0xFF000000) >> 24) / 255.0, ((uValue & 0x00FF0000) >> 16) / 255.0, ((uValue & 0x0000FF00) >> 8) / 255.0, ((uValue & 0x000000FF)) / 255.0);
 }
 
 // Pack a float3 and a uint8 into an uint

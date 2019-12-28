@@ -197,14 +197,14 @@ void CreatePPLLResolveLayout(EI_Device* pDevice)
 
 void CreatePPLLShadeParamLayout(EI_Device* pDevice)
 {
-	EI_LayoutDescription desc = {
-		{
-			{"TressFXShadeParams", 0, EI_RESOURCETYPE_UNIFORM },
-		},
-		EI_PS
-	};
+    EI_LayoutDescription desc = {
+        {
+            {"TressFXShadeParams", 0, EI_RESOURCETYPE_UNIFORM },
+        },
+        EI_PS
+    };
 
-	g_TressFXLayouts->pPPLLShadeParamLayout = pDevice->CreateLayout(desc);
+    g_TressFXLayouts->pPPLLShadeParamLayout = pDevice->CreateLayout(desc);
 }
 
 void CreateShortcutDepthsAlphaLayout(EI_Device* pDevice)
@@ -232,14 +232,14 @@ void CreateShortcutDepthReadLayout(EI_Device* pDevice)
 
 void CreateShortCutShadeParamLayout(EI_Device* pDevice)
 {
-	EI_LayoutDescription desc = {
-		{
-			{"TressFXShadeParams", 0, EI_RESOURCETYPE_UNIFORM },
-		},
-		EI_PS
-	};
+    EI_LayoutDescription desc = {
+        {
+            {"TressFXShadeParams", 0, EI_RESOURCETYPE_UNIFORM },
+        },
+        EI_PS
+    };
 
-	g_TressFXLayouts->pShortcutShadeParamLayout = pDevice->CreateLayout(desc);
+    g_TressFXLayouts->pShortcutShadeParamLayout = pDevice->CreateLayout(desc);
 }
 
 void CreateShortCutColorReadLayout(EI_Device* pDevice)
@@ -311,12 +311,12 @@ void InitializeAllLayouts(EI_Device* pDevice)
     
     CreateShortcutDepthsAlphaLayout(pDevice);
     CreateShortcutDepthReadLayout(pDevice);
-	CreateShortCutShadeParamLayout(pDevice);
+    CreateShortCutShadeParamLayout(pDevice);
     CreateShortCutColorReadLayout(pDevice);
 
     CreatePPLLFillLayout(pDevice);
     CreatePPLLResolveLayout(pDevice);
-	CreatePPLLShadeParamLayout(pDevice);
+    CreatePPLLShadeParamLayout(pDevice);
 
     CreateViewLayout(GetDevice());
     CreateShadowViewLayout(GetDevice());

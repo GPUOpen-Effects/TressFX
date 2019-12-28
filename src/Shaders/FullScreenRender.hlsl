@@ -56,6 +56,6 @@ VS_OUTPUT_SCREENQUAD FullScreenVS(uint vertexID : SV_VertexID)
 // Full-screen pass that writes the farthest of the near depths for depth culling.
 float4 FullScreenPS(VS_OUTPUT_SCREENQUAD input) : SV_Target0
 {
-	// Output the color
-	return float4( ColorTexture[input.vPosition.xy].xyz, 1.f );
+    // Output the color
+    return float4( ColorTexture[input.vPosition.xy].xyz, 1.f );
 }

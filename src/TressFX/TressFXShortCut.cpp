@@ -53,24 +53,24 @@ TressFXShortCut::TressFXShortCut() :
     m_pDepthResolvePSO(nullptr),
     m_pHairColorPSO(nullptr),
     m_pHairResolvePSO(nullptr),
-	// Bindsets
-	m_ShadeParamsBindSet(nullptr)
+    // Bindsets
+    m_ShadeParamsBindSet(nullptr)
 {
 }
 
 TressFXShortCut::~TressFXShortCut()
 {
-	m_ShadeParamsConstantBuffer.Reset();
+    m_ShadeParamsConstantBuffer.Reset();
 }
 
 void TressFXShortCut::Initialize(int width, int height)
 {
     Create(GetDevice(), width, height);
 
-	// Create constant buffer and bind set
-	m_ShadeParamsConstantBuffer.CreateBufferResource("TressFXShadeParams");
-	EI_BindSetDescription set = { { m_ShadeParamsConstantBuffer.GetBufferResource() } };
-	m_ShadeParamsBindSet = GetDevice()->CreateBindSet(GetShortCutShadeParamLayout(), set);
+    // Create constant buffer and bind set
+    m_ShadeParamsConstantBuffer.CreateBufferResource("TressFXShadeParams");
+    EI_BindSetDescription set = { { m_ShadeParamsConstantBuffer.GetBufferResource() } };
+    m_ShadeParamsBindSet = GetDevice()->CreateBindSet(GetShortCutShadeParamLayout(), set);
 
     // Depth Alpha Pass
     {
@@ -192,7 +192,7 @@ bool TressFXShortCut::Create(EI_Device* pDevice, int width, int height)
     CreateColorReadBindSet(pDevice);
 
     // Create RenderPasss sets
-	CreateDepthsAlphaRenderTargetSet(pDevice);
+    CreateDepthsAlphaRenderTargetSet(pDevice);
     CreateDepthResolveRenderTargetSet(pDevice);
     CreateHairColorRenderTargetSet(pDevice);
     CreateColorResolveRenderTargetSet(pDevice);
@@ -229,13 +229,13 @@ void TressFXShortCut::CreateColorReadBindSet(EI_Device* pDevice)
 
 void TressFXShortCut::CreateDepthsAlphaRenderTargetSet(EI_Device* pDevice)
 {
-	// For shortcut depth alpha render pass, we need InvAlphaTexture bound with Depth buffer.
-	const EI_Resource* ResourceArray[] = { m_pInvAlpha.get(), GetDevice()->GetDepthBufferResource() };
+    // For shortcut depth alpha render pass, we need InvAlphaTexture bound with Depth buffer.
+    const EI_Resource* ResourceArray[] = { m_pInvAlpha.get(), GetDevice()->GetDepthBufferResource() };
     const EI_AttachmentParams AttachmentParams[] = { {EI_RenderPassFlags::Load | EI_RenderPassFlags::Clear | EI_RenderPassFlags::Store},
                                                      {EI_RenderPassFlags::Depth | EI_RenderPassFlags::Load | EI_RenderPassFlags::Store} };
 
-	float clearValues[] = { 1.f, 1.f, 1.f, 1.f };	// Color
-	m_pShortCutDepthsAlphaRenderTargetSet = pDevice->CreateRenderTargetSet(ResourceArray, 2, AttachmentParams, clearValues);
+    float clearValues[] = { 1.f, 1.f, 1.f, 1.f };	// Color
+    m_pShortCutDepthsAlphaRenderTargetSet = pDevice->CreateRenderTargetSet(ResourceArray, 2, AttachmentParams, clearValues);
 }
 
 void TressFXShortCut::CreateDepthResolveRenderTargetSet(EI_Device* pDevice)
@@ -332,22 +332,22 @@ void TressFXShortCut::BeginDepthsAlpha(EI_CommandContext& commandContext)
         commandContext.SubmitBarrier(AMD_ARRAY_SIZE(readToWrite), readToWrite);
     }
 
-	// Begin the render pass
-	GetDevice()->BeginRenderPass(commandContext, m_pShortCutDepthsAlphaRenderTargetSet.get(), L"BeginDepthsAlpha Pass");
+    // Begin the render pass
+    GetDevice()->BeginRenderPass(commandContext, m_pShortCutDepthsAlphaRenderTargetSet.get(), L"BeginDepthsAlpha Pass");
 }
 
 void TressFXShortCut::EndDepthsAlpha(EI_CommandContext& commandContext)
 {
-	// End the render pass
-	GetDevice()->EndRenderPass(commandContext);
+    // End the render pass
+    GetDevice()->EndRenderPass(commandContext);
 
-	EI_Barrier writeToRead[] =
-	{
+    EI_Barrier writeToRead[] =
+    {
         { m_pInvAlpha.get(), EI_STATE_RENDER_TARGET, EI_STATE_SRV },
-		{ m_pDepths.get(), EI_STATE_UAV, EI_STATE_SRV },
-	};
+        { m_pDepths.get(), EI_STATE_UAV, EI_STATE_SRV },
+    };
 
-	commandContext.SubmitBarrier(AMD_ARRAY_SIZE(writeToRead), writeToRead);
+    commandContext.SubmitBarrier(AMD_ARRAY_SIZE(writeToRead), writeToRead);
 }
 
 void TressFXShortCut::BeginDepthResolve(EI_CommandContext& commandContext)
@@ -439,7 +439,7 @@ void TressFXShortCut::Draw(EI_CommandContext& commandContext, int numHairStrands
         DrawHairStrands(commandContext, numHairStrands, hairStrands, m_pDepthsAlphaPSO.get(), ExtraBindSets, 3);
     }
     EndDepthsAlpha(commandContext);
-	GetDevice()->GetTimeStamp("Shortcut DepthAlpha");
+    GetDevice()->GetTimeStamp("Shortcut DepthAlpha");
 
     // Depth Resolve pass
     BeginDepthResolve(commandContext);
@@ -448,7 +448,7 @@ void TressFXShortCut::Draw(EI_CommandContext& commandContext, int numHairStrands
         GetDevice()->DrawFullScreenQuad(commandContext, *m_pDepthResolvePSO, BindSets, 1);
     }
     EndDepthResolve(commandContext);
-	GetDevice()->GetTimeStamp("Shortcut DepthAlpha Resolve");
+    GetDevice()->GetTimeStamp("Shortcut DepthAlpha Resolve");
 
     // Render the color pass (hair render)
     BeginHairColor(commandContext);
@@ -457,7 +457,7 @@ void TressFXShortCut::Draw(EI_CommandContext& commandContext, int numHairStrands
         DrawHairStrands(commandContext, numHairStrands, hairStrands, m_pHairColorPSO.get(), ExtraBindSets, 4);
     }
     EndHairColor(commandContext);
-	GetDevice()->GetTimeStamp("Shortcut Hair Pass");
+    GetDevice()->GetTimeStamp("Shortcut Hair Pass");
 
     // Apply hair to main target
     BeginColorResolve(commandContext);
@@ -466,23 +466,23 @@ void TressFXShortCut::Draw(EI_CommandContext& commandContext, int numHairStrands
         GetDevice()->DrawFullScreenQuad(commandContext, *m_pHairResolvePSO, BindSets, 1);
     }
     EndColorResolve(commandContext);
-	GetDevice()->GetTimeStamp("Shortcut Hair Apply");
+    GetDevice()->GetTimeStamp("Shortcut Hair Apply");
 
     m_firstRun = false;
 }
 
 void TressFXShortCut::UpdateShadeParameters(std::vector<const TressFXRenderingSettings*>& renderSettings)
 {
-	// Update Render Parameters
-	for (int i = 0; i < renderSettings.size(); ++i)
-	{
-		m_ShadeParamsConstantBuffer->HairShadeParams[i].FiberRadius = renderSettings[i]->m_FiberRadius; // Don't modify radius by LOD multiplier as this one is used to calculate shadowing and that calculation should remain unaffected
-		m_ShadeParamsConstantBuffer->HairShadeParams[i].ShadowAlpha = renderSettings[i]->m_HairShadowAlpha;
-		m_ShadeParamsConstantBuffer->HairShadeParams[i].FiberSpacing = renderSettings[i]->m_HairFiberSpacing;
-		m_ShadeParamsConstantBuffer->HairShadeParams[i].HairEx2 = renderSettings[i]->m_HairSpecExp2;
-		m_ShadeParamsConstantBuffer->HairShadeParams[i].HairKs2 = renderSettings[i]->m_HairKSpec2;
-		m_ShadeParamsConstantBuffer->HairShadeParams[i].MatKValue = { 0.f, renderSettings[i]->m_HairKDiffuse, renderSettings[i]->m_HairKSpec1, renderSettings[i]->m_HairSpecExp1 }; // no ambient
-	}
-	
-	m_ShadeParamsConstantBuffer.Update(GetDevice()->GetCurrentCommandContext());
+    // Update Render Parameters
+    for (int i = 0; i < renderSettings.size(); ++i)
+    {
+        m_ShadeParamsConstantBuffer->HairShadeParams[i].FiberRadius = renderSettings[i]->m_FiberRadius; // Don't modify radius by LOD multiplier as this one is used to calculate shadowing and that calculation should remain unaffected
+        m_ShadeParamsConstantBuffer->HairShadeParams[i].ShadowAlpha = renderSettings[i]->m_HairShadowAlpha;
+        m_ShadeParamsConstantBuffer->HairShadeParams[i].FiberSpacing = renderSettings[i]->m_HairFiberSpacing;
+        m_ShadeParamsConstantBuffer->HairShadeParams[i].HairEx2 = renderSettings[i]->m_HairSpecExp2;
+        m_ShadeParamsConstantBuffer->HairShadeParams[i].HairKs2 = renderSettings[i]->m_HairKSpec2;
+        m_ShadeParamsConstantBuffer->HairShadeParams[i].MatKValue = { 0.f, renderSettings[i]->m_HairKDiffuse, renderSettings[i]->m_HairKSpec1, renderSettings[i]->m_HairSpecExp1 }; // no ambient
+    }
+    
+    m_ShadeParamsConstantBuffer.Update(GetDevice()->GetCurrentCommandContext());
 }

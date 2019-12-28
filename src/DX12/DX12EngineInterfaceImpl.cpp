@@ -350,26 +350,26 @@ std::unique_ptr<EI_Resource> EI_Device::CreateUint32Resource(const int width, co
 #ifdef TRESSFX_DEBUG_UAV
 std::unique_ptr<EI_Resource> EI_Device::CreateDebugUAVResource(const int width, const int height, const size_t channels, const int arraySize, const char* name, float ClearValue /*= 0.f*/)
 {
-	EI_Resource* res = new EI_Resource;
-	res->m_ResourceType = EI_ResourceType::Buffer;
-	res->m_pBuffer = new DX12Resource(&m_device);
+    EI_Resource* res = new EI_Resource;
+    res->m_ResourceType = EI_ResourceType::Buffer;
+    res->m_pBuffer = new DX12Resource(&m_device);
 
-	DXGI_FORMAT format = DXGI_FORMAT_R32_UINT;
-	switch (channels)
-	{
-	case 4:
-		format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-		break;
+    DXGI_FORMAT format = DXGI_FORMAT_R32_UINT;
+    switch (channels)
+    {
+    case 4:
+        format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+        break;
 
-	default:
-		// Unsupported ... add whatever you need
-		assert(false);
-		break;
-	}
+    default:
+        // Unsupported ... add whatever you need
+        assert(false);
+        break;
+    }
 
-	res->m_pBuffer->CreateTex2D(format, width, height, arraySize, EI_BF_NEEDSUAV, name);
+    res->m_pBuffer->CreateTex2D(format, width, height, arraySize, EI_BF_NEEDSUAV, name);
 
-	return std::unique_ptr<EI_Resource>(res);
+    return std::unique_ptr<EI_Resource>(res);
 }
 #endif // TRESSFX_DEBUG_UAV
 
@@ -681,30 +681,30 @@ std::unique_ptr<EI_RenderTargetSet> EI_Device::CreateRenderTargetSet(const EI_Re
 
 std::unique_ptr<EI_GLTFTexturesAndBuffers> EI_Device::CreateGLTFTexturesAndBuffers(GLTFCommon* pGLTFCommon)
 {
-	EI_GLTFTexturesAndBuffers* GLTFBuffersAndTextures = new CAULDRON_DX12::GLTFTexturesAndBuffers();
-	GLTFBuffersAndTextures->OnCreate(GetCauldronDevice(), pGLTFCommon, &m_uploadHeap, &m_vidMemBufferPool, &m_constantBufferRing);
+    EI_GLTFTexturesAndBuffers* GLTFBuffersAndTextures = new CAULDRON_DX12::GLTFTexturesAndBuffers();
+    GLTFBuffersAndTextures->OnCreate(GetCauldronDevice(), pGLTFCommon, &m_uploadHeap, &m_vidMemBufferPool, &m_constantBufferRing);
 
-	return std::unique_ptr<EI_GLTFTexturesAndBuffers>(GLTFBuffersAndTextures);
+    return std::unique_ptr<EI_GLTFTexturesAndBuffers>(GLTFBuffersAndTextures);
 }
 
 std::unique_ptr<EI_GltfPbrPass> EI_Device::CreateGLTFPbrPass(EI_GLTFTexturesAndBuffers* pGLTFTexturesAndBuffers, EI_RenderTargetSet* renderTargetSet)
 {
-	EI_GltfPbrPass* GLTFPbr = new CAULDRON_DX12::GltfPbrPass();
-	GLTFPbr->OnCreate(GetCauldronDevice(), &m_uploadHeap, &m_resourceViewHeaps, &m_constantBufferRing, &m_vidMemBufferPool,
-					  pGLTFTexturesAndBuffers, nullptr, false, GetColorBufferFormat(), 1);
+    EI_GltfPbrPass* GLTFPbr = new CAULDRON_DX12::GltfPbrPass();
+    GLTFPbr->OnCreate(GetCauldronDevice(), &m_uploadHeap, &m_resourceViewHeaps, &m_constantBufferRing, &m_vidMemBufferPool,
+                      pGLTFTexturesAndBuffers, nullptr, false, GetColorBufferFormat(), 1);
 
-	return std::unique_ptr<EI_GltfPbrPass>(GLTFPbr);
+    return std::unique_ptr<EI_GltfPbrPass>(GLTFPbr);
 }
 
 std::unique_ptr<EI_GltfDepthPass> EI_Device::CreateGLTFDepthPass(EI_GLTFTexturesAndBuffers* pGLTFTexturesAndBuffers, EI_RenderTargetSet* renderTargetSet)
 {
-	EI_GltfDepthPass* GLTFDepth = new CAULDRON_DX12::GltfDepthPass();
-	assert(renderTargetSet);
+    EI_GltfDepthPass* GLTFDepth = new CAULDRON_DX12::GltfDepthPass();
+    assert(renderTargetSet);
 
-	GLTFDepth->OnCreate(GetCauldronDevice(), &m_uploadHeap, &m_resourceViewHeaps, &m_constantBufferRing, &m_vidMemBufferPool, 
-						pGLTFTexturesAndBuffers);
+    GLTFDepth->OnCreate(GetCauldronDevice(), &m_uploadHeap, &m_resourceViewHeaps, &m_constantBufferRing, &m_vidMemBufferPool, 
+                        pGLTFTexturesAndBuffers);
 
-	return std::unique_ptr<EI_GltfDepthPass>(GLTFDepth);
+    return std::unique_ptr<EI_GltfDepthPass>(GLTFDepth);
 }
 
 void EI_RenderTargetSet::SetResources(const EI_Resource** pResourcesArray)
@@ -916,7 +916,7 @@ void EI_Device::OnResize(uint32_t width, uint32_t height)
         m_swapChain.OnCreateWindowSizeDependentResources(width, height, m_vSync, CAULDRON_DX12::DISPLAYMODE_SDR);
 
 #ifdef TRESSFX_DEBUG_UAV
-		m_pDebugUAV = CreateDebugUAVResource(width, height, 4, 2, "DebugUAV", 0.f);
+        m_pDebugUAV = CreateDebugUAVResource(width, height, 4, 2, "DebugUAV", 0.f);
 #endif // TRESSFX_DEBUG_UAV
 
         // Create resources we need to resolve out render target back to swap chain
@@ -954,7 +954,7 @@ void EI_Device::OnDestroy()
     m_colorBuffer.reset();
 
 #if TRESSFX_DEBUG_UAV
-	m_pDebugUAV.reset();
+    m_pDebugUAV.reset();
 #endif // TRESSFX_DEBUG_UAV
 
     m_toneMapping.OnDestroy();
@@ -1007,7 +1007,7 @@ std::unique_ptr<EI_PSO> EI_Device::CreateComputeShaderPSO(const char* shaderName
     defines["AMD_TRESSFX_DX12"] = "1";
 
 #ifdef TRESSFX_DEBUG_UAV
-	defines["TRESSFX_DEBUG_UAV"] = "1";
+    defines["TRESSFX_DEBUG_UAV"] = "1";
 #endif // TRESSFX_DEBUG_UAV
 
     D3D12_SHADER_BYTECODE computeShader;
@@ -1082,7 +1082,7 @@ std::unique_ptr<EI_PSO> EI_Device::CreateGraphicsPSO(const char* vertexShaderNam
     defines["AMD_TRESSFX_DX12"] = "1";
 
 #ifdef TRESSFX_DEBUG_UAV
-	defines["TRESSFX_DEBUG_UAV"] = "1";
+    defines["TRESSFX_DEBUG_UAV"] = "1";
 #endif // TRESSFX_DEBUG_UAV
 
     // Compile and create shaders

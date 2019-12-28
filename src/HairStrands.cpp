@@ -64,7 +64,7 @@ HairStrands::HairStrands(
     int               numFollowHairsPerGuideHair,
     float             tipSeparationFactor,
     int               skinNumber, 
-	int				  renderIndex
+    int				  renderIndex
 )
 {
     EI_Device* pDevice = GetDevice();

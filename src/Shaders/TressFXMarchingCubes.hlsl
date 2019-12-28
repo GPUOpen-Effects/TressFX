@@ -149,123 +149,123 @@ void RunMarchingCubesOnSdf(uint GIndex : SV_GroupIndex,
                     uint3 GId : SV_GroupID,
                     uint3 DTid : SV_DispatchThreadID)
 {
-	int numSdfCells = g_NumCellsX * g_NumCellsY * g_NumCellsZ;
+    int numSdfCells = g_NumCellsX * g_NumCellsY * g_NumCellsZ;
 
     int sdfCellIndex = GId.x * THREAD_GROUP_SIZE + GIndex;
-	
+    
     if(sdfCellIndex >= numSdfCells) 
         return;
 
-	int3 gridPosition = GetSdfCellPositionFromIndex( (uint)sdfCellIndex );
-	
-	if( !(0 <= gridPosition.x && gridPosition.x < g_NumCellsX - 1)
-	 || !(0 <= gridPosition.y && gridPosition.y < g_NumCellsY - 1)
-	 || !(0 <= gridPosition.z && gridPosition.z < g_NumCellsZ - 1) ) return;
-	
-	int3 offset[8];
-	offset[0] = int3(0, 0, 0);
-	offset[1] = int3(1, 0, 0);
-	offset[2] = int3(1, 0, 1);
-	offset[3] = int3(0, 0, 1);
-	offset[4] = int3(0, 1, 0);
-	offset[5] = int3(1, 1, 0);
-	offset[6] = int3(1, 1, 1);
-	offset[7] = int3(0, 1, 1);
-	
-	int3 cellCoordinates[8];
+    int3 gridPosition = GetSdfCellPositionFromIndex( (uint)sdfCellIndex );
+    
+    if( !(0 <= gridPosition.x && gridPosition.x < g_NumCellsX - 1)
+     || !(0 <= gridPosition.y && gridPosition.y < g_NumCellsY - 1)
+     || !(0 <= gridPosition.z && gridPosition.z < g_NumCellsZ - 1) ) return;
+    
+    int3 offset[8];
+    offset[0] = int3(0, 0, 0);
+    offset[1] = int3(1, 0, 0);
+    offset[2] = int3(1, 0, 1);
+    offset[3] = int3(0, 0, 1);
+    offset[4] = int3(0, 1, 0);
+    offset[5] = int3(1, 1, 0);
+    offset[6] = int3(1, 1, 1);
+    offset[7] = int3(0, 1, 1);
+    
+    int3 cellCoordinates[8];
 
-	for(int i = 0; i < 8; ++i) 
-		cellCoordinates[i] = gridPosition + offset[i];
+    for(int i = 0; i < 8; ++i) 
+        cellCoordinates[i] = gridPosition + offset[i];
 
-	MarchingCube C;
+    MarchingCube C;
 
-	for(int j = 0; j < 8; ++j) 
-		C.m_vertices[j].xyz = GetSdfCellPosition(cellCoordinates[j]);
+    for(int j = 0; j < 8; ++j) 
+        C.m_vertices[j].xyz = GetSdfCellPosition(cellCoordinates[j]);
 
-	for(int k = 0; k < 8; ++k) 
-	{
-		int sdfIndex = GetSdfCellIndex(cellCoordinates[k]);
-		float dist = asfloat(g_MarchingCubesSignedDistanceField[sdfIndex]);
-		
-		C.m_scalars[k] = dist;
-	}
+    for(int k = 0; k < 8; ++k) 
+    {
+        int sdfIndex = GetSdfCellIndex(cellCoordinates[k]);
+        float dist = asfloat(g_MarchingCubesSignedDistanceField[sdfIndex]);
+        
+        C.m_scalars[k] = dist;
+    }
 
 
-	//appendTrianglesMarchingCubes(C);
-	{
-		//Compare floats at vertices 0-7 with g_MarchingCubesIsolevel 
-		//to determine which of the 256 possible configurations is present
-		uint cubeIndex = 0;
-		if( C.m_scalars[0] < g_MarchingCubesIsolevel ) cubeIndex |= 1;
-		if( C.m_scalars[1] < g_MarchingCubesIsolevel ) cubeIndex |= 2;
-		if( C.m_scalars[2] < g_MarchingCubesIsolevel ) cubeIndex |= 4;
-		if( C.m_scalars[3] < g_MarchingCubesIsolevel ) cubeIndex |= 8;
-		if( C.m_scalars[4] < g_MarchingCubesIsolevel ) cubeIndex |= 16;
-		if( C.m_scalars[5] < g_MarchingCubesIsolevel ) cubeIndex |= 32;
-		if( C.m_scalars[6] < g_MarchingCubesIsolevel ) cubeIndex |= 64;
-		if( C.m_scalars[7] < g_MarchingCubesIsolevel ) cubeIndex |= 128;
-		
-		if( !g_MarchingCubesEdgeTable[cubeIndex] ) 
-			return;		//All vertices are above or below isolevel
-		
-		//Generate vertices for edges 0-11; interpolate between the edge's vertices
-		float3 vertices[12];
-		if( g_MarchingCubesEdgeTable[cubeIndex] & 1    ) vertices[0]  = VertexLerp(g_MarchingCubesIsolevel, C.m_scalars[0], C.m_scalars[1], C.m_vertices[0], C.m_vertices[1]);
-		if( g_MarchingCubesEdgeTable[cubeIndex] & 2    ) vertices[1]  = VertexLerp(g_MarchingCubesIsolevel, C.m_scalars[1], C.m_scalars[2], C.m_vertices[1], C.m_vertices[2]);
-		if( g_MarchingCubesEdgeTable[cubeIndex] & 4    ) vertices[2]  = VertexLerp(g_MarchingCubesIsolevel, C.m_scalars[2], C.m_scalars[3], C.m_vertices[2], C.m_vertices[3]);
-		if( g_MarchingCubesEdgeTable[cubeIndex] & 8    ) vertices[3]  = VertexLerp(g_MarchingCubesIsolevel, C.m_scalars[3], C.m_scalars[0], C.m_vertices[3], C.m_vertices[0]);
-		if( g_MarchingCubesEdgeTable[cubeIndex] & 16   ) vertices[4]  = VertexLerp(g_MarchingCubesIsolevel, C.m_scalars[4], C.m_scalars[5], C.m_vertices[4], C.m_vertices[5]);
-		if( g_MarchingCubesEdgeTable[cubeIndex] & 32   ) vertices[5]  = VertexLerp(g_MarchingCubesIsolevel, C.m_scalars[5], C.m_scalars[6], C.m_vertices[5], C.m_vertices[6]);
-		if( g_MarchingCubesEdgeTable[cubeIndex] & 64   ) vertices[6]  = VertexLerp(g_MarchingCubesIsolevel, C.m_scalars[6], C.m_scalars[7], C.m_vertices[6], C.m_vertices[7]);
-		if( g_MarchingCubesEdgeTable[cubeIndex] & 128  ) vertices[7]  = VertexLerp(g_MarchingCubesIsolevel, C.m_scalars[7], C.m_scalars[4], C.m_vertices[7], C.m_vertices[4]);
-		if( g_MarchingCubesEdgeTable[cubeIndex] & 256  ) vertices[8]  = VertexLerp(g_MarchingCubesIsolevel, C.m_scalars[0], C.m_scalars[4], C.m_vertices[0], C.m_vertices[4]);
-		if( g_MarchingCubesEdgeTable[cubeIndex] & 512  ) vertices[9]  = VertexLerp(g_MarchingCubesIsolevel, C.m_scalars[1], C.m_scalars[5], C.m_vertices[1], C.m_vertices[5]);
-		if( g_MarchingCubesEdgeTable[cubeIndex] & 1024 ) vertices[10] = VertexLerp(g_MarchingCubesIsolevel, C.m_scalars[2], C.m_scalars[6], C.m_vertices[2], C.m_vertices[6]);
-		if( g_MarchingCubesEdgeTable[cubeIndex] & 2048 ) vertices[11] = VertexLerp(g_MarchingCubesIsolevel, C.m_scalars[3], C.m_scalars[7], C.m_vertices[3], C.m_vertices[7]);
-		
-		//Store triangles
-		uint numVerticesFromThisCube = 0;
+    //appendTrianglesMarchingCubes(C);
+    {
+        //Compare floats at vertices 0-7 with g_MarchingCubesIsolevel 
+        //to determine which of the 256 possible configurations is present
+        uint cubeIndex = 0;
+        if( C.m_scalars[0] < g_MarchingCubesIsolevel ) cubeIndex |= 1;
+        if( C.m_scalars[1] < g_MarchingCubesIsolevel ) cubeIndex |= 2;
+        if( C.m_scalars[2] < g_MarchingCubesIsolevel ) cubeIndex |= 4;
+        if( C.m_scalars[3] < g_MarchingCubesIsolevel ) cubeIndex |= 8;
+        if( C.m_scalars[4] < g_MarchingCubesIsolevel ) cubeIndex |= 16;
+        if( C.m_scalars[5] < g_MarchingCubesIsolevel ) cubeIndex |= 32;
+        if( C.m_scalars[6] < g_MarchingCubesIsolevel ) cubeIndex |= 64;
+        if( C.m_scalars[7] < g_MarchingCubesIsolevel ) cubeIndex |= 128;
+        
+        if( !g_MarchingCubesEdgeTable[cubeIndex] ) 
+            return;		//All vertices are above or below isolevel
+        
+        //Generate vertices for edges 0-11; interpolate between the edge's vertices
+        float3 vertices[12];
+        if( g_MarchingCubesEdgeTable[cubeIndex] & 1    ) vertices[0]  = VertexLerp(g_MarchingCubesIsolevel, C.m_scalars[0], C.m_scalars[1], C.m_vertices[0], C.m_vertices[1]);
+        if( g_MarchingCubesEdgeTable[cubeIndex] & 2    ) vertices[1]  = VertexLerp(g_MarchingCubesIsolevel, C.m_scalars[1], C.m_scalars[2], C.m_vertices[1], C.m_vertices[2]);
+        if( g_MarchingCubesEdgeTable[cubeIndex] & 4    ) vertices[2]  = VertexLerp(g_MarchingCubesIsolevel, C.m_scalars[2], C.m_scalars[3], C.m_vertices[2], C.m_vertices[3]);
+        if( g_MarchingCubesEdgeTable[cubeIndex] & 8    ) vertices[3]  = VertexLerp(g_MarchingCubesIsolevel, C.m_scalars[3], C.m_scalars[0], C.m_vertices[3], C.m_vertices[0]);
+        if( g_MarchingCubesEdgeTable[cubeIndex] & 16   ) vertices[4]  = VertexLerp(g_MarchingCubesIsolevel, C.m_scalars[4], C.m_scalars[5], C.m_vertices[4], C.m_vertices[5]);
+        if( g_MarchingCubesEdgeTable[cubeIndex] & 32   ) vertices[5]  = VertexLerp(g_MarchingCubesIsolevel, C.m_scalars[5], C.m_scalars[6], C.m_vertices[5], C.m_vertices[6]);
+        if( g_MarchingCubesEdgeTable[cubeIndex] & 64   ) vertices[6]  = VertexLerp(g_MarchingCubesIsolevel, C.m_scalars[6], C.m_scalars[7], C.m_vertices[6], C.m_vertices[7]);
+        if( g_MarchingCubesEdgeTable[cubeIndex] & 128  ) vertices[7]  = VertexLerp(g_MarchingCubesIsolevel, C.m_scalars[7], C.m_scalars[4], C.m_vertices[7], C.m_vertices[4]);
+        if( g_MarchingCubesEdgeTable[cubeIndex] & 256  ) vertices[8]  = VertexLerp(g_MarchingCubesIsolevel, C.m_scalars[0], C.m_scalars[4], C.m_vertices[0], C.m_vertices[4]);
+        if( g_MarchingCubesEdgeTable[cubeIndex] & 512  ) vertices[9]  = VertexLerp(g_MarchingCubesIsolevel, C.m_scalars[1], C.m_scalars[5], C.m_vertices[1], C.m_vertices[5]);
+        if( g_MarchingCubesEdgeTable[cubeIndex] & 1024 ) vertices[10] = VertexLerp(g_MarchingCubesIsolevel, C.m_scalars[2], C.m_scalars[6], C.m_vertices[2], C.m_vertices[6]);
+        if( g_MarchingCubesEdgeTable[cubeIndex] & 2048 ) vertices[11] = VertexLerp(g_MarchingCubesIsolevel, C.m_scalars[3], C.m_scalars[7], C.m_vertices[3], C.m_vertices[7]);
+        
+        //Store triangles
+        uint numVerticesFromThisCube = 0;
 
-		for(int i = 0; i < 16 && g_MarchingCubesTriangleTable[cubeIndex * 16 + i] != -1; ++i) 
-			++numVerticesFromThisCube;
-		
-		int vertexIndexOffset;
-		InterlockedAdd(g_NumMarchingCubesVertices[0], numVerticesFromThisCube, vertexIndexOffset);
+        for(int i = 0; i < 16 && g_MarchingCubesTriangleTable[cubeIndex * 16 + i] != -1; ++i) 
+            ++numVerticesFromThisCube;
+        
+        int vertexIndexOffset;
+        InterlockedAdd(g_NumMarchingCubesVertices[0], numVerticesFromThisCube, vertexIndexOffset);
 
-		if(vertexIndexOffset + numVerticesFromThisCube < g_MaxMarchingCubesVertices)
-		{
-			uint numTriangles = numVerticesFromThisCube / 3;
-			
-			for(uint tri = 0; tri < numTriangles; ++tri)
-			{
-				uint offset0 = tri * 3 + 0;
-				uint offset1 = tri * 3 + 1;
-				uint offset2 = tri * 3 + 2;
-				
-				StandardVertex v0;
-				StandardVertex v1;
-				StandardVertex v2;
+        if(vertexIndexOffset + numVerticesFromThisCube < g_MaxMarchingCubesVertices)
+        {
+            uint numTriangles = numVerticesFromThisCube / 3;
+            
+            for(uint tri = 0; tri < numTriangles; ++tri)
+            {
+                uint offset0 = tri * 3 + 0;
+                uint offset1 = tri * 3 + 1;
+                uint offset2 = tri * 3 + 2;
+                
+                StandardVertex v0;
+                StandardVertex v1;
+                StandardVertex v2;
 
-				v0.position = float4(vertices[ g_MarchingCubesTriangleTable[cubeIndex * 16 + offset0] ], 0);
-				v1.position = float4(vertices[ g_MarchingCubesTriangleTable[cubeIndex * 16 + offset1] ], 0);
-				v2.position = float4(vertices[ g_MarchingCubesTriangleTable[cubeIndex * 16 + offset2] ], 0);
-				
-				float3 normal = normalize( cross(v1.position.xyz - v0.position.xyz, v2.position.xyz - v0.position.xyz) );
-				
-				v0.normal = float4(normal.xyz, 0);
-				v1.normal = float4(normal.xyz, 0);
-				v2.normal = float4(normal.xyz, 0);
-				
-				uint index0 = vertexIndexOffset + offset0;
-				uint index1 = vertexIndexOffset + offset1;
-				uint index2 = vertexIndexOffset + offset2;
-				
-				g_MarchingCubesTriangleVertices[index0] = v0;
-				g_MarchingCubesTriangleVertices[index1] = v1;
-				g_MarchingCubesTriangleVertices[index2] = v2;
-			}
-		}
-	}
+                v0.position = float4(vertices[ g_MarchingCubesTriangleTable[cubeIndex * 16 + offset0] ], 0);
+                v1.position = float4(vertices[ g_MarchingCubesTriangleTable[cubeIndex * 16 + offset1] ], 0);
+                v2.position = float4(vertices[ g_MarchingCubesTriangleTable[cubeIndex * 16 + offset2] ], 0);
+                
+                float3 normal = normalize( cross(v1.position.xyz - v0.position.xyz, v2.position.xyz - v0.position.xyz) );
+                
+                v0.normal = float4(normal.xyz, 0);
+                v1.normal = float4(normal.xyz, 0);
+                v2.normal = float4(normal.xyz, 0);
+                
+                uint index0 = vertexIndexOffset + offset0;
+                uint index1 = vertexIndexOffset + offset1;
+                uint index2 = vertexIndexOffset + offset2;
+                
+                g_MarchingCubesTriangleVertices[index0] = v0;
+                g_MarchingCubesTriangleVertices[index1] = v1;
+                g_MarchingCubesTriangleVertices[index2] = v2;
+            }
+        }
+    }
 
 }
 

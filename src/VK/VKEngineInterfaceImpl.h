@@ -66,7 +66,7 @@ public:
     void Dispatch(int numGroups);
     void UpdateBuffer(EI_Resource * res, void * data);
     void ClearUint32Image(EI_Resource* res, uint32_t value);
-	void ClearFloat32Image(EI_Resource* res, float value);
+    void ClearFloat32Image(EI_Resource* res, float value);
     void DrawIndexedInstanced(EI_PSO& pso, EI_IndexedDrawParams& drawParams);
     void DrawInstanced(EI_PSO& pso, EI_DrawParams& drawParams);
     void PushConstants(EI_PSO * pso, int size, void * data);
@@ -75,9 +75,9 @@ public:
 
 namespace CAULDRON_VK
 {
-	class GLTFTexturesAndBuffers;
-	class GltfPbrPass;
-	class GltfDepthPass;
+    class GLTFTexturesAndBuffers;
+    class GltfPbrPass;
+    class GltfDepthPass;
 }
 
 typedef CAULDRON_VK::GLTFTexturesAndBuffers EI_GLTFTexturesAndBuffers;
@@ -106,7 +106,7 @@ class EI_Device
 {
 public:
                     EI_Device();
-					~EI_Device();
+                    ~EI_Device();
     // interface
     EI_CommandContext& GetCurrentCommandContext() { return m_currentCommandBuffer; }
     std::unique_ptr<EI_Resource>    CreateBufferResource(const int structSize, const int structCount, const unsigned int flags, const char* name);
@@ -120,15 +120,15 @@ public:
 
     std::unique_ptr <EI_BindSet>    CreateBindSet(EI_BindLayout * layout, EI_BindSetDescription& bindSet);
 
-	std::unique_ptr<EI_RenderTargetSet>   CreateRenderTargetSet(const EI_ResourceFormat* pResourceFormats, const uint32_t numResources, const EI_AttachmentParams* AttachmentParams, float* clearValues);
+    std::unique_ptr<EI_RenderTargetSet>   CreateRenderTargetSet(const EI_ResourceFormat* pResourceFormats, const uint32_t numResources, const EI_AttachmentParams* AttachmentParams, float* clearValues);
     std::unique_ptr<EI_RenderTargetSet>   CreateRenderTargetSet(const EI_Resource** pResourcesArray, const uint32_t numResources, const EI_AttachmentParams* AttachmentParams, float* clearValues);
 
-	std::unique_ptr<EI_GLTFTexturesAndBuffers> CreateGLTFTexturesAndBuffers(GLTFCommon* pGLTFCommon);
-	std::unique_ptr<EI_GltfPbrPass> CreateGLTFPbrPass(EI_GLTFTexturesAndBuffers* pGLTFTexturesAndBuffers, EI_RenderTargetSet* renderTargetSet);
-	std::unique_ptr<EI_GltfDepthPass> CreateGLTFDepthPass(EI_GLTFTexturesAndBuffers* pGLTFTexturesAndBuffers, EI_RenderTargetSet* renderTargetSet);
+    std::unique_ptr<EI_GLTFTexturesAndBuffers> CreateGLTFTexturesAndBuffers(GLTFCommon* pGLTFCommon);
+    std::unique_ptr<EI_GltfPbrPass> CreateGLTFPbrPass(EI_GLTFTexturesAndBuffers* pGLTFTexturesAndBuffers, EI_RenderTargetSet* renderTargetSet);
+    std::unique_ptr<EI_GltfDepthPass> CreateGLTFDepthPass(EI_GLTFTexturesAndBuffers* pGLTFTexturesAndBuffers, EI_RenderTargetSet* renderTargetSet);
 
-	void			BeginRenderPass(EI_CommandContext& commandContext, const EI_RenderTargetSet* pRenderPassSet, const wchar_t* pPassName, uint32_t width = 0, uint32_t height = 0);
-	void			EndRenderPass(EI_CommandContext& commandContext);
+    void			BeginRenderPass(EI_CommandContext& commandContext, const EI_RenderTargetSet* pRenderPassSet, const wchar_t* pPassName, uint32_t width = 0, uint32_t height = 0);
+    void			EndRenderPass(EI_CommandContext& commandContext);
     void            SetViewportAndScissor(EI_CommandContext& commandContext, uint32_t topX, uint32_t topY, uint32_t width, uint32_t height);
 
     std::unique_ptr<EI_PSO> CreateComputeShaderPSO(const char * shaderName, const char * entryPoint, EI_BindLayout ** layouts, int numLayouts);
@@ -153,18 +153,18 @@ public:
     void            BeginNewCommandBuffer();
     void            BeginNewComputeCommandBuffer();
     void            BeginBackbufferRenderPass();
-	void			EndRenderPass();
+    void			EndRenderPass();
     void            RenderUI();
 
     CAULDRON_VK::Device* GetCauldronDevice() { return &m_device; }
     VkRenderPass    GetSwapChainRenderPass() { return m_swapChain.GetRenderPass(); }
 
-	CAULDRON_VK::UploadHeap* GetUploadHeap() { return &m_uploadHeap; }
-	CAULDRON_VK::StaticBufferPool* GetVidMemBufferPool() { return &m_vidMemBufferPool; }
-	CAULDRON_VK::DynamicBufferRing* GetConstantBufferRing() { return &m_constantBufferRing; }
+    CAULDRON_VK::UploadHeap* GetUploadHeap() { return &m_uploadHeap; }
+    CAULDRON_VK::StaticBufferPool* GetVidMemBufferPool() { return &m_vidMemBufferPool; }
+    CAULDRON_VK::DynamicBufferRing* GetConstantBufferRing() { return &m_constantBufferRing; }
 
-	// Find a better place to put this ...
-	EI_Resource*	    GetDepthBufferResource() { return m_depthBuffer.get(); }
+    // Find a better place to put this ...
+    EI_Resource*	    GetDepthBufferResource() { return m_depthBuffer.get(); }
     EI_ResourceFormat   GetDepthBufferFormat() { return VK_FORMAT_D32_SFLOAT; }
     EI_Resource*        GetColorBufferResource() { return m_colorBuffer.get(); }
     EI_ResourceFormat   GetColorBufferFormat() { return VK_FORMAT_R8G8B8A8_SRGB; }
@@ -189,13 +189,13 @@ private:
     VkRenderPass   CreateRenderPass(const EI_ResourceFormat* pResourceFormats, const uint32_t numResources, const EI_AttachmentParams* AttachmentParams);
 
     void            EndAndSubmitCommandBufferWithFences();
-	CAULDRON_VK::Device		m_device;
+    CAULDRON_VK::Device		m_device;
     CAULDRON_VK::SwapChain	m_swapChain;
     int m_currentImageIndex;
 
     // We need to be able to get access to the depth buffer from within the demo
-	// so store as an agnostic resource. We will also store a color target for all our sample's works
-	std::unique_ptr<EI_Resource> m_depthBuffer;
+    // so store as an agnostic resource. We will also store a color target for all our sample's works
+    std::unique_ptr<EI_Resource> m_depthBuffer;
     std::unique_ptr<EI_Resource> m_colorBuffer;
     std::unique_ptr<EI_Resource> m_shadowBuffer;
 
@@ -221,7 +221,7 @@ private:
 
     // resource allocators
     CAULDRON_VK::ResourceViewHeaps  m_resourceViewHeaps;
-	CAULDRON_VK::UploadHeap         m_uploadHeap;
+    CAULDRON_VK::UploadHeap         m_uploadHeap;
     CAULDRON_VK::StaticBufferPool   m_vidMemBufferPool;
     CAULDRON_VK::StaticBufferPool   m_sysMemBufferPool;
     CAULDRON_VK::DynamicBufferRing  m_constantBufferRing; // "dynamic" uniform buffers
@@ -275,7 +275,7 @@ struct EI_BindLayout
 
     EI_LayoutDescription description;
     std::vector<VkDescriptorSetLayoutBinding> layoutBindings;
-	VkDescriptorSetLayout m_descriptorSetLayout = VK_NULL_HANDLE;
+    VkDescriptorSetLayout m_descriptorSetLayout = VK_NULL_HANDLE;
 };
 
 const static int MaxRenderAttachments = 5;
@@ -284,10 +284,10 @@ struct EI_RenderTargetSet
     ~EI_RenderTargetSet();
     void SetResources(const EI_Resource** pResourcesArray);
 
-	VkRenderPass	m_RenderPass = VK_NULL_HANDLE;       
-	VkFramebuffer	m_FrameBuffer = VK_NULL_HANDLE;
-	VkClearValue	m_ClearValues[MaxRenderAttachments];
-	uint32_t		m_NumResources = 0;
+    VkRenderPass	m_RenderPass = VK_NULL_HANDLE;       
+    VkFramebuffer	m_FrameBuffer = VK_NULL_HANDLE;
+    VkClearValue	m_ClearValues[MaxRenderAttachments];
+    uint32_t		m_NumResources = 0;
 };
 
 class EI_PSO
@@ -295,8 +295,8 @@ class EI_PSO
 public:
     ~EI_PSO();
 
-	VkPipeline          m_pipeline = VK_NULL_HANDLE;
-	VkPipelineLayout    m_pipelineLayout = VK_NULL_HANDLE;
+    VkPipeline          m_pipeline = VK_NULL_HANDLE;
+    VkPipelineLayout    m_pipelineLayout = VK_NULL_HANDLE;
     EI_BindPoint        m_bp;
 };
 

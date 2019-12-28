@@ -46,12 +46,12 @@ TressFXHairObject::TressFXHairObject(TressFXAsset* asset,
     EI_CommandContext&  commandContext,
     const char *      name, int RenderIndex) :
     m_NumTotalVertices(0), 
-	m_NumTotalStrands(0), 
-	m_NumVerticesPerStrand(0), 
-	m_CPULocalShapeIterations(0), 
-	m_SimulationFrame(0), 
-	m_RenderIndex(RenderIndex), 
-	m_pRenderLayoutBindSet(nullptr)
+    m_NumTotalStrands(0), 
+    m_NumVerticesPerStrand(0), 
+    m_CPULocalShapeIterations(0), 
+    m_SimulationFrame(0), 
+    m_RenderIndex(RenderIndex), 
+    m_pRenderLayoutBindSet(nullptr)
 {
     m_NumTotalVertices = asset->m_numTotalVertices;
     m_NumTotalStrands = asset->m_numTotalStrands;
@@ -243,36 +243,36 @@ void TressFXHairObject::UpdatePerObjectRenderParams(EI_CommandContext& commandCo
 void TressFXHairObject::DrawStrands(EI_CommandContext& commandContext,
                                     EI_PSO&            pso,
                                     EI_BindSet**       extraBindSets,
-									uint32_t		   numExtraBindSets)
+                                    uint32_t		   numExtraBindSets)
 {
     // at some point, should probably pass these in to EI_BindAndDrawIndexedInstanced.
-	static const uint32_t MaxSetsToBind = 10;	// Grow as needed
-	EI_BindSet* sets[MaxSetsToBind];
+    static const uint32_t MaxSetsToBind = 10;	// Grow as needed
+    EI_BindSet* sets[MaxSetsToBind];
 
-	// First 2 sets are always the RenderLayout and PosTanCollection
-	sets[0] = m_pRenderLayoutBindSet.get(); sets[1] = &m_DynamicState.GetRenderBindSet();
+    // First 2 sets are always the RenderLayout and PosTanCollection
+    sets[0] = m_pRenderLayoutBindSet.get(); sets[1] = &m_DynamicState.GetRenderBindSet();
 
-	for (uint32_t i = 0; i < numExtraBindSets; ++i)
-		sets[2+i] = extraBindSets[i];
+    for (uint32_t i = 0; i < numExtraBindSets; ++i)
+        sets[2+i] = extraBindSets[i];
 
     commandContext.BindSets(&pso, 2 + numExtraBindSets, sets);
     AMD::uint32 nStrandCopies = 1;
     
-	uint32_t NumPrimsToRender = (m_TotalIndices / 3);
-	
-	if (m_LODHairDensity != 1.f)
-	{
-		NumPrimsToRender = uint32_t(float(NumPrimsToRender) * m_LODHairDensity);
+    uint32_t NumPrimsToRender = (m_TotalIndices / 3);
+    
+    if (m_LODHairDensity != 1.f)
+    {
+        NumPrimsToRender = uint32_t(float(NumPrimsToRender) * m_LODHairDensity);
 
-		// Calculate a new number of Primitives to draw. Keep it aligned to number of primitives per strand (i.e. don't cut strands in half or anything)
-		uint32 NumPrimsPerStrand = (m_NumVerticesPerStrand - 1) * 2;
-		uint32 RemainderPrims = NumPrimsToRender % NumPrimsPerStrand;
+        // Calculate a new number of Primitives to draw. Keep it aligned to number of primitives per strand (i.e. don't cut strands in half or anything)
+        uint32 NumPrimsPerStrand = (m_NumVerticesPerStrand - 1) * 2;
+        uint32 RemainderPrims = NumPrimsToRender % NumPrimsPerStrand;
 
-		NumPrimsToRender = (RemainderPrims > 0) ? NumPrimsToRender + NumPrimsPerStrand - RemainderPrims : NumPrimsToRender;
+        NumPrimsToRender = (RemainderPrims > 0) ? NumPrimsToRender + NumPrimsPerStrand - RemainderPrims : NumPrimsToRender;
 
-		// Force prims to be on (guide hair + its follow hairs boundary... no partial groupings)
-		NumPrimsToRender = NumPrimsToRender - (NumPrimsToRender % (NumPrimsPerStrand * (m_NumFollowHairsPerGuideHair + 1)));
-	}
+        // Force prims to be on (guide hair + its follow hairs boundary... no partial groupings)
+        NumPrimsToRender = NumPrimsToRender - (NumPrimsToRender % (NumPrimsPerStrand * (m_NumFollowHairsPerGuideHair + 1)));
+    }
 
     EI_IndexedDrawParams drawParams;
     drawParams.pIndexBuffer = m_pIndexBuffer.get();
@@ -360,7 +360,7 @@ void TressFXHairObject::PopulateDrawStrandsBindSet(EI_Device* pDevice, TressFXRe
           m_StrandAlbedo.get() ? m_StrandAlbedo.get() : pDevice->GetDefaultWhiteTexture(),
         }
     };
-	m_pRenderLayoutBindSet = pDevice->CreateBindSet(GetTressFXParamLayout(), bindSetDesc);
+    m_pRenderLayoutBindSet = pDevice->CreateBindSet(GetTressFXParamLayout(), bindSetDesc);
 }
 
 void TressFXHairObject::UpdateBoneMatrices(const AMD::float4x4* pBoneMatricesInWS, int numBoneMatrices)
@@ -458,29 +458,29 @@ void TressFXHairObject::UpdateRenderingParameters(const TressFXRenderingSettings
     m_StrandCB->StrandUVTilingFactor = parameters->m_StrandUVTilingFactor;
     m_StrandCB->FiberRatio = parameters->m_FiberRatio;
 
-	// Reset LOD hair density for the frame
-	m_LODHairDensity = 1.f;
+    // Reset LOD hair density for the frame
+    m_LODHairDensity = 1.f;
 
-	float FiberRadius = parameters->m_FiberRadius;
-	if (parameters->m_EnableHairLOD)
-	{
-		float MinLODDist = ShadowUpdate? min(parameters->m_ShadowLODStartDistance, parameters->m_ShadowLODEndDistance) : min(parameters->m_LODStartDistance, parameters->m_LODEndDistance);
-		float MaxLODDist = ShadowUpdate? max(parameters->m_ShadowLODStartDistance, parameters->m_ShadowLODEndDistance) : max(parameters->m_LODStartDistance, parameters->m_LODEndDistance);
+    float FiberRadius = parameters->m_FiberRadius;
+    if (parameters->m_EnableHairLOD)
+    {
+        float MinLODDist = ShadowUpdate? min(parameters->m_ShadowLODStartDistance, parameters->m_ShadowLODEndDistance) : min(parameters->m_LODStartDistance, parameters->m_LODEndDistance);
+        float MaxLODDist = ShadowUpdate? max(parameters->m_ShadowLODStartDistance, parameters->m_ShadowLODEndDistance) : max(parameters->m_LODStartDistance, parameters->m_LODEndDistance);
 
-		if (Distance > MinLODDist)
-		{
-			float DistanceRatio = min((Distance - MinLODDist) / max(MaxLODDist - MinLODDist, 0.00001f), 1.f);
+        if (Distance > MinLODDist)
+        {
+            float DistanceRatio = min((Distance - MinLODDist) / max(MaxLODDist - MinLODDist, 0.00001f), 1.f);
 
-			// Lerp: x + s(y-x)
-			float MaxLODFiberRadius = FiberRadius * (ShadowUpdate? parameters->m_ShadowLODWidthMultiplier : parameters->m_LODWidthMultiplier);
-			FiberRadius = FiberRadius + (DistanceRatio * (MaxLODFiberRadius - FiberRadius));
+            // Lerp: x + s(y-x)
+            float MaxLODFiberRadius = FiberRadius * (ShadowUpdate? parameters->m_ShadowLODWidthMultiplier : parameters->m_LODWidthMultiplier);
+            FiberRadius = FiberRadius + (DistanceRatio * (MaxLODFiberRadius - FiberRadius));
 
-			// Lerp: x + s(y-x)
-			m_LODHairDensity = 1.f + (DistanceRatio * ((ShadowUpdate ? parameters->m_ShadowLODPercent : parameters->m_LODPercent) - 1.f));
-		}
-	}
+            // Lerp: x + s(y-x)
+            m_LODHairDensity = 1.f + (DistanceRatio * ((ShadowUpdate ? parameters->m_ShadowLODPercent : parameters->m_LODPercent) - 1.f));
+        }
+    }
 
-	m_StrandCB->FiberRadius = FiberRadius;
+    m_StrandCB->FiberRadius = FiberRadius;
 
     m_StrandCB->NumVerticesPerStrand = m_NumVerticesPerStrand;  // Always constant
     m_StrandCB->EnableThinTip = parameters->m_EnableThinTip;

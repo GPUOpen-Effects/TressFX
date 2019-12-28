@@ -246,45 +246,45 @@ float4 MakeQuaternion(float angle_radian, float3 axis)
 // Note that this function does not check the orthonormality. 
 float4 MakeQuaternion(column_major float4x4 m)
 {
-	float4 q;
-	float trace = m[0][0] + m[1][1] + m[2][2];
+    float4 q;
+    float trace = m[0][0] + m[1][1] + m[2][2];
 
-	if (trace > 0.0f)
-	{
-		float r = sqrt(trace + 1.0f);
-		q.w = 0.5 * r;
-		r = 0.5 / r;
-		q.x = (m[1][2] - m[2][1])*r;
-		q.y = (m[2][0] - m[0][2])*r;
-		q.z = (m[0][1] - m[1][0])*r;
-	}
-	else
-	{
-		int i = 0, j = 1, k = 2;
+    if (trace > 0.0f)
+    {
+        float r = sqrt(trace + 1.0f);
+        q.w = 0.5 * r;
+        r = 0.5 / r;
+        q.x = (m[1][2] - m[2][1])*r;
+        q.y = (m[2][0] - m[0][2])*r;
+        q.z = (m[0][1] - m[1][0])*r;
+    }
+    else
+    {
+        int i = 0, j = 1, k = 2;
 
-		if (m[1][1] > m[0][0])
-		{
-			i = 1; j = 2; k = 0;
-		}
-		if (m[2][2] > m[i][i])
-		{
-			i = 2; j = 0; k = 1;
-		}
+        if (m[1][1] > m[0][0])
+        {
+            i = 1; j = 2; k = 0;
+        }
+        if (m[2][2] > m[i][i])
+        {
+            i = 2; j = 0; k = 1;
+        }
 
-		float r = sqrt(m[i][i] - m[j][j] - m[k][k] + 1.0f);
+        float r = sqrt(m[i][i] - m[j][j] - m[k][k] + 1.0f);
 
-		float qq[4];
+        float qq[4];
 
-		qq[i] = 0.5f * r;
-		r = 0.5f / r;
-		q.w = (m[j][k] - m[k][j])*r;
-		qq[j] = (m[j][i] + m[i][j])*r;
-		qq[k] = (m[k][i] + m[i][k])*r;
+        qq[i] = 0.5f * r;
+        r = 0.5f / r;
+        q.w = (m[j][k] - m[k][j])*r;
+        qq[j] = (m[j][i] + m[i][j])*r;
+        qq[k] = (m[k][i] + m[i][k])*r;
 
-		q.x = qq[0]; q.y = qq[1]; q.z = qq[2];
-	}
+        q.x = qq[0]; q.y = qq[1]; q.z = qq[2];
+    }
 
-	return q;
+    return q;
 }
 
 float4 InverseQuaternion(float4 q)
@@ -328,50 +328,50 @@ float4 MultQuaternionAndQuaternion(float4 qA, float4 qB)
 
 float4 NormalizeQuaternion(float4 q)
 {
-	float4 qq = q;
-	float n = q.x*q.x + q.y*q.y + q.z*q.z + q.w*q.w;
+    float4 qq = q;
+    float n = q.x*q.x + q.y*q.y + q.z*q.z + q.w*q.w;
 
-	if (n < 1e-10f)
-	{
-		qq.w = 1;
-		return qq;
-	}
+    if (n < 1e-10f)
+    {
+        qq.w = 1;
+        return qq;
+    }
 
-	qq *= 1.0f / sqrt(n);
-	return qq;
+    qq *= 1.0f / sqrt(n);
+    return qq;
 }
 
 // Compute a quaternion which rotates u to v. u and v must be unit vector. 
 float4 QuatFromTwoUnitVectors(float3 u, float3 v)
 {
-	float r = 1.f + dot(u, v);
-	float3 n;
+    float r = 1.f + dot(u, v);
+    float3 n;
 
-	// if u and v are parallel
-	if (r < 1e-7)
-	{
-		r = 0.0f;
-		n = abs(u.x) > abs(u.z) ? float3(-u.y, u.x, 0.f) : float3(0.f, -u.z, u.y);
-	}
-	else
-	{
-		n = cross(u, v);  
-	}
+    // if u and v are parallel
+    if (r < 1e-7)
+    {
+        r = 0.0f;
+        n = abs(u.x) > abs(u.z) ? float3(-u.y, u.x, 0.f) : float3(0.f, -u.z, u.y);
+    }
+    else
+    {
+        n = cross(u, v);  
+    }
 
-	float4 q = float4(n.x, n.y, n.z, r);
-	return NormalizeQuaternion(q);
+    float4 q = float4(n.x, n.y, n.z, r);
+    return NormalizeQuaternion(q);
 }
 
 // Make the inpute 4x4 matrix be identity
 float4x4 MakeIdentity()
 {
-	float4x4 m;
-	m._m00 = 1;   m._m01 = 0;   m._m02 = 0;   m._m03 = 0;
-	m._m10 = 0;   m._m11 = 1;   m._m12 = 0;   m._m13 = 0;
-	m._m20 = 0;   m._m21 = 0;   m._m22 = 1;   m._m23 = 0;
-	m._m30 = 0;   m._m31 = 0;   m._m32 = 0;   m._m33 = 1;
+    float4x4 m;
+    m._m00 = 1;   m._m01 = 0;   m._m02 = 0;   m._m03 = 0;
+    m._m10 = 0;   m._m11 = 1;   m._m12 = 0;   m._m13 = 0;
+    m._m20 = 0;   m._m21 = 0;   m._m22 = 1;   m._m23 = 0;
+    m._m30 = 0;   m._m31 = 0;   m._m32 = 0;   m._m33 = 1;
 
-	return m;
+    return m;
 }
 
 void ApplyDistanceConstraint(inout float4 pos0, inout float4 pos1, float targetDistance, float stiffness = 1.0)
@@ -463,7 +463,7 @@ bool CapsuleCollision(float4 curPosition, float4 oldPosition, inout float3 newPo
 {
     const float radius0 = cc.p0.w;
     const float radius1 = cc.p1.w;
-	newPosition = curPosition.xyz;
+    newPosition = curPosition.xyz;
 
     if ( !IsMovable(curPosition) )
         return false;
@@ -584,7 +584,7 @@ void UpdateFinalVertexPositions(float4 oldPosition, float4 newPosition, int glob
     g_HairVertexPositionsPrev[globalVertexIndex] = oldPosition;
     g_HairVertexPositions[globalVertexIndex] = newPosition;
 }
-			
+            
 
 [numthreads(THREAD_GROUP_SIZE, 1, 1)]
 void TestShader(uint GIndex : SV_GroupIndex,
@@ -617,8 +617,8 @@ void IntegrationAndGlobalShapeConstraints(uint GIndex : SV_GroupIndex,
     // Copy data into shared memory
     float4 initialPos = g_InitialHairPositions[globalVertexIndex]; // rest position
 
-	// Apply bone skinning to initial position
-	BoneSkinningData skinningData = g_BoneSkinningData[globalStrandIndex];
+    // Apply bone skinning to initial position
+    BoneSkinningData skinningData = g_BoneSkinningData[globalStrandIndex];
     float4 bone_quat;
     initialPos.xyz = ApplyVertexBoneSkinning(initialPos.xyz, skinningData, bone_quat);
 
@@ -643,7 +643,7 @@ void IntegrationAndGlobalShapeConstraints(uint GIndex : SV_GroupIndex,
         sharedPos[indexForSharedMem].xyz = Integrate(currentPos.xyz, oldPos.xyz, initialPos.xyz, dampingCoeff);
     else
         sharedPos[indexForSharedMem] = initialPos;
-		
+        
     // Global Shape Constraints
     float stiffnessForGlobalShapeMatching = GetGlobalStiffness(strandType);
     float globalShapeMatchingEffectiveRange = GetGlobalRange(strandType);
@@ -661,7 +661,7 @@ void IntegrationAndGlobalShapeConstraints(uint GIndex : SV_GroupIndex,
         }
     }
 
-	// update global position buffers
+    // update global position buffers
     UpdateFinalVertexPositions(currentPos, sharedPos[indexForSharedMem], globalVertexIndex, localVertexIndex, numVerticesInTheStrand);
 }
 
@@ -676,32 +676,32 @@ void IntegrationAndGlobalShapeConstraints(uint GIndex : SV_GroupIndex,
 //--------------------------------------------------------------------------------------
 [numthreads(THREAD_GROUP_SIZE, 1, 1)]
 void CalculateStrandLevelData(uint GIndex : SV_GroupIndex,
-	                          uint3 GId : SV_GroupID,
-	                          uint3 DTid : SV_DispatchThreadID)
+                              uint3 GId : SV_GroupID,
+                              uint3 DTid : SV_DispatchThreadID)
 {
-	uint local_id, group_id, globalStrandIndex, numVerticesInTheStrand, globalRootVertexIndex, strandType;
-	CalcIndicesInStrandLevelMaster(GIndex, GId.x, globalStrandIndex, numVerticesInTheStrand, globalRootVertexIndex, strandType);
+    uint local_id, group_id, globalStrandIndex, numVerticesInTheStrand, globalRootVertexIndex, strandType;
+    CalcIndicesInStrandLevelMaster(GIndex, GId.x, globalStrandIndex, numVerticesInTheStrand, globalRootVertexIndex, strandType);
 
     float4 pos_old_old[2]; // previous previous positions for vertex 0 (root) and vertex 1.
-	float4 pos_old[2]; // previous positions for vertex 0 (root) and vertex 1.
-	float4 pos_new[2]; // current positions for vertex 0 (root) and vertex 1.
+    float4 pos_old[2]; // previous positions for vertex 0 (root) and vertex 1.
+    float4 pos_new[2]; // current positions for vertex 0 (root) and vertex 1.
 
     pos_old_old[0] = g_HairVertexPositionsPrevPrev[globalRootVertexIndex];
     pos_old_old[1] = g_HairVertexPositionsPrevPrev[globalRootVertexIndex + 1];
 
     pos_old[0] = g_HairVertexPositionsPrev[globalRootVertexIndex];
-	pos_old[1] = g_HairVertexPositionsPrev[globalRootVertexIndex + 1];
-	
+    pos_old[1] = g_HairVertexPositionsPrev[globalRootVertexIndex + 1];
+    
     pos_new[0] = g_HairVertexPositions[globalRootVertexIndex];
-	pos_new[1] = g_HairVertexPositions[globalRootVertexIndex + 1];
+    pos_new[1] = g_HairVertexPositions[globalRootVertexIndex + 1];
 
-	float3 u = normalize(pos_old[1].xyz - pos_old[0].xyz);
-	float3 v = normalize(pos_new[1].xyz - pos_new[0].xyz);
+    float3 u = normalize(pos_old[1].xyz - pos_old[0].xyz);
+    float3 v = normalize(pos_new[1].xyz - pos_new[0].xyz);
 
     // Compute rotation and translation which transform pos_old to pos_new. 
     // Since the first two vertices are immovable, we can assume that there is no scaling during tranform. 
-	float4 rot = QuatFromTwoUnitVectors(u, v);
-	float3 trans = pos_new[0].xyz - MultQuaternionAndVector(rot, pos_old[0].xyz);
+    float4 rot = QuatFromTwoUnitVectors(u, v);
+    float3 trans = pos_new[0].xyz - MultQuaternionAndVector(rot, pos_old[0].xyz);
 
     float vspCoeff = GetVelocityShockPropogation();
     float restLength0 = g_HairRestLengthSRV[globalRootVertexIndex];
@@ -990,9 +990,9 @@ void UpdateFollowHairVertices(uint GIndex : SV_GroupIndex,
     for ( uint i = 0; i < g_NumFollowHairsPerGuideHair; i++ )
     {
         int globalFollowVertexIndex = globalVertexIndex + numVerticesInTheStrand * (i + 1);
-		int globalFollowStrandIndex = globalStrandIndex + i + 1;
+        int globalFollowStrandIndex = globalStrandIndex + i + 1;
         float factor = g_TipSeparationFactor*((float)localVertexIndex / (float)numVerticesInTheStrand) + 1.0f;
-		float3 followPos = sharedPos[indexForSharedMem].xyz + factor*g_FollowHairRootOffset[globalFollowStrandIndex].xyz;
+        float3 followPos = sharedPos[indexForSharedMem].xyz + factor*g_FollowHairRootOffset[globalFollowStrandIndex].xyz;
         g_HairVertexPositions[globalFollowVertexIndex].xyz = followPos;
         g_HairVertexTangents[globalFollowVertexIndex] = sharedTangent[indexForSharedMem];
     }
@@ -1041,103 +1041,103 @@ void PrepareFollowHairBeforeTurningIntoGuide(uint GIndex : SV_GroupIndex,
 //
 //--------------------------------------------------------------------------------------
 #if USE_MESH_BASED_HAIR_TRANSFORM == 1
-	[numthreads(THREAD_GROUP_SIZE, 1, 1)]
-	void GenerateTransforms(uint GIndex : SV_GroupIndex,
-					  uint3 GId : SV_GroupID,
-					  uint3 DTid : SV_DispatchThreadID)
-	{
-		uint local_id, group_id, globalStrandIndex, numVerticesInTheStrand, globalRootVertexIndex, strandType;
-		CalcIndicesInStrandLevelMaster(GIndex, GId.x, globalStrandIndex, numVerticesInTheStrand, globalRootVertexIndex, strandType);
+    [numthreads(THREAD_GROUP_SIZE, 1, 1)]
+    void GenerateTransforms(uint GIndex : SV_GroupIndex,
+                      uint3 GId : SV_GroupID,
+                      uint3 DTid : SV_DispatchThreadID)
+    {
+        uint local_id, group_id, globalStrandIndex, numVerticesInTheStrand, globalRootVertexIndex, strandType;
+        CalcIndicesInStrandLevelMaster(GIndex, GId.x, globalStrandIndex, numVerticesInTheStrand, globalRootVertexIndex, strandType);
 
-		// get the index for the mesh triangle
-		uint triangleIndex = g_HairToMeshMapping[globalStrandIndex].triangleIndex * 3;
+        // get the index for the mesh triangle
+        uint triangleIndex = g_HairToMeshMapping[globalStrandIndex].triangleIndex * 3;
 
-		// get the barycentric coordinate for this hair strand
-		float a = g_HairToMeshMapping[globalStrandIndex].barycentricCoord[0];
-		float b = g_HairToMeshMapping[globalStrandIndex].barycentricCoord[1];
-		float c = g_HairToMeshMapping[globalStrandIndex].barycentricCoord[2];
+        // get the barycentric coordinate for this hair strand
+        float a = g_HairToMeshMapping[globalStrandIndex].barycentricCoord[0];
+        float b = g_HairToMeshMapping[globalStrandIndex].barycentricCoord[1];
+        float c = g_HairToMeshMapping[globalStrandIndex].barycentricCoord[2];
 
-		// get the un-transformed triangle
-		float3 vert1 = g_MeshVertices[triangleIndex].xyz;
-		float3 vert2 = g_MeshVertices[triangleIndex+1].xyz;
-		float3 vert3 = g_MeshVertices[triangleIndex+2].xyz;
+        // get the un-transformed triangle
+        float3 vert1 = g_MeshVertices[triangleIndex].xyz;
+        float3 vert2 = g_MeshVertices[triangleIndex+1].xyz;
+        float3 vert3 = g_MeshVertices[triangleIndex+2].xyz;
 
-		// get the transfomed (skinned) triangle
-		float3 skinnedVert1 = g_TransformedVerts[triangleIndex].xyz;
-		float3 skinnedVert2 = g_TransformedVerts[triangleIndex+1].xyz;
-		float3 skinnedVert3 = g_TransformedVerts[triangleIndex+2].xyz;
+        // get the transfomed (skinned) triangle
+        float3 skinnedVert1 = g_TransformedVerts[triangleIndex].xyz;
+        float3 skinnedVert2 = g_TransformedVerts[triangleIndex+1].xyz;
+        float3 skinnedVert3 = g_TransformedVerts[triangleIndex+2].xyz;
 
-		// calculate original hair position for the strand using the barycentric coordinate
-		//float3 pos = mul(a, vert1) + mul (b, vert2) + mul(c, vert3);
+        // calculate original hair position for the strand using the barycentric coordinate
+        //float3 pos = mul(a, vert1) + mul (b, vert2) + mul(c, vert3);
 
-		// calculate the new hair position for the strand using the barycentric coordinate
-		float3 tfmPos = mul(a, skinnedVert1) + mul (b, skinnedVert2) + mul(c, skinnedVert3);
-		float3 initialPos = g_InitialHairPositions[globalRootVertexIndex].xyz;
+        // calculate the new hair position for the strand using the barycentric coordinate
+        float3 tfmPos = mul(a, skinnedVert1) + mul (b, skinnedVert2) + mul(c, skinnedVert3);
+        float3 initialPos = g_InitialHairPositions[globalRootVertexIndex].xyz;
 
-		//-------------------------------------------------
-		// Calculate transformation matrix for the hair
-		//-------------------------------------------------
+        //-------------------------------------------------
+        // Calculate transformation matrix for the hair
+        //-------------------------------------------------
 
-		// create a coordinate system from the untransformed triangle
-		// Note: this part only needs to be done once. We could pre-calculate it
-		// for every hair and save it in a buffer.
-		float3 normal;
-		float3 tangent = normalize(vert1 - vert3);
-		float3 tangent2 = vert2 - vert3;
-		normal = normalize(cross(tangent, tangent2));
-		float3 binormal = normalize(cross(normal, tangent));
+        // create a coordinate system from the untransformed triangle
+        // Note: this part only needs to be done once. We could pre-calculate it
+        // for every hair and save it in a buffer.
+        float3 normal;
+        float3 tangent = normalize(vert1 - vert3);
+        float3 tangent2 = vert2 - vert3;
+        normal = normalize(cross(tangent, tangent2));
+        float3 binormal = normalize(cross(normal, tangent));
 
-		row_major float4x4  triangleMtx;
-		triangleMtx._m00 = tangent.x;   triangleMtx._m01 = tangent.y;   triangleMtx._m02 = tangent.z;   triangleMtx._m03 = 0;
-		triangleMtx._m10 = normal.x;    triangleMtx._m11 = normal.y;    triangleMtx._m12 = normal.z;    triangleMtx._m13 = 0;
-		triangleMtx._m20 = binormal.x;  triangleMtx._m21 = binormal.y;  triangleMtx._m22 = binormal.z;  triangleMtx._m23 = 0;
-		triangleMtx._m30 = 0;           triangleMtx._m31 = 0;           triangleMtx._m32 = 0;           triangleMtx._m33 = 1;
+        row_major float4x4  triangleMtx;
+        triangleMtx._m00 = tangent.x;   triangleMtx._m01 = tangent.y;   triangleMtx._m02 = tangent.z;   triangleMtx._m03 = 0;
+        triangleMtx._m10 = normal.x;    triangleMtx._m11 = normal.y;    triangleMtx._m12 = normal.z;    triangleMtx._m13 = 0;
+        triangleMtx._m20 = binormal.x;  triangleMtx._m21 = binormal.y;  triangleMtx._m22 = binormal.z;  triangleMtx._m23 = 0;
+        triangleMtx._m30 = 0;           triangleMtx._m31 = 0;           triangleMtx._m32 = 0;           triangleMtx._m33 = 1;
 
-		// create a coordinate system from the transformed triangle
-		tangent = normalize(skinnedVert1 - skinnedVert3);
-		tangent2 = skinnedVert2 - skinnedVert3;
-		normal = normalize(cross(tangent, tangent2));
-		binormal = normalize(cross(normal, tangent));
+        // create a coordinate system from the transformed triangle
+        tangent = normalize(skinnedVert1 - skinnedVert3);
+        tangent2 = skinnedVert2 - skinnedVert3;
+        normal = normalize(cross(tangent, tangent2));
+        binormal = normalize(cross(normal, tangent));
 
-		row_major float4x4  tfmTriangleMtx;
-		tfmTriangleMtx._m00 = tangent.x;   tfmTriangleMtx._m01 = tangent.y;   tfmTriangleMtx._m02 = tangent.z;   tfmTriangleMtx._m03 = 0;
-		tfmTriangleMtx._m10 = normal.x;    tfmTriangleMtx._m11 = normal.y;    tfmTriangleMtx._m12 = normal.z;    tfmTriangleMtx._m13 = 0;
-		tfmTriangleMtx._m20 = binormal.x;  tfmTriangleMtx._m21 = binormal.y;  tfmTriangleMtx._m22 = binormal.z;  tfmTriangleMtx._m23 = 0;
-		tfmTriangleMtx._m30 = 0;           tfmTriangleMtx._m31 = 0;           tfmTriangleMtx._m32 = 0;           tfmTriangleMtx._m33 = 1;
+        row_major float4x4  tfmTriangleMtx;
+        tfmTriangleMtx._m00 = tangent.x;   tfmTriangleMtx._m01 = tangent.y;   tfmTriangleMtx._m02 = tangent.z;   tfmTriangleMtx._m03 = 0;
+        tfmTriangleMtx._m10 = normal.x;    tfmTriangleMtx._m11 = normal.y;    tfmTriangleMtx._m12 = normal.z;    tfmTriangleMtx._m13 = 0;
+        tfmTriangleMtx._m20 = binormal.x;  tfmTriangleMtx._m21 = binormal.y;  tfmTriangleMtx._m22 = binormal.z;  tfmTriangleMtx._m23 = 0;
+        tfmTriangleMtx._m30 = 0;           tfmTriangleMtx._m31 = 0;           tfmTriangleMtx._m32 = 0;           tfmTriangleMtx._m33 = 1;
 
-		// Find the rotation transformation from the untransformed triangle to the transformed triangle
-		// rotation = inverse(triangleMtx) x tfmTriangleMtx = transpose(triangleMtx) x tfmTriangleMtx, since triangelMtx is orthonormal
-		row_major float4x4  rotationMtx =  mul(transpose(triangleMtx), tfmTriangleMtx);
+        // Find the rotation transformation from the untransformed triangle to the transformed triangle
+        // rotation = inverse(triangleMtx) x tfmTriangleMtx = transpose(triangleMtx) x tfmTriangleMtx, since triangelMtx is orthonormal
+        row_major float4x4  rotationMtx =  mul(transpose(triangleMtx), tfmTriangleMtx);
 
-		// translation matrix from hair to origin since we want to rotate the hair at it's root
-		row_major float4x4  translationMtx;
-		translationMtx._m00 = 1;                translationMtx._m01 = 0;                translationMtx._m02 = 0;                translationMtx._m03 = 0;
-		translationMtx._m10 = 0;                translationMtx._m11 = 1;                translationMtx._m12 = 0;                translationMtx._m13 = 0;
-		translationMtx._m20 = 0;                translationMtx._m21 = 0;                translationMtx._m22 = 1;                translationMtx._m23 = 0;
-		translationMtx._m30 = -initialPos.x;    translationMtx._m31 = -initialPos.y;    translationMtx._m32 = -initialPos.z;    translationMtx._m33 = 1;
+        // translation matrix from hair to origin since we want to rotate the hair at it's root
+        row_major float4x4  translationMtx;
+        translationMtx._m00 = 1;                translationMtx._m01 = 0;                translationMtx._m02 = 0;                translationMtx._m03 = 0;
+        translationMtx._m10 = 0;                translationMtx._m11 = 1;                translationMtx._m12 = 0;                translationMtx._m13 = 0;
+        translationMtx._m20 = 0;                translationMtx._m21 = 0;                translationMtx._m22 = 1;                translationMtx._m23 = 0;
+        translationMtx._m30 = -initialPos.x;    translationMtx._m31 = -initialPos.y;    translationMtx._m32 = -initialPos.z;    translationMtx._m33 = 1;
 
-		// final rotation matrix
-		rotationMtx = mul(translationMtx, rotationMtx);
+        // final rotation matrix
+        rotationMtx = mul(translationMtx, rotationMtx);
 
-		// translate back to the final position (as determined by the skinned mesh position)
-		translationMtx._m30 = tfmPos.x;    translationMtx._m31 = tfmPos.y;    translationMtx._m32 = tfmPos.z;    translationMtx._m33 = 1;
+        // translate back to the final position (as determined by the skinned mesh position)
+        translationMtx._m30 = tfmPos.x;    translationMtx._m31 = tfmPos.y;    translationMtx._m32 = tfmPos.z;    translationMtx._m33 = 1;
 
-		// combine the rotation and translation
-		row_major float4x4  tfmMtx = mul(rotationMtx, translationMtx);
+        // combine the rotation and translation
+        row_major float4x4  tfmMtx = mul(rotationMtx, translationMtx);
 
-		// apply the global transformation for the model
-		//tfmMtx = mul(tfmMtx, g_ModelTransformForHead);
+        // apply the global transformation for the model
+        //tfmMtx = mul(tfmMtx, g_ModelTransformForHead);
 
-	   // calculate the quaternion from the matrix
-		float4 quaternion;
-		quaternion.w = sqrt(1 + tfmMtx._m00 + tfmMtx._m11 + tfmMtx._m22) / 2;
-		quaternion.x = (tfmMtx._m21 - tfmMtx._m12)/( 4 * quaternion.w);
-		quaternion.y = (tfmMtx._m02 - tfmMtx._m20)/( 4 * quaternion.w);
-		quaternion.z = (tfmMtx._m10 - tfmMtx._m01)/( 4 * quaternion.w);
+       // calculate the quaternion from the matrix
+        float4 quaternion;
+        quaternion.w = sqrt(1 + tfmMtx._m00 + tfmMtx._m11 + tfmMtx._m22) / 2;
+        quaternion.x = (tfmMtx._m21 - tfmMtx._m12)/( 4 * quaternion.w);
+        quaternion.y = (tfmMtx._m02 - tfmMtx._m20)/( 4 * quaternion.w);
+        quaternion.z = (tfmMtx._m10 - tfmMtx._m01)/( 4 * quaternion.w);
 
-		g_Transforms[globalStrandIndex].tfm = tfmMtx;
-		g_Transforms[globalStrandIndex].quat = quaternion;
-		return;
-	}
+        g_Transforms[globalStrandIndex].tfm = tfmMtx;
+        g_Transforms[globalStrandIndex].quat = quaternion;
+        return;
+    }
 #endif
 // EndHLSL

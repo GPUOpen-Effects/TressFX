@@ -205,48 +205,48 @@ VS_OUTPUT_SCREENQUAD FullScreenVS(uint vertexID : SV_VertexID)
 // If you change this, you MUST also change TressFXShadeParams in TressFXConstantBuffers.h and ShadeParams in TressFXShortcut.hlsl
 struct ShadeParams
 {
-	// General information
-	float       FiberRadius;
-	// For deep approximated shadow lookup
-	float       ShadowAlpha;
-	float       FiberSpacing;
-	// For lighting/shading
-	float       HairEx2;
-	float4		MatKValue;   // KAmbient, KDiffuse, KSpec1, Exp1
-	float       HairKs2;
-	float		fPadding0;
-	float		fPadding1;
-	float		fPadding2;
+    // General information
+    float       FiberRadius;
+    // For deep approximated shadow lookup
+    float       ShadowAlpha;
+    float       FiberSpacing;
+    // For lighting/shading
+    float       HairEx2;
+    float4		MatKValue;   // KAmbient, KDiffuse, KSpec1, Exp1
+    float       HairKs2;
+    float		fPadding0;
+    float		fPadding1;
+    float		fPadding2;
 };
 
 [[vk::binding(0, 1)]] cbuffer TressFXShadeParams  : register(b0, space1)
 {
-	ShadeParams HairParams[AMD_TRESSFX_MAX_HAIR_GROUP_RENDER];
+    ShadeParams HairParams[AMD_TRESSFX_MAX_HAIR_GROUP_RENDER];
 };
 
 float3 TressFXShading(float2 pixelCoord, float depth, float3 vTangentCoverage, float3 baseColor, int shaderParamIndex)
 {
-	float3 vNDC = ScreenPosToNDC(float3(pixelCoord, depth), g_vViewport);
-	float3 vPositionWS = NDCToWorld(vNDC, cInvViewProjMatrix);
-	float3 vViewDirWS = g_vEye - vPositionWS;
+    float3 vNDC = ScreenPosToNDC(float3(pixelCoord, depth), g_vViewport);
+    float3 vPositionWS = NDCToWorld(vNDC, cInvViewProjMatrix);
+    float3 vViewDirWS = g_vEye - vPositionWS;
 
-	// Need to expand the tangent that was compressed to store in the buffer
-	float3 vTangent = vTangentCoverage.xyz * 2.f - 1.f;
+    // Need to expand the tangent that was compressed to store in the buffer
+    float3 vTangent = vTangentCoverage.xyz * 2.f - 1.f;
 
-	HairShadeParams params;
-	params.Color = baseColor;
-	params.HairShadowAlpha = HairParams[shaderParamIndex].ShadowAlpha;
-	params.FiberRadius = HairParams[shaderParamIndex].FiberRadius;
-	params.FiberSpacing = HairParams[shaderParamIndex].FiberSpacing;
+    HairShadeParams params;
+    params.Color = baseColor;
+    params.HairShadowAlpha = HairParams[shaderParamIndex].ShadowAlpha;
+    params.FiberRadius = HairParams[shaderParamIndex].FiberRadius;
+    params.FiberSpacing = HairParams[shaderParamIndex].FiberSpacing;
 
-	params.Ka = HairParams[shaderParamIndex].MatKValue.x;
-	params.Kd = HairParams[shaderParamIndex].MatKValue.y;
-	params.Ks1 = HairParams[shaderParamIndex].MatKValue.z;
-	params.Ex1 = HairParams[shaderParamIndex].MatKValue.w;
-	params.Ks2 = HairParams[shaderParamIndex].HairKs2;
-	params.Ex2 = HairParams[shaderParamIndex].HairEx2;
+    params.Ka = HairParams[shaderParamIndex].MatKValue.x;
+    params.Kd = HairParams[shaderParamIndex].MatKValue.y;
+    params.Ks1 = HairParams[shaderParamIndex].MatKValue.z;
+    params.Ex1 = HairParams[shaderParamIndex].MatKValue.w;
+    params.Ks2 = HairParams[shaderParamIndex].HairKs2;
+    params.Ex2 = HairParams[shaderParamIndex].HairEx2;
 
-	return AccumulateHairLight(vTangent, vPositionWS, vViewDirWS, params, vNDC);
+    return AccumulateHairLight(vTangent, vPositionWS, vViewDirWS, params, vNDC);
 }
 
 float4 GatherLinkedList(float2 vfScreenAddress)
@@ -259,7 +259,7 @@ float4 GatherLinkedList(float2 vfScreenAddress)
 
     uint4 kBuffer[KBUFFER_SIZE];
 
-	// Init kbuffer to large values
+    // Init kbuffer to large values
     [unroll]
     for (int t = 0; t < KBUFFER_SIZE; ++t)
     {
@@ -268,7 +268,7 @@ float4 GatherLinkedList(float2 vfScreenAddress)
     }
 
     // Get first K elements from the top (top to bottom)
-	// And store them in the kbuffer for later
+    // And store them in the kbuffer for later
     for (int p = 0; p < KBUFFER_SIZE; ++p)
     {
         if (pointer != FRAGMENT_LIST_NULL)
@@ -282,7 +282,7 @@ float4 GatherLinkedList(float2 vfScreenAddress)
 
     float4 fcolor = float4(0, 0, 0, 1);
 
-	// Go through the remaining layers of hair
+    // Go through the remaining layers of hair
     [allow_uav_condition]
     for (int iFragment = 0; iFragment < MAX_FRAGMENTS && pointer != FRAGMENT_LIST_NULL; ++iFragment)
     {
@@ -325,23 +325,23 @@ float4 GatherLinkedList(float2 vfScreenAddress)
             color = tmp;
         }
 
-		// Calculate color contribution from whatever sample we are using
+        // Calculate color contribution from whatever sample we are using
         float4 vData = UnpackUintIntoFloat4(data);
-		float3 vTangent = vData.xyz;
-		float alpha = vData.w;
-		uint shadeParamIndex;	// So we know what settings to shade with
+        float3 vTangent = vData.xyz;
+        float alpha = vData.w;
+        uint shadeParamIndex;	// So we know what settings to shade with
         float3 vColor = UnpackUintIntoFloat3Byte(color, shadeParamIndex);
         
         // Shade the bottom hair layers (cheap shading, just uses scalp base color)
         // Just blend in the color for cheap underhairs
-		fcolor.xyz = fcolor.xyz * (1.f - alpha) + vColor * alpha;
-		fcolor.w *= (1.f - alpha);
+        fcolor.xyz = fcolor.xyz * (1.f - alpha) + vColor * alpha;
+        fcolor.w *= (1.f - alpha);
 
         pointer = NODE_NEXT(pointer);
     }
 
-	// Make sure we are blending the correct number of strands (don't blend more than we have)
-	float maxAlpha = 0;
+    // Make sure we are blending the correct number of strands (don't blend more than we have)
+    float maxAlpha = 0;
 
     // Blend the top-most entries
     for (int j = 0; j < KBUFFER_SIZE; j++)
@@ -371,15 +371,15 @@ float4 GatherLinkedList(float2 vfScreenAddress)
         // Use high quality shading for the nearest k fragments
         float fDepth = asfloat(nodeDepth);
         float4 vData = UnpackUintIntoFloat4(data);
-		float3 vTangent = vData.xyz;
-		float alpha = vData.w;
-		uint shadeParamIndex;	// So we know what settings to shade with
-		float3 vColor = UnpackUintIntoFloat3Byte(color, shadeParamIndex);
+        float3 vTangent = vData.xyz;
+        float alpha = vData.w;
+        uint shadeParamIndex;	// So we know what settings to shade with
+        float3 vColor = UnpackUintIntoFloat3Byte(color, shadeParamIndex);
         float3 fragmentColor = TressFXShading(vfScreenAddress, fDepth, vTangent, vColor, shadeParamIndex);
 
         // Blend in the fragment color
         fcolor.xyz = fcolor.xyz * (1.f - alpha) + fragmentColor * alpha;
-		fcolor.w *= (1.f - alpha);
+        fcolor.w *= (1.f - alpha);
     }
 
     return fcolor;

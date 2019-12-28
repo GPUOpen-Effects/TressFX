@@ -81,15 +81,15 @@ public:
 
 private:
     void ComputeGlobalIdxToSkinIdx();
-	EI_Device* m_pDevice;
+    EI_Device* m_pDevice;
     std::unique_ptr<EI_GLTFTexturesAndBuffers>	m_pGLTFTexturesAndBuffers;
 
     GLTFCommon*							m_pGLTFCommon;
 
-	std::unique_ptr<EI_GltfPbrPass>		m_gltfPBR;
+    std::unique_ptr<EI_GltfPbrPass>		m_gltfPBR;
     std::unique_ptr<EI_GltfDepthPass>	m_gltfDepth;
     
-	State                               m_state;
+    State                               m_state;
 
     std::string m_bonePrefix;
     float m_startOffset = 0;

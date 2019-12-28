@@ -70,7 +70,7 @@ struct LightParams
     int			UseDepthApproximation;
     int			Padding4;
     int			Padding5;
-	LightParams LightData[AMD_TRESSFX_MAX_LIGHTS];
+    LightParams LightData[AMD_TRESSFX_MAX_LIGHTS];
 };
 
 [[vk::binding(1, 3)]] Texture2D<float> ShadowTexture : register(t1, space3);
@@ -78,56 +78,56 @@ struct LightParams
 // https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_lights_punctual/README.md#inner-and-outer-cone-angles
 float SpotAttenuation(float3 pointToLight, float3 spotDirection, float outerConeCos, float innerConeCos)
 {
-	float actualCos = dot(normalize(spotDirection), normalize(-pointToLight));
-	if (actualCos > outerConeCos)
-	{
-		if (actualCos < innerConeCos)
-		{
-			return smoothstep(outerConeCos, innerConeCos, actualCos);
-		}
-		return 1.0;
-	}
-	return 0.0;
+    float actualCos = dot(normalize(spotDirection), normalize(-pointToLight));
+    if (actualCos > outerConeCos)
+    {
+        if (actualCos < innerConeCos)
+        {
+            return smoothstep(outerConeCos, innerConeCos, actualCos);
+        }
+        return 1.0;
+    }
+    return 0.0;
 }
 
 // https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_lights_punctual/README.md#range-property
 float RangeAttenuation(float range, float distance)
 {
-	if (range < 0.0)
-	{
-		// negative range means unlimited
-		return 1.0;
-	}
-	return max(lerp(1, 0, distance / range), 0);//max(min(1.0 - pow(distance / range, 4.0), 1.0), 0.0) / pow(distance, 2.0);
+    if (range < 0.0)
+    {
+        // negative range means unlimited
+        return 1.0;
+    }
+    return max(lerp(1, 0, distance / range), 0);//max(min(1.0 - pow(distance / range, 4.0), 1.0), 0.0) / pow(distance, 2.0);
 }
 
 // =============================================================================================================================
 // Reduces light to a direction and intensity (taking attenuation and light strength into account)
 void GetLightParams(float3 WorldPosition, uint lightIndex, inout float3 LightVector, inout float LightIntensity, HairShadeParams params)
 {
-	LightIntensity = LightData[lightIndex].LightIntensity;
+    LightIntensity = LightData[lightIndex].LightIntensity;
 
-	// Spot and Directionals use the light direction directly
-	LightVector = LightData[lightIndex].LightDirWS;
-	if (LightData[lightIndex].LightType == LightType_Directional)
-		return;
+    // Spot and Directionals use the light direction directly
+    LightVector = LightData[lightIndex].LightDirWS;
+    if (LightData[lightIndex].LightType == LightType_Directional)
+        return;
 
-	// Normalized light vector and squared distance for radial source calculations
-	float3 vLightVecWS = LightData[lightIndex].LightPositionWS - WorldPosition;
-	float distToLight = length(vLightVecWS);
+    // Normalized light vector and squared distance for radial source calculations
+    float3 vLightVecWS = LightData[lightIndex].LightPositionWS - WorldPosition;
+    float distToLight = length(vLightVecWS);
 
-	// Set the LightVector to actual direction to light
-	LightVector = normalize(vLightVecWS);
+    // Set the LightVector to actual direction to light
+    LightVector = normalize(vLightVecWS);
 
-	// Calculate radial falloff
-	LightIntensity *= RangeAttenuation(LightData[lightIndex].LightRange, distToLight);
-	
-	// Modulate with spot falloff if needed
-	if (LightData[lightIndex].LightType == LightType_Spot)
-	{
-		// Need to inverse the direction going in (as it's direction to light) as Unreal with negate it again under the hood.
-		LightIntensity *= SpotAttenuation(LightVector, -LightData[lightIndex].LightDirWS, LightData[lightIndex].LightOuterConeCos, LightData[lightIndex].LightInnerConeCos);
-	}
+    // Calculate radial falloff
+    LightIntensity *= RangeAttenuation(LightData[lightIndex].LightRange, distToLight);
+    
+    // Modulate with spot falloff if needed
+    if (LightData[lightIndex].LightType == LightType_Spot)
+    {
+        // Need to inverse the direction going in (as it's direction to light) as Unreal with negate it again under the hood.
+        LightIntensity *= SpotAttenuation(LightVector, -LightData[lightIndex].LightDirWS, LightData[lightIndex].LightOuterConeCos, LightData[lightIndex].LightInnerConeCos);
+    }
 }
 
 // Returns a float3 which is the scale for diffuse, spec term, and colored spec term.
@@ -183,7 +183,7 @@ float3 ComputeDiffuseSpecFactors(float3 vEyeDir, float3 vLightDir, float3 vTange
 
 float LinearizeDepth(float depthNDC, float fNear, float fFar)
 {
-	return fNear * fFar / (fFar - depthNDC * (fFar - fNear));
+    return fNear * fFar / (fFar - depthNDC * (fFar - fNear));
 }
 
 // fDepthDistanceWS is the world space distance between the point on the surface and the point in the shadow map.
@@ -193,33 +193,33 @@ float LinearizeDepth(float depthNDC, float fNear, float fFar)
 // Output is a number between 0 (totally shadowed) and 1 (lets everything through)
 float ComputeShadowAttenuation(float fDepthDistanceWS, float fFiberSpacing, float fFiberRadius, float fHairAlpha)
 {
-	float numFibers = fDepthDistanceWS / (fFiberSpacing * fFiberRadius);	// fiberSpacing + fiberRadius is total distance from 1 fiber to another
+    float numFibers = fDepthDistanceWS / (fFiberSpacing * fFiberRadius);	// fiberSpacing + fiberRadius is total distance from 1 fiber to another
 
-	// if occluded by hair, there is at least one fiber
-	[flatten] if (fDepthDistanceWS > 1e-5)
-		numFibers = max(numFibers, 1);
+    // if occluded by hair, there is at least one fiber
+    [flatten] if (fDepthDistanceWS > 1e-5)
+        numFibers = max(numFibers, 1);
 
-	return pow(abs(1 - fHairAlpha), numFibers);
+    return pow(abs(1 - fHairAlpha), numFibers);
 }
 
 float ComputeLightShadow(int lightIndex, float3 vPositionWS, in HairShadeParams params)
 {
     if (LightData[lightIndex].ShadowMapIndex < 0)
         return 1.f;
-	
-	float4 shadowTexCoord = MatrixMult( LightData[lightIndex].ShadowProjection, float4(vPositionWS, 1.f) );
+    
+    float4 shadowTexCoord = MatrixMult( LightData[lightIndex].ShadowProjection, float4(vPositionWS, 1.f) );
     shadowTexCoord.xyz /= shadowTexCoord.w;
 
-	// remember we are splitting the shadow map in 4 quarters 
-	// and at this point, everything's in -1 to 1
-	// So bring back to 0 -> 0.5 and flip the Y coordinate
-	shadowTexCoord.x = (1.0 + shadowTexCoord.x) * 0.25;
-	shadowTexCoord.y = (1.0 - shadowTexCoord.y) * 0.25;
+    // remember we are splitting the shadow map in 4 quarters 
+    // and at this point, everything's in -1 to 1
+    // So bring back to 0 -> 0.5 and flip the Y coordinate
+    shadowTexCoord.x = (1.0 + shadowTexCoord.x) * 0.25;
+    shadowTexCoord.y = (1.0 - shadowTexCoord.y) * 0.25;
 
-	// Bias the depth value (note, we need better depth bias settings)
-	shadowTexCoord.z -= LightData[lightIndex].ShadowParams.x;
+    // Bias the depth value (note, we need better depth bias settings)
+    shadowTexCoord.z -= LightData[lightIndex].ShadowParams.x;
 
-	float LinearZ = LinearizeDepth(shadowTexCoord.z, LightData[lightIndex].ShadowParams.y, LightData[lightIndex].ShadowParams.z);
+    float LinearZ = LinearizeDepth(shadowTexCoord.z, LightData[lightIndex].ShadowParams.y, LightData[lightIndex].ShadowParams.z);
 
     if ((shadowTexCoord.y < 0) || (shadowTexCoord.y > .5)) return 1.f;
     if ((shadowTexCoord.x < 0) || (shadowTexCoord.x > .5)) return 1.f;
@@ -230,31 +230,31 @@ float ComputeLightShadow(int lightIndex, float3 vPositionWS, in HairShadeParams 
     shadowTexCoord.x += offsetsX[LightData[lightIndex].ShadowMapIndex] * .5;
     shadowTexCoord.y += offsetsY[LightData[lightIndex].ShadowMapIndex] * .5;
 
-	// Sample shadow map
-	float shadow = 0.0;
+    // Sample shadow map
+    float shadow = 0.0;
 
-	static const int kernelLevel = 2;
-	static const int kernelWidth = 2 * kernelLevel + 1;
-	[unroll] for (int i = -kernelLevel; i <= kernelLevel; i++)
-	{
-		[unroll] for (int j = -kernelLevel; j <= kernelLevel; j++)
-		{
-			float distToLight = ShadowTexture.Sample(LinearWrapSampler, shadowTexCoord.xy, int2(i, j)).r;
-			float LinearSample = LinearizeDepth(distToLight, LightData[lightIndex].ShadowParams.y, LightData[lightIndex].ShadowParams.z);
-			bool isLit = UseDepthApproximation ? LinearZ < LinearSample : shadowTexCoord.z < distToLight;
+    static const int kernelLevel = 2;
+    static const int kernelWidth = 2 * kernelLevel + 1;
+    [unroll] for (int i = -kernelLevel; i <= kernelLevel; i++)
+    {
+        [unroll] for (int j = -kernelLevel; j <= kernelLevel; j++)
+        {
+            float distToLight = ShadowTexture.Sample(LinearWrapSampler, shadowTexCoord.xy, int2(i, j)).r;
+            float LinearSample = LinearizeDepth(distToLight, LightData[lightIndex].ShadowParams.y, LightData[lightIndex].ShadowParams.z);
+            bool isLit = UseDepthApproximation ? LinearZ < LinearSample : shadowTexCoord.z < distToLight;
 
-			if (isLit)
-				shadow += 1.f;
-			else
-			{
-				shadow += UseDepthApproximation ? ComputeShadowAttenuation(LinearZ - LinearSample, params.FiberSpacing, params.FiberRadius, params.HairShadowAlpha) : 0.f;
-			}
-		}
-	}
+            if (isLit)
+                shadow += 1.f;
+            else
+            {
+                shadow += UseDepthApproximation ? ComputeShadowAttenuation(LinearZ - LinearSample, params.FiberSpacing, params.FiberRadius, params.HairShadowAlpha) : 0.f;
+            }
+        }
+    }
 
-	// Average the values according to number of samples
-	shadow /= (kernelWidth * kernelWidth);
-	
+    // Average the values according to number of samples
+    shadow /= (kernelWidth * kernelWidth);
+    
     return shadow;
 }
 
@@ -266,34 +266,34 @@ float3 AccumulateHairLight(float3 vTangent, float3 vPositionWS, float3 vViewDirW
 
     float3 color = float3(0.0, 0.0, 0.0);
 
-	// Needed for each light calculation
-	float3 LightVector;
-	float LightIntensity;
+    // Needed for each light calculation
+    float3 LightVector;
+    float LightIntensity;
 
     // Start with non-shadowed lights
     uint lightCount = min(NumLights, AMD_TRESSFX_MAX_LIGHTS);
     for (uint i = 0; i < lightCount; i++)
     {
-		GetLightParams(vPositionWS, i, LightVector, LightIntensity, params);
+        GetLightParams(vPositionWS, i, LightVector, LightIntensity, params);
 
         if (LightIntensity)
         {
             // Compute shadow term (if we've got one)
-			float fShadowTerm = ComputeLightShadow(i, vPositionWS, params);
+            float fShadowTerm = ComputeLightShadow(i, vPositionWS, params);
 
             if (fShadowTerm > 0.f)
             {
                 float3 L = LightVector;
-				float3 LightColor = LightData[i].LightColor;
+                float3 LightColor = LightData[i].LightColor;
 
-				float3 reflection = ComputeDiffuseSpecFactors(V, L, T, params);
+                float3 reflection = ComputeDiffuseSpecFactors(V, L, T, params);
 
                 float3 ReflectedLight = reflection.x * LightColor * params.Color;
                 ReflectedLight += reflection.y * LightColor;
                 ReflectedLight += reflection.z * LightColor * params.Color;
                 ReflectedLight *= fShadowTerm * LightIntensity;
 
-				color += max(float3(0, 0, 0), ReflectedLight);
+                color += max(float3(0, 0, 0), ReflectedLight);
             }
         }
     }
