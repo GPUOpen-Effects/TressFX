@@ -334,7 +334,7 @@ float4 GatherLinkedList(float2 vfScreenAddress)
         
         // Shade the bottom hair layers (cheap shading, just uses scalp base color)
         // Just blend in the color for cheap underhairs
-        fcolor.xyz = fcolor.xyz * (1.f - alpha) + vColor * alpha;
+        fcolor.xyz = fcolor.xyz * (1.f - alpha) + (vColor * alpha) * alpha;
         fcolor.w *= (1.f - alpha);
 
         pointer = NODE_NEXT(pointer);
@@ -378,7 +378,7 @@ float4 GatherLinkedList(float2 vfScreenAddress)
         float3 fragmentColor = TressFXShading(vfScreenAddress, fDepth, vTangent, vColor, shadeParamIndex);
 
         // Blend in the fragment color
-        fcolor.xyz = fcolor.xyz * (1.f - alpha) + fragmentColor * alpha;
+        fcolor.xyz = fcolor.xyz * (1.f - alpha) + (fragmentColor * alpha) * alpha;
         fcolor.w *= (1.f - alpha);
     }
 
