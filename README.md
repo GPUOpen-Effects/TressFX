@@ -1,6 +1,6 @@
 # AMD TressFX
 
-![AMD TressFX](doc/TressFX4.1-wideshot1.jpg)
+![AMD TressFX](http://gpuopen-effects.github.io/media/effects/TressFX4.1-wideshot1.jpg) 
 
 The TressFX library is AMD's hair/fur rendering and simulation technology. TressFX is designed to use the GPU to simulate and render high-quality, realistic hair and fur. 
 The TressFX/Radeon&reg; Cauldron sample is built on top of Radeon&reg; Cauldron, which is an open sourced framework used at AMD for sample creation. It supports both DirectX&reg; 12 and Vulkan&reg; through a custom wrapper layer. For more information about Radeon&reg; Cauldron, or to download the source/examples, please refer to https://gpuopen.com/gamingproduct/caudron-framework/.
@@ -23,7 +23,7 @@ This release also demonstrates TressFX integration with Epic Games Unreal Engine
 * Autodesk&reg; Maya&reg; plugin provided for hair/fur and collision authoring
 * Full source code provided
 
-![AMD TressFX](doc/TressFX4.1-wideshot2.jpg)
+![AMD TressFX](http://gpuopen-effects.github.io/media/effects/TressFX4.1-wideshot2.jpg)
 
 ### New in TressFX 4.1
 * TressFX/Radeon&reg; Cauldron implementation with full source code (DirectX&reg; 12 and Vulkan&reg;)
@@ -34,7 +34,7 @@ This release also demonstrates TressFX integration with Epic Games Unreal Engine
 * New Level of Detail (LOD) system
 * Extensive documentation and tutorials
 * Updated Autodesk&reg; Maya&reg; Exporter with new UI and new features/error checking
-* TressFX/Epic Games Unreal 4.22 engine integration (patch under Epic Games Unreal GitHub repository)
+* TressFX/Epic Games Unreal 4.22 engine integration (patch under Epic Games Unreal GitHub repository)  (See https://github.com/GPUOpenSoftware/UnrealEngine/tree/TressFX-4.22)
 
 *Hair Parameter Blending currently only available under TressFX/Unreal. Please see included documentation for more details.
 
@@ -114,4 +114,4 @@ been working with TressFX 3.
 
 **Disclaimer**
 
-The information contained herein is for informational purposes only, and is subject to change without notice. While every precaution has been taken in the preparation of this document, it may contain technical inaccuracies, omissions and typographical errors, and AMD is under no obligation to update or otherwise correct this information.  Advanced Micro Devices, Inc. makes no representations or warranties with respect to the accuracy or completeness of the contents of this document, and assumes no liability of any kind, including the implied warranties of noninfringement, merchantability or fitness for particular purposes, with respect to the operation or use of AMD hardware, software or other products described herein.  No license, including implied or arising by estoppel, to any intellectual property rights is granted by this document.  Terms and limitations applicable to the purchase or use of AMD’s products are as set forth in a signed agreement between the parties or in AMD's Standard Terms and Conditions of Sale.
+The information contained herein is for informational purposes only, and is subject to change without notice. While every precaution has been taken in the preparation of this document, it may contain technical inaccuracies, omissions and typographical errors, and AMD is under no obligation to update or otherwise correct this information.  Advanced Micro Devices, Inc. makes no representations or warranties with respect to the accuracy or completeness of the contents of this document, and assumes no liability of any kind, including the implied warranties of noninfringement, merchantability or fitness for particular purposes, with respect to the operation or use of AMD hardware, software or other products described herein.  No license, including implied or arising by estoppel, to any intellectual property rights is granted by this document.  Terms and limitations applicable to the purchase or use of AMDâ€™s products are as set forth in a signed agreement between the parties or in AMD's Standard Terms and Conditions of Sale.
