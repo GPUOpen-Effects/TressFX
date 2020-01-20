@@ -1,6 +1,6 @@
 # AMD TressFX
 
-![AMD TressFX](http://gpuopen-effects.github.io/media/effects/TressFX4.1-wideshot1.jpg) 
+![AMD TressFX](http://gpuopen.com/GitHub_Media/TressFX4.1-wideshot1.jpg)
 
 The TressFX library is AMD's hair/fur rendering and simulation technology. TressFX is designed to use the GPU to simulate and render high-quality, realistic hair and fur. 
 The TressFX/Radeon&reg; Cauldron sample is built on top of Radeon&reg; Cauldron, which is an open sourced framework used at AMD for sample creation. It supports both DirectX&reg; 12 and Vulkan&reg; through a custom wrapper layer. For more information about Radeon&reg; Cauldron, or to download the source/examples, please refer to https://gpuopen.com/gamingproduct/caudron-framework/.
@@ -23,7 +23,7 @@ This release also demonstrates TressFX integration with Epic Games Unreal Engine
 * Autodesk&reg; Maya&reg; plugin provided for hair/fur and collision authoring
 * Full source code provided
 
-![AMD TressFX](http://gpuopen-effects.github.io/media/effects/TressFX4.1-wideshot2.jpg)
+![AMD TressFX](http://gpuopen.com/GitHub_Media/TressFX4.1-wideshot2.jpg)
 
 ### New in TressFX 4.1
 * TressFX/Radeon&reg; Cauldron implementation with full source code (DirectX&reg; 12 and Vulkan&reg;)
