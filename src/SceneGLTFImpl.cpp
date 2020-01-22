@@ -52,7 +52,7 @@ void EI_Scene::OnCreate(EI_Device* pDevice, EI_RenderTargetSet * renderTargetSet
     // Init Camera, looking at the origin
     m_roll = 0.0f;
     m_pitch = 0.0f;
-    m_distance = 4.0f;
+    m_distance = 2.0f;
     m_animationTime = 0.0f;
 
     // init GUI state   
@@ -135,6 +135,7 @@ void EI_Scene::OnBeginFrame(float deltaTime, float aspect)
 
             bool panning = (io.KeyCtrl == true) && (io.MouseDown[0] == true);
 
+            m_state.camera.LookAt(m_state.camera.GetPosition(), DirectX::XMVectorSet(-0.1f, 0.5f, 0.4f, 0.0f));
             m_state.camera.UpdateCameraPolar(m_roll, m_pitch, panning ? -io.MouseDelta.x / 100.0f : 0.0f, panning ? io.MouseDelta.y / 100.0f : 0.0f, m_distance);
         }
     }
