@@ -52,7 +52,7 @@ const uint32_t NUMBER_OF_BACK_BUFFERS = 3;
 
 // This could instead be retrieved as a variable from the
 // script manager, or passed as an argument.
-static const size_t AVE_FRAGS_PER_PIXEL = 4;
+static const size_t AVE_FRAGS_PER_PIXEL = 12;
 static const size_t PPLL_NODE_SIZE = 16;
 
 TressFXSample::TressFXSample(LPCSTR name)
