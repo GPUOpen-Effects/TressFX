@@ -1,0 +1,3 @@
+[submodule "libs/cauldron"]
+	path = libs/cauldron
+	url = git@github.com:GPUOpen-LibrariesAndSDKs/Cauldron.git

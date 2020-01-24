@@ -26,6 +26,7 @@
 *.ini       eol=crlf
 *.shl       eol=crlf
 *.sufx      eol=crlf
+*.jpg       binary
 *.pdf       binary
 *.pps       binary
 *.ppsx      binary
@@ -45,6 +46,7 @@
 *.suf2      binary
 *.sul2      binary
 *.suo2      binary
+*.bin       binary
 
 # Some model formats might be ASCII, but treating them as such
 # can slow down GitHub Desktop if the model file is large. Just

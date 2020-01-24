@@ -1,8 +1,0 @@
-Texture2D          tAccumInvAlpha < >
-
-Texture2D          FragmentDepthsTexture < >
-RWTexture2D        RWFragmentDepthsTexture < >
-
-Texture2D          FragmentColorsTexture < >
-
-
