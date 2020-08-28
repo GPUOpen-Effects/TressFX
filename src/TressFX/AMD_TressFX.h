@@ -31,7 +31,7 @@
 #define AMD_TRESSFX_H
 
 #define AMD_TRESSFX_VERSION_MAJOR                    4
-#define AMD_TRESSFX_VERSION_MINOR                    0
+#define AMD_TRESSFX_VERSION_MINOR                    1
 #define AMD_TRESSFX_VERSION_PATCH                    0
 
 #include "AMD_Types.h"
