@@ -338,7 +338,7 @@ void TressFXHairObject::UploadRenderingGPUResources(EI_CommandContext&  commandC
    
 }
 
-void TressFXHairObject::PopulateDrawStrandsBindSet(EI_Device* pDevice, TressFXRenderingSettings* pRenderSettings/*=nullptr*/)
+void TressFXHairObject::PopulateDrawStrandsBindSet(EI_Device* pDevice, const TressFXRenderingSettings* pRenderSettings/*=nullptr*/)
 {
     if (pRenderSettings)
     {
@@ -348,7 +348,7 @@ void TressFXHairObject::PopulateDrawStrandsBindSet(EI_Device* pDevice, TressFXRe
         }
         if (pRenderSettings->m_StrandAlbedoName != "<none>")
         {
-            m_StrandAlbedo = GetDevice()->CreateResourceFromFile(pRenderSettings->m_BaseAlbedoName.c_str(), true);
+            m_StrandAlbedo = GetDevice()->CreateResourceFromFile(pRenderSettings->m_StrandAlbedoName.c_str(), true);
         }
     }
     EI_BindSetDescription bindSetDesc =
