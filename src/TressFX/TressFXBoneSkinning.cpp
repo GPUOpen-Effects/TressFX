@@ -413,7 +413,7 @@ Vector3 TressFXBoneSkinning::SkinPosition( int i )
     // compute a bone skinning transform
     TressFXBoneSkinningData skinning = boneSkinningData[global_id];
 
-    std::vector<XMMATRIX>& skinningMatrices = m_pScene->GetWorldSpaceSkeletonMats(m_skinNumber);
+    const std::vector<XMMATRIX>& skinningMatrices = m_pScene->GetWorldSpaceSkeletonMats(m_skinNumber);
     // Interpolate world space bone matrices using weights.
     XMMATRIX bone_matrix = skinningMatrices[(int)skinning.boneIndex[0]] * skinning.weight[0];
     float weight_sum = skinning.weight[0];

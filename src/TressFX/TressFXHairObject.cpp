@@ -338,7 +338,7 @@ void TressFXHairObject::UploadRenderingGPUResources(EI_CommandContext&  commandC
    
 }
 
-void TressFXHairObject::PopulateDrawStrandsBindSet(EI_Device* pDevice, TressFXRenderingSettings* pRenderSettings/*=nullptr*/)
+void TressFXHairObject::PopulateDrawStrandsBindSet(EI_Device* pDevice, const TressFXRenderingSettings* pRenderSettings/*=nullptr*/)
 {
     if (pRenderSettings)
     {
