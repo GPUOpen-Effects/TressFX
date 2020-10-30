@@ -31,7 +31,7 @@ struct EI_RenderTargetSet;          // Render set
 
 enum EI_ShaderStage
 {
-    EI_UNINITIALIZED = 0,  // we will always specify shader stage.  "all" is never used.
+    EI_UNINITIALIZED = 0,
     EI_VS,
     EI_PS,
     EI_CS,
